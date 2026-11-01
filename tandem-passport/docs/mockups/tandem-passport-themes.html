@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tandem Passport: pick a theme</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f1efe9; color: #222; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header, footer { max-width: 1000px; margin: 0 auto; padding: 26px 18px 6px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0; color: #555; line-height: 1.5; }
+  section.theme { max-width: 1000px; margin: 22px auto 8px; padding: 0 18px; }
+  section.theme h2 { margin: 0 0 4px; font-size: 21px; }
+  section.theme > p { margin: 0 0 14px; color: #444; line-height: 1.45; }
+  .row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .shot { width: 260px; margin: 0; }
+  .shot figcaption { text-align: center; font-size: 13px; color: #666; margin-top: 8px; }
+  .phone { width: 260px; height: 540px; border-radius: 34px; border: 9px solid #111; overflow: hidden; box-shadow: 0 16px 36px rgba(0,0,0,.25); position: relative; }
+  .scr { height: 100%; display: flex; flex-direction: column; font-size: 13px; }
+  footer { color: #666; font-size: 14px; padding-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .starter i { font-style: italic; }
+
+  /* ---------- A: real passport ---------- */
+  .A { background: #f5ecd7; color: #1d2a4a;
+       background-image: repeating-radial-gradient(circle at 50% 120%, transparent 0 9px, rgba(29,42,74,.05) 9px 10px); }
+  .A .cover { background: #1d2a4a; color: #e8c872; padding: 14px 14px 12px; text-align: center; }
+  .A .cover small { display: block; font: 700 9px ui-monospace, Consolas, monospace; letter-spacing: .25em; opacity: .8; }
+  .A .cover b { display: block; font: 900 21px Georgia, "Times New Roman", serif; letter-spacing: .08em; margin-top: 2px; }
+  .A .prog { margin: 10px 14px 8px; font: 700 10px ui-monospace, Consolas, monospace; letter-spacing: .12em; display: flex; justify-content: space-between; }
+  .A .grid { padding: 0 12px; }
+  .A .slot { height: 92px; border: 1.5px dashed rgba(29,42,74,.35); border-radius: 10px; display: grid; place-items: center; text-align: center; font-size: 11px; font-weight: 700; color: rgba(29,42,74,.55); padding: 4px; }
+  .A .slot i { display: block; font-style: normal; font-size: 22px; opacity: .55; }
+  .A .stamp { border: 0; position: relative; }
+  .A .stamp span { width: 80px; height: 80px; border-radius: 50%; border: 3px double var(--ink); color: var(--ink); display: grid; place-items: center; transform: rotate(var(--r)); font: 900 10px/1.1 ui-monospace, Consolas, monospace; letter-spacing: .04em; padding: 6px; opacity: .88;
+                     box-shadow: inset 0 0 0 4px transparent, inset 0 0 0 5px var(--ink); }
+  .A .secret { margin: 10px 12px 0; border: 1.5px solid #1d2a4a; border-radius: 10px; padding: 8px 10px; font-weight: 700; display: flex; gap: 8px; align-items: center; background: rgba(232,200,114,.35); }
+  .A .btn { margin: auto 12px 14px; background: #1d2a4a; color: #e8c872; border-radius: 12px; text-align: center; padding: 13px; font-weight: 900; letter-spacing: .06em; }
+  .A .qhead { background: #1d2a4a; color: #e8c872; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; font: 700 10px ui-monospace, Consolas, monospace; letter-spacing: .16em; }
+  .A .qbody { padding: 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .A .qtitle { font: 900 26px Georgia, serif; }
+  .A .qtext { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .A .starter { background: #fff8e6; border-left: 4px solid #b23a48; padding: 8px 10px; font-size: 14px; border-radius: 4px; }
+  .A .field { border-bottom: 2px solid #1d2a4a; padding: 6px 2px; font-family: "Segoe Print", "Comic Sans MS", cursive; font-size: 16px; }
+  .A .field small { display: block; font: 700 9px ui-monospace, Consolas, monospace; letter-spacing: .14em; color: #6a7186; }
+  .A .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px; gap: 10px; }
+  .A .medal { width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff3c4, #e8c872 45%, #b8902f); display: grid; place-items: center; font-size: 56px; box-shadow: 0 0 0 6px #1d2a4a, 0 10px 22px rgba(0,0,0,.25); }
+  .A .done h3 { margin: 6px 0 0; font: 900 24px Georgia, serif; }
+  .A .ticket { border: 2px dashed #b23a48; color: #b23a48; border-radius: 10px; padding: 6px 12px; font: 900 20px ui-monospace, Consolas, monospace; letter-spacing: .1em; }
+  .A .prize { font-weight: 800; font-size: 14px; }
+
+  /* ---------- B: ESN bright ---------- */
+  .B { background: #f3f7fc; color: #13235b; }
+  .B .hero { background: linear-gradient(135deg, #2e3192, #00aeef); color: #fff; padding: 14px 14px 14px; border-radius: 0 0 22px 22px; }
+  .B .pill { display: inline-block; background: #ec008c; color: #fff; font: 800 9px ui-monospace, Consolas, monospace; letter-spacing: .16em; padding: 3px 8px; border-radius: 999px; }
+  .B .hero b { display: block; font-size: 22px; font-weight: 900; margin: 6px 0 8px; }
+  .B .bar { height: 10px; background: rgba(255,255,255,.3); border-radius: 999px; overflow: hidden; }
+  .B .bar i { display: block; height: 100%; width: 60%; background: #7ac143; border-radius: 999px; }
+  .B .hero small { display: block; margin-top: 5px; font-weight: 700; font-size: 11px; }
+  .B .list { padding: 10px 12px; display: grid; gap: 6px; }
+  .B .q { background: #fff; border-radius: 12px; padding: 7px 10px; display: flex; gap: 9px; align-items: center; border-top: 3px solid var(--c); box-shadow: 0 2px 6px rgba(19,35,91,.08); font-weight: 800; }
+  .B .q .e { font-size: 18px; }
+  .B .q .s { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #c9d3e6; display: grid; place-items: center; font-size: 12px; }
+  .B .q.ok .s { background: #7ac143; border-color: #7ac143; color: #fff; }
+  .B .q.secret { border-top-color: #ec008c; background: #fff0f8; color: #c4006f; }
+  .B .back { padding: 14px; display: flex; justify-content: space-between; font-weight: 800; }
+  .B .card { margin: 0 12px; background: #fff; border-radius: 18px; padding: 16px 14px; border-top: 6px solid #00aeef; box-shadow: 0 6px 16px rgba(19,35,91,.12); display: flex; flex-direction: column; gap: 10px; }
+  .B .card .num { font: 800 10px ui-monospace, Consolas, monospace; color: #0079a8; letter-spacing: .16em; }
+  .B .card h3 { margin: 0; font-size: 24px; }
+  .B .card p { margin: 0; font-size: 14px; line-height: 1.35; font-weight: 600; }
+  .B .starter { background: #e6f6fd; color: #0a4f6e; border-radius: 10px; padding: 8px 10px; font-size: 13.5px; }
+  .B .input { border: 2px solid #c9d3e6; border-radius: 10px; padding: 9px 10px; color: #8a94ad; font-weight: 600; }
+  .B .btn { margin: auto 12px 14px; background: #ec008c; color: #fff; border-radius: 14px; text-align: center; padding: 14px; font-weight: 900; font-size: 15px; box-shadow: 0 5px 0 #a3005f; }
+  .B.end { background: linear-gradient(160deg, #2e3192, #00aeef 60%, #7ac143); color: #fff; }
+  .B .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 16px; }
+  .B .badge { width: 140px; height: 140px; border-radius: 32px; transform: rotate(-6deg); background: #fff; color: #2e3192; display: grid; place-items: center; box-shadow: 0 12px 26px rgba(0,0,0,.3); font-size: 60px; position: relative; }
+  .B .badge::after { content: "★ COMPLETE ★"; position: absolute; bottom: -10px; background: #ec008c; color: #fff; font: 900 10px ui-monospace, Consolas, monospace; padding: 4px 8px; border-radius: 999px; letter-spacing: .1em; }
+  .B .done h3 { margin: 8px 0 0; font-size: 25px; }
+  .B .tick { background: #fff; color: #13235b; border-radius: 12px; padding: 6px 14px; font: 900 19px ui-monospace, Consolas, monospace; letter-spacing: .1em; }
+
+  /* ---------- C: sticker book ---------- */
+  .C { background: #ffd23f; color: #2b1d0e; }
+  .C .top { padding: 14px 14px 6px; }
+  .C .top small { font: 800 9px ui-monospace, Consolas, monospace; letter-spacing: .2em; }
+  .C .top b { display: block; font-size: 25px; font-weight: 900; line-height: 1; margin-top: 4px; transform: rotate(-1.5deg); }
+  .C .dots { display: flex; gap: 5px; margin: 9px 0 2px; }
+  .C .dots i { width: 30px; height: 10px; border-radius: 999px; background: rgba(43,29,14,.18); }
+  .C .dots i.on { background: #ff5d73; }
+  .C .grid { padding: 6px 12px; gap: 9px; }
+  .C .tile { height: 92px; border-radius: 16px; background: var(--c); color: #fff; padding: 8px; font-weight: 900; font-size: 12.5px; line-height: 1.1; position: relative; box-shadow: 0 4px 0 rgba(43,29,14,.25); }
+  .C .tile i { display: block; font-style: normal; font-size: 26px; margin-bottom: 4px; }
+  .C .tile.todo { background: #fff6d6; color: #8a6d1d; border: 2.5px dashed #c9a227; box-shadow: none; }
+  .C .tile .stk { position: absolute; right: -6px; top: -8px; background: #fff; color: #1a9e5c; border-radius: 999px; padding: 3px 7px; font-size: 11px; transform: rotate(12deg); box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+  .C .secret { margin: 6px 12px 0; border-radius: 14px; background: #2b1d0e; color: #ffd23f; padding: 9px 11px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+  .C .btn { margin: auto 12px 14px; background: #ff5d73; color: #fff; border-radius: 16px; text-align: center; padding: 14px; font-weight: 900; font-size: 15px; box-shadow: 0 5px 0 #c23347; }
+  .C .qcard { margin: 12px; background: #fff; border-radius: 22px; padding: 14px; transform: rotate(-1deg); box-shadow: 0 8px 0 rgba(43,29,14,.2); display: flex; flex-direction: column; gap: 9px; }
+  .C .qcard .big { font-size: 44px; line-height: 1; }
+  .C .qcard h3 { margin: 0; font-size: 25px; font-weight: 900; color: #7b4fd6; }
+  .C .qcard p { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.35; }
+  .C .starter { background: #ffd23f; border-radius: 12px; padding: 8px 10px; font-size: 13.5px; transform: rotate(1deg); }
+  .C .input { border: 2.5px solid #2b1d0e; border-radius: 12px; padding: 8px 10px; color: #9b8a6a; font-weight: 700; }
+  .C.end { background: #7b4fd6; color: #fff; }
+  .C .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 16px; }
+  .C .stickers { position: relative; width: 170px; height: 150px; }
+  .C .stickers span { position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 32px; box-shadow: 0 4px 0 rgba(0,0,0,.25); border: 4px solid var(--c); }
+  .C .done h3 { margin: 0; font-size: 27px; font-weight: 900; color: #ffd23f; transform: rotate(-2deg); }
+  .C .tick { background: #ffd23f; color: #2b1d0e; border-radius: 14px; padding: 6px 14px; font: 900 19px ui-monospace, Consolas, monospace; letter-spacing: .1em; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛂 Tandem Passport: pick a theme</h1>
+  <p>Three looks for the same game. Each row shows the passport (your stamps), one quest open (with the conversation starter) and the screen you get after 5 stamps (show a volunteer, enter the prize draw).
+  Which one do you like: <b>A</b>, <b>B</b> or <b>C</b>?</p>
+</header>
+
+<!-- ================= A ================= -->
+<section class="theme">
+  <h2>A · Real passport</h2>
+  <p>Navy and gold like a real passport, cream paper with a security pattern. Every quest you complete gets an ink stamp in a different colour, slightly crooked like at a border.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr A">
+      <div class="cover"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>PASSPORT</b></div>
+      <div class="prog"><span>STAMPS 3 / 5</span><span>BADGE 🔒</span></div>
+      <div class="grid">
+        <div class="slot stamp"><span style="--ink:#2e5aa8;--r:-12deg">WORD<br>EXCHANGE<br>✓ BOLOGNA</span></div>
+        <div class="slot stamp"><span style="--ink:#b23a48;--r:9deg">BOLOGNA<br>CHECK<br>✓ 22:41</span></div>
+        <div class="slot"><div><i>✈️</i>Travel Map</div></div>
+        <div class="slot"><div><i>🎉</i>Culture Swap</div></div>
+        <div class="slot stamp"><span style="--ink:#2f7d4f;--r:-5deg">SAME<br>SAME?<br>✓ ESN</span></div>
+        <div class="slot"><div><i>🗣️</i>Teach Me!</div></div>
+      </div>
+      <div class="secret">🕵️ Secret mission: find a volunteer</div>
+    </div></div><figcaption>Your passport</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr A">
+      <div class="qhead"><span>← PASSPORT</span><span>QUEST 🌐</span></div>
+      <div class="qbody">
+        <div class="qtitle">Word Exchange</div>
+        <div class="qtext">Ask someone for a funny or useful word in their mother tongue.</div>
+        <div class="starter"><i>"What's your favourite untranslatable word?"</i></div>
+        <div class="field"><small>THEIR WORD</small>gezellig</div>
+        <div class="field"><small>IT MEANS</small>cosy, nice together 🇳🇱</div>
+      </div>
+      <div class="btn">STAMP IT ✓</div>
+    </div></div><figcaption>A quest open</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr A">
+      <div class="cover"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>PASSPORT</b></div>
+      <div class="done">
+        <div class="medal">🏅</div>
+        <h3>Passport complete!</h3>
+        <div class="prize">Show this screen to a volunteer to enter the prize draw 🎁</div>
+        <div class="ticket">DRAW Nº 0427</div>
+      </div>
+    </div></div><figcaption>After 5 stamps</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================= B ================= -->
+<section class="theme">
+  <h2>B · ESN bright</h2>
+  <p>The ESN colours from the event guide: blue gradient header, clean white quest cards, magenta and green accents, a progress bar to the badge. Very readable, on-brand.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr B">
+      <div class="hero"><span class="pill">ESN BOLOGNA · TANDEM</span><b>My Tandem Passport</b><div class="bar"><i></i></div><small>3 of 5 stamps to unlock your badge</small></div>
+      <div class="list">
+        <div class="q ok" style="--c:#00aeef"><span class="e">🌐</span>Word Exchange<span class="s">✓</span></div>
+        <div class="q ok" style="--c:#f47b20"><span class="e">🍝</span>Bologna Check<span class="s">✓</span></div>
+        <div class="q" style="--c:#7ac143"><span class="e">✈️</span>Travel Map<span class="s"></span></div>
+        <div class="q" style="--c:#ec008c"><span class="e">🎉</span>Culture Swap<span class="s"></span></div>
+        <div class="q ok" style="--c:#2e3192"><span class="e">🤝</span>Same Same?<span class="s">✓</span></div>
+        <div class="q" style="--c:#00aeef"><span class="e">🗣️</span>Teach Me!<span class="s"></span></div>
+        <div class="q secret"><span class="e">🕵️</span>Secret mission<span class="s">🔒</span></div>
+      </div>
+    </div></div><figcaption>Your passport</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr B">
+      <div class="back"><span>← Back</span><span>🌐</span></div>
+      <div class="card">
+        <span class="num">QUEST · WORD EXCHANGE</span>
+        <h3>Word Exchange</h3>
+        <p>Ask someone for a funny or useful word in their mother tongue.</p>
+        <div class="starter">💬 <i>"What's your favourite untranslatable word?"</i></div>
+        <div class="input">Their word…</div>
+        <div class="input">What it means…</div>
+      </div>
+      <div class="btn">DONE, GET MY STAMP ✓</div>
+    </div></div><figcaption>A quest open</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr B end">
+      <div class="done">
+        <div class="badge">🛂</div>
+        <h3>You did it!</h3>
+        <div style="font-weight:800;font-size:14px">Show this screen to a volunteer to enter the prize draw 🎁</div>
+        <div class="tick">DRAW Nº 0427</div>
+      </div>
+    </div></div><figcaption>After 5 stamps</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================= C ================= -->
+<section class="theme">
+  <h2>C · Sticker book</h2>
+  <p>Sunny yellow and loud: every quest is a colourful sticker tile, the ones you finish get a "✓" sticker slapped on. Feels like a game, very party.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr C">
+      <div class="top"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>TANDEM<br>PASSPORT ✈️</b>
+        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+      <div class="grid">
+        <div class="tile" style="--c:#3a86ff"><i>🌐</i>Word Exchange<span class="stk">✓ DONE</span></div>
+        <div class="tile" style="--c:#fb5607"><i>🍝</i>Bologna Check<span class="stk">✓ DONE</span></div>
+        <div class="tile todo"><i>✈️</i>Travel Map</div>
+        <div class="tile todo"><i>🎉</i>Culture Swap</div>
+        <div class="tile" style="--c:#06a77d"><i>🤝</i>Same Same?<span class="stk">✓ DONE</span></div>
+        <div class="tile todo"><i>🗣️</i>Teach Me!</div>
+      </div>
+      <div class="secret">🕵️ Secret mission? Find a volunteer!</div>
+    </div></div><figcaption>Your passport</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr C">
+      <div class="qcard">
+        <div class="big">🌐</div>
+        <h3>Word Exchange</h3>
+        <p>Ask someone for a funny or useful word in their mother tongue.</p>
+        <div class="starter">💬 <i>"What's your favourite untranslatable word?"</i></div>
+        <div class="input">Their word…</div>
+        <div class="input">What it means…</div>
+      </div>
+      <div class="btn">STICK IT ✓</div>
+    </div></div><figcaption>A quest open</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr C end">
+      <div class="done">
+        <div class="stickers">
+          <span style="left:0;top:20px;--c:#3a86ff;transform:rotate(-12deg)">🌐</span>
+          <span style="left:52px;top:0;--c:#fb5607;transform:rotate(8deg)">🍝</span>
+          <span style="left:104px;top:22px;--c:#06a77d;transform:rotate(-4deg)">🤝</span>
+          <span style="left:24px;top:80px;--c:#ff5d73;transform:rotate(10deg)">🎉</span>
+          <span style="left:84px;top:84px;--c:#ffd23f;transform:rotate(-9deg)">✈️</span>
+        </div>
+        <h3>PASSPORT FULL!</h3>
+        <div style="font-weight:800;font-size:14px">Show this screen to a volunteer to enter the prize draw 🎁</div>
+        <div class="tick">DRAW Nº 0427</div>
+      </div>
+    </div></div><figcaption>After 5 stamps</figcaption></figure>
+  </div>
+</section>
+
+<footer>Mockup only, not the final site. ESN Bologna · Tandem Passport</footer>
+</body>
+</html>
