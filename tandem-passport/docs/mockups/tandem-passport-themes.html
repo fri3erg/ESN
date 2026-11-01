@@ -56,14 +56,14 @@
   .B .pill { display: inline-block; background: #ec008c; color: #fff; font: 800 9px ui-monospace, Consolas, monospace; letter-spacing: .16em; padding: 3px 8px; border-radius: 999px; }
   .B .hero b { display: block; font-size: 22px; font-weight: 900; margin: 6px 0 8px; }
   .B .bar { height: 10px; background: rgba(255,255,255,.3); border-radius: 999px; overflow: hidden; }
-  .B .bar i { display: block; height: 100%; width: 60%; background: #7ac143; border-radius: 999px; }
+  .B .bar i { display: block; height: 100%; width: 50%; background: #7ac143; border-radius: 999px; }
   .B .hero small { display: block; margin-top: 5px; font-weight: 700; font-size: 11px; }
   .B .list { padding: 10px 12px; display: grid; gap: 6px; }
   .B .q { background: #fff; border-radius: 12px; padding: 7px 10px; display: flex; gap: 9px; align-items: center; border-top: 3px solid var(--c); box-shadow: 0 2px 6px rgba(19,35,91,.08); font-weight: 800; }
   .B .q .e { font-size: 18px; }
   .B .q .s { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #c9d3e6; display: grid; place-items: center; font-size: 12px; }
   .B .q.ok .s { background: #7ac143; border-color: #7ac143; color: #fff; }
-  .B .q.secret { border-top-color: #ec008c; background: #fff0f8; color: #c4006f; }
+  .B .q.mys { border-top-color: #c9d3e6; color: #8a94ad; border-top-style: dashed; }
   .B .back { padding: 14px; display: flex; justify-content: space-between; font-weight: 800; }
   .B .card { margin: 0 12px; background: #fff; border-radius: 18px; padding: 16px 14px; border-top: 6px solid #00aeef; box-shadow: 0 6px 16px rgba(19,35,91,.12); display: flex; flex-direction: column; gap: 10px; }
   .B .card .num { font: 800 10px ui-monospace, Consolas, monospace; color: #0079a8; letter-spacing: .16em; }
@@ -111,7 +111,7 @@
 <body>
 <header>
   <h1>🛂 Tandem Passport: pick a theme</h1>
-  <p>Three looks for the same game. Each row shows the passport (your stamps), one quest open (with the conversation starter) and the screen you get after 5 stamps (show a volunteer, enter the prize draw).
+  <p>Three looks for the same game. Everyone gets the same 6 missions, in a random order, one at a time. Each row shows the passport (your stamps), a new mission (with the conversation starter) and the screen you get after all 6 stamps (show a volunteer, enter the prize draw).
   Which one do you like: <b>A</b>, <b>B</b> or <b>C</b>?</p>
 </header>
 
@@ -122,20 +122,20 @@
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr A">
       <div class="cover"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>PASSPORT</b></div>
-      <div class="prog"><span>STAMPS 3 / 5</span><span>BADGE 🔒</span></div>
+      <div class="prog"><span>STAMPS 3 / 6</span><span>BADGE 🔒</span></div>
       <div class="grid">
         <div class="slot stamp"><span style="--ink:#2e5aa8;--r:-12deg">WORD<br>EXCHANGE<br>✓ BOLOGNA</span></div>
         <div class="slot stamp"><span style="--ink:#b23a48;--r:9deg">BOLOGNA<br>CHECK<br>✓ 22:41</span></div>
-        <div class="slot"><div><i>✈️</i>Travel Map</div></div>
-        <div class="slot"><div><i>🎉</i>Culture Swap</div></div>
+        <div class="slot"><div><i>❔</i>Mystery</div></div>
+        <div class="slot"><div><i>❔</i>Mystery</div></div>
         <div class="slot stamp"><span style="--ink:#2f7d4f;--r:-5deg">SAME<br>SAME?<br>✓ ESN</span></div>
-        <div class="slot"><div><i>🗣️</i>Teach Me!</div></div>
+        <div class="slot"><div><i>❔</i>Mystery</div></div>
       </div>
-      <div class="secret">🕵️ Secret mission: find a volunteer</div>
+      <div class="btn">🎲 NEXT MISSION</div>
     </div></div><figcaption>Your passport</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr A">
-      <div class="qhead"><span>← PASSPORT</span><span>QUEST 🌐</span></div>
+      <div class="qhead"><span>← PASSPORT</span><span>NEW MISSION 🎲</span></div>
       <div class="qbody">
         <div class="qtitle">Word Exchange</div>
         <div class="qtext">Ask someone for a funny or useful word in their mother tongue.</div>
@@ -144,7 +144,7 @@
         <div class="field"><small>IT MEANS</small>cosy, nice together 🇳🇱</div>
       </div>
       <div class="btn">STAMP IT ✓</div>
-    </div></div><figcaption>A quest open</figcaption></figure>
+    </div></div><figcaption>A new mission</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr A">
       <div class="cover"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>PASSPORT</b></div>
@@ -154,7 +154,7 @@
         <div class="prize">Show this screen to a volunteer to enter the prize draw 🎁</div>
         <div class="ticket">DRAW Nº 0427</div>
       </div>
-    </div></div><figcaption>After 5 stamps</figcaption></figure>
+    </div></div><figcaption>After 6 stamps</figcaption></figure>
   </div>
 </section>
 
@@ -164,16 +164,16 @@
   <p>The ESN colours from the event guide: blue gradient header, clean white quest cards, magenta and green accents, a progress bar to the badge. Very readable, on-brand.</p>
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr B">
-      <div class="hero"><span class="pill">ESN BOLOGNA · TANDEM</span><b>My Tandem Passport</b><div class="bar"><i></i></div><small>3 of 5 stamps to unlock your badge</small></div>
+      <div class="hero"><span class="pill">ESN BOLOGNA · TANDEM</span><b>My Tandem Passport</b><div class="bar"><i></i></div><small>3 of 6 stamps to complete your passport</small></div>
       <div class="list">
         <div class="q ok" style="--c:#00aeef"><span class="e">🌐</span>Word Exchange<span class="s">✓</span></div>
         <div class="q ok" style="--c:#f47b20"><span class="e">🍝</span>Bologna Check<span class="s">✓</span></div>
-        <div class="q" style="--c:#7ac143"><span class="e">✈️</span>Travel Map<span class="s"></span></div>
-        <div class="q" style="--c:#ec008c"><span class="e">🎉</span>Culture Swap<span class="s"></span></div>
+        <div class="q mys"><span class="e">❔</span>Mystery mission<span class="s"></span></div>
+        <div class="q mys"><span class="e">❔</span>Mystery mission<span class="s"></span></div>
         <div class="q ok" style="--c:#2e3192"><span class="e">🤝</span>Same Same?<span class="s">✓</span></div>
-        <div class="q" style="--c:#00aeef"><span class="e">🗣️</span>Teach Me!<span class="s"></span></div>
-        <div class="q secret"><span class="e">🕵️</span>Secret mission<span class="s">🔒</span></div>
+        <div class="q mys"><span class="e">❔</span>Mystery mission<span class="s"></span></div>
       </div>
+      <div class="btn">🎲 NEXT MISSION</div>
     </div></div><figcaption>Your passport</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr B">
@@ -187,7 +187,7 @@
         <div class="input">What it means…</div>
       </div>
       <div class="btn">DONE, GET MY STAMP ✓</div>
-    </div></div><figcaption>A quest open</figcaption></figure>
+    </div></div><figcaption>A new mission</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr B end">
       <div class="done">
@@ -196,7 +196,7 @@
         <div style="font-weight:800;font-size:14px">Show this screen to a volunteer to enter the prize draw 🎁</div>
         <div class="tick">DRAW Nº 0427</div>
       </div>
-    </div></div><figcaption>After 5 stamps</figcaption></figure>
+    </div></div><figcaption>After 6 stamps</figcaption></figure>
   </div>
 </section>
 
@@ -207,16 +207,16 @@
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr C">
       <div class="top"><small>ESN BOLOGNA · TANDEM NIGHT</small><b>TANDEM<br>PASSPORT ✈️</b>
-        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+        <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></div>
       <div class="grid">
         <div class="tile" style="--c:#3a86ff"><i>🌐</i>Word Exchange<span class="stk">✓ DONE</span></div>
         <div class="tile" style="--c:#fb5607"><i>🍝</i>Bologna Check<span class="stk">✓ DONE</span></div>
-        <div class="tile todo"><i>✈️</i>Travel Map</div>
-        <div class="tile todo"><i>🎉</i>Culture Swap</div>
+        <div class="tile todo"><i>❔</i>Mystery</div>
+        <div class="tile todo"><i>❔</i>Mystery</div>
         <div class="tile" style="--c:#06a77d"><i>🤝</i>Same Same?<span class="stk">✓ DONE</span></div>
-        <div class="tile todo"><i>🗣️</i>Teach Me!</div>
+        <div class="tile todo"><i>❔</i>Mystery</div>
       </div>
-      <div class="secret">🕵️ Secret mission? Find a volunteer!</div>
+      <div class="btn">🎲 NEXT MISSION</div>
     </div></div><figcaption>Your passport</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr C">
@@ -229,7 +229,7 @@
         <div class="input">What it means…</div>
       </div>
       <div class="btn">STICK IT ✓</div>
-    </div></div><figcaption>A quest open</figcaption></figure>
+    </div></div><figcaption>A new mission</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr C end">
       <div class="done">
@@ -239,12 +239,13 @@
           <span style="left:104px;top:22px;--c:#06a77d;transform:rotate(-4deg)">🤝</span>
           <span style="left:24px;top:80px;--c:#ff5d73;transform:rotate(10deg)">🎉</span>
           <span style="left:84px;top:84px;--c:#ffd23f;transform:rotate(-9deg)">✈️</span>
+          <span style="left:132px;top:72px;--c:#7b4fd6;transform:rotate(6deg)">🗣️</span>
         </div>
         <h3>PASSPORT FULL!</h3>
         <div style="font-weight:800;font-size:14px">Show this screen to a volunteer to enter the prize draw 🎁</div>
         <div class="tick">DRAW Nº 0427</div>
       </div>
-    </div></div><figcaption>After 5 stamps</figcaption></figure>
+    </div></div><figcaption>After 6 stamps</figcaption></figure>
   </div>
 </section>
 
