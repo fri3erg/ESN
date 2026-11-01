@@ -5,6 +5,7 @@ import { WORDS } from './words.js';
 export const KEY = 'taboo.v1';
 export const ROUND_MS = 120000;
 export const CANDY_AT = 5;
+export const MAX_SKIPS = 3;
 export const RESULTS = ['got', 'taboo', 'skip'];
 const ALL = WORDS.map(w => w.word);
 
@@ -65,6 +66,7 @@ const live = (round, now) => !!round && !round.finishedAt && round.pausedLeft ==
 
 export function answer(state, result, now = Date.now(), rng = secureRandomInt) {
   if (!RESULTS.includes(result) || !live(state.round, now)) return state;
+  if (result === 'skip' && skipsLeft(state.round) <= 0) return state;
   const { word, deck } = draw(state.deck, state.round.current, rng);
   const results = [...state.round.results, { word: state.round.current, result }];
   return { deck, round: { ...state.round, current: word, results } };
@@ -90,6 +92,7 @@ export function finish(state, now = Date.now()) {
 export const guessed = round => round.results.filter(r => r.result === 'got').map(r => r.word);
 export const score = round => guessed(round).length;
 export const earnsCandy = n => n >= CANDY_AT;
+export const skipsLeft = round => Math.max(0, MAX_SKIPS - round.results.filter(r => r.result === 'skip').length);
 
 function isValidRound(r) {
   if (r === null) return true;

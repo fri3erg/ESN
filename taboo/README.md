@@ -2,7 +2,7 @@
 
 One-page party game for the ESN Bologna Taboo Tandem Night (Irish Pub, 10 PM): scan the QR, read the rules,
 one person describes the word on the phone without saying the 4 forbidden words, the others guess.
-2 minutes per round; guess 5 or more and show the screen to a volunteer for a candy 🍬.
+2 minutes per round; guess 5 or more and show the screen to a volunteer to win a prize 🎁 (max 3 skips per round).
 
 Live: https://esn-taboo.vercel.app
 
@@ -14,7 +14,7 @@ Live: https://esn-taboo.vercel.app
 All the cards are in [`words.js`](words.js): the word, its category (`job`, `animal`, `object`) and exactly 4 forbidden words.
 Change them there, nothing else. The tests check every card still has 4 forbidden words and no duplicates.
 
-Round length and the candy threshold are `ROUND_MS` and `CANDY_AT` at the top of [`game.js`](game.js)
+Round length, the prize threshold and the skips per round are `ROUND_MS`, `CANDY_AT` and `MAX_SKIPS` at the top of [`game.js`](game.js)
 (the rules text and the end screen use them, but the "2 minutes" wording in the rules and print material is written out by hand).
 
 ## Print

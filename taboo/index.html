@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Taboo Night</title>
-  <meta name="description" content="Describe the word without saying the forbidden ones. Guess 5 in 2 minutes and win a candy.">
+  <meta name="description" content="Describe the word without saying the forbidden ones. Guess 5 in 2 minutes and win a prize.">
   <meta name="theme-color" content="#0e3b43">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230e3b43'/%3E%3Crect x='14' y='30' width='72' height='40' rx='10' fill='%23e5533d'/%3E%3Ctext x='50' y='61' font-size='30' text-anchor='middle' font-family='Arial' font-weight='900' fill='%23fff'%3ET%3C/text%3E%3C/svg%3E">
   <style>
@@ -40,7 +40,7 @@
     /* rules */
     .brand { margin: 4px 0 0; }
     .brand .t { display: inline-block; background: var(--tomato); color: #fff; font-size: clamp(56px, 19vw, 84px); font-weight: 900; line-height: 1; padding: 6px 16px 10px; border-radius: 18px; letter-spacing: .02em; transform: rotate(-2deg); box-shadow: 0 8px 0 var(--tomato-dark); }
-    .brand .n { display: block; font-size: clamp(30px, 10vw, 42px); font-weight: 900; color: var(--cream); margin-top: 8px; letter-spacing: .12em; }
+    .brand .n { display: block; font-size: clamp(50px, 17vw, 76px); line-height: 1; font-weight: 900; color: var(--cream); margin-top: 14px; letter-spacing: .1em; }
     .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
     .rules li { display: flex; gap: 12px; align-items: center; background: var(--cream); color: var(--ink); border-radius: 16px; padding: 13px 14px; font-weight: 750; font-size: 18px; line-height: 1.3; }
     .rules b.n { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--tomato); color: #fff; display: grid; place-items: center; font-size: 19px; }
@@ -65,18 +65,28 @@
     .card .nosay { font: 800 12px var(--mono); letter-spacing: .2em; text-align: center; color: var(--tomato); margin: 0 0 8px; }
     .forb { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1; grid-auto-rows: 1fr; }
     .forb li { display: grid; place-items: center; background: #fff; border: 2px solid var(--edge); border-radius: 12px; padding: 8px 10px; font-weight: 800; font-size: 21px; text-transform: uppercase; text-align: center; }
-    .card.flash-got { animation: fgot .35s ease-out; } .card.flash-taboo { animation: fno .35s ease-out; } .card.flash-skip { animation: fskip .3s ease-out; }
-    @keyframes fgot { from { box-shadow: 0 0 0 8px var(--ok); transform: scale(.97); } }
-    @keyframes fno { 0% { transform: translateX(0); box-shadow: 0 0 0 8px var(--tomato); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
-    @keyframes fskip { from { transform: translateX(14px); opacity: .4; } }
-    .plus { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 900; color: var(--ok); text-shadow: 0 4px 0 #0a2c32; pointer-events: none; animation: up .7s ease-out forwards; z-index: 5; }
-    @keyframes up { to { transform: translate(-50%, -150%); opacity: 0; } }
+    /* full-screen flash after every answer (1 s); it also swallows taps so nobody double-scores */
+    .fx { position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 20px; animation: fxfade 1s ease-out forwards; }
+    .fx.got { background: var(--ok); color: #062b1d; } .fx.taboo { background: var(--tomato); color: #fff; } .fx.skip { background: var(--sand); color: var(--ink); }
+    .fx b { font-size: clamp(110px, 40vw, 190px); line-height: 1; font-weight: 900; }
+    .fx span { font-size: clamp(36px, 12vw, 56px); font-weight: 900; letter-spacing: .03em; line-height: 1.05; }
+    .fx small { font-size: 20px; font-weight: 800; opacity: .8; }
+    .fx.got b { animation: fxpop .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+    .fx.taboo { animation: fxfade 1s ease-out forwards, fxshake .45s linear; }
+    .fx.taboo b { animation: fxpop .4s ease-out both; }
+    .fx.skip b { animation: fxslide .6s ease-in-out both; }
+    @keyframes fxfade { 0% { opacity: 0; } 10%, 75% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes fxpop { from { transform: scale(.2) rotate(-12deg); } to { transform: scale(1); } }
+    @keyframes fxshake { 0%, 100% { transform: translateX(0); } 15% { transform: translateX(-18px); } 35% { transform: translateX(16px); } 55% { transform: translateX(-12px); } 75% { transform: translateX(8px); } }
+    @keyframes fxslide { from { transform: translateX(60vw); opacity: 0; } 60% { transform: translateX(-4vw); opacity: 1; } to { transform: translateX(0); } }
     .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .answers button { min-height: 66px; border: 0; border-radius: 16px; font-size: 21px; font-weight: 900; }
     .answers .ok { background: var(--ok); color: #062b1d; box-shadow: 0 5px 0 var(--ok-dark); }
     .answers .no { background: var(--tomato); color: #fff; box-shadow: 0 5px 0 var(--tomato-dark); }
     .answers .ok:active, .answers .no:active { transform: translateY(3px); box-shadow: none; }
     .answers .skip { grid-column: 1 / -1; min-height: 50px; border: 2px solid rgba(246, 231, 200, .45); background: transparent; color: var(--sand); font-size: 18px; }
+    .answers .skip small { font-size: 15px; font-weight: 700; opacity: .8; }
+    .answers .skip:disabled { opacity: .4; cursor: default; border-style: dashed; }
 
     /* sheet: rules during the game, play-again confirmation */
     .dim { position: fixed; inset: 0; background: rgba(4, 20, 24, .88); display: flex; align-items: flex-end; justify-content: center; padding: 12px; z-index: 10; overflow-y: auto; }
@@ -86,7 +96,7 @@
     .paused { font: 800 13px var(--mono); letter-spacing: .18em; color: var(--gold); }
 
     /* end: drifting background + light sweeping the score card, so a screenshot looks obviously dead.
-       A determined cheater can still fake it; the stakes are one candy. */
+       A determined cheater can still fake it; the stakes are one small prize. */
     body.end { background: linear-gradient(120deg, #0a2c32, #145a63, #7a2a1c, #0a2c32); background-size: 300% 300%; animation: drift 6s linear infinite alternate; }
     @keyframes drift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
     .ach { position: relative; overflow: hidden; background: var(--cream); color: var(--ink); border-radius: 24px; padding: 20px 16px 18px; text-align: center; box-shadow: 0 12px 30px rgba(0, 0, 0, .4); }
@@ -103,6 +113,7 @@
     .stamp b { display: block; font-size: 40px; letter-spacing: .02em; color: var(--cream); text-shadow: 0 0 14px rgba(255, 201, 74, .6); }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0; padding: 0; list-style: none; }
     .chips li { background: rgba(63, 191, 138, .2); border: 1.5px solid var(--ok); border-radius: 999px; padding: 3px 11px; font-weight: 800; font-size: 15px; }
+    .btn.again { min-height: 76px; font-size: 26px; border-radius: 20px; }
     .tally { text-align: center; margin: 0; font-size: 15px; opacity: .85; }
     .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
     .confetti i { position: absolute; top: -20px; width: 9px; height: 14px; border-radius: 2px; animation: fall linear infinite; }
@@ -117,11 +128,13 @@
       .forb li { font-size: 19px; padding: 5px 8px; }
       .answers button { min-height: 58px; }
       .answers .skip { min-height: 44px; }
-      .ach { padding: 10px 12px; } .ach .trophy { font-size: 32px; }
-      .ach .lead { font-size: 19px; margin: 0; } .ach .big { font-size: 84px; } .ach .unit { font-size: 21px; }
+      .ach { padding: 8px 12px; } .ach .trophy { font-size: 28px; }
+      .ach .lead { font-size: 19px; margin: 0; } .ach .big { font-size: 78px; } .ach .unit { font-size: 21px; }
       .prize { padding: 10px 12px; font-size: 17px; }
       .chips li { font-size: 14px; padding: 2px 9px; }
-      .stamp b { font-size: 28px; }
+      .stamp b { font-size: 26px; }
+      .tally { font-size: 14px; }
+      .btn.again { min-height: 66px; font-size: 23px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -159,8 +172,8 @@
     const RULES = `<ol class="rules">
         <li><b class="n">1</b><span>One person holds the phone and describes, the others guess.</span></li>
         <li><b class="n">2</b><span>Don't say the word or the 4 words under it. No gestures, no sounds!</span></li>
-        <li><b class="n">3</b><span><span class="ok-t">✓</span> they got it, <span class="no-t">✗</span> you said a forbidden word, <b>Skip</b> to pass.</span></li>
-        <li><b class="n">4</b><span>You have 2 minutes. Guess ${G.CANDY_AT} or more and come get a candy 🍬</span></li>
+        <li><b class="n">3</b><span><span class="ok-t">✓</span> they got it, <span class="no-t">✗</span> you said a forbidden word, <b>Skip</b> to pass (${G.MAX_SKIPS} per round).</span></li>
+        <li><b class="n">4</b><span>You have 2 minutes. Guess ${G.CANDY_AT} or more and win a prize 🎁</span></li>
       </ol>`;
 
     async function keepAwake(on) {
@@ -173,6 +186,7 @@
     function render() {
       stopTimers();
       $('sheet')?.remove();
+      $('fx')?.remove();
       if (view === 'play' && state.round) {
         state = G.finish(state);   // a reload after the time ran out lands on the score
         persist();
@@ -237,10 +251,11 @@
         <div class="answers">
           <button class="ok" id="got">✓ GOT IT</button>
           <button class="no" id="taboo">✗ TABOO!</button>
-          <button class="skip" id="skip">Skip →</button>
+          <button class="skip" id="skip"></button>
         </div>
       </main>`;
       for (const k of G.RESULTS) $(k).onclick = () => onAnswer(k);
+      showSkips();
       tick();
       timers.push(setInterval(tick, 250));
       if (r.pausedLeft != null) openRules();   // reloaded while the rules were open: stay paused
@@ -266,19 +281,34 @@
       state = G.answer(state, result);
       if (state === before) return;
       persist();
-      const card = $('card');
-      card.innerHTML = cardHtml(state.round.current);
-      card.className = 'card';
-      void card.offsetWidth;   // restart the flash animation
-      card.classList.add(`flash-${result}`);
+      $('card').innerHTML = cardHtml(state.round.current);
       $('score').textContent = `★ ${G.score(state.round)}`;
-      if (result === 'got' && !reduced) {
-        const p = document.createElement('div');
-        p.className = 'plus'; p.textContent = '+1'; p.setAttribute('aria-hidden', 'true');
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 700);
-      }
+      showSkips();
+      flash(result);
       if (result === 'taboo') { try { navigator.vibrate?.(120); } catch { /* not supported */ } }
+    }
+
+    function showSkips() {
+      const left = G.skipsLeft(state.round);
+      const btn = $('skip');
+      btn.disabled = left === 0;
+      btn.innerHTML = left ? `Skip → <small>(${left} left)</small>` : 'No skips left';
+    }
+
+    function flash(result) {
+      $('fx')?.remove();
+      const left = G.skipsLeft(state.round);
+      const fx = document.createElement('div');
+      fx.id = 'fx';
+      fx.className = `fx ${result}`;
+      fx.setAttribute('role', 'status');
+      fx.innerHTML = {
+        got: `<b>+1</b><span>GOT IT!</span>`,
+        taboo: `<b>✗</b><span>TABOO!</span>`,
+        skip: `<b>↷</b><span>SKIPPED</span><small>${left ? `${left} skip${left === 1 ? '' : 's'} left` : 'no skips left'}</small>`,
+      }[result];
+      document.body.appendChild(fx);
+      timers.push(setTimeout(() => fx.remove(), 1000));
     }
 
     // Bottom sheet; used for the rules (from any screen) and to confirm playing again.
@@ -333,19 +363,19 @@
           <p class="unit">${n === 1 ? 'word!' : 'words!'}</p>
         </section>
         ${won
-          ? `<p class="prize win">🍬 Show this screen to a volunteer and come get a candy!</p>`
-          : `<p class="prize lose">So close! Guess ${G.CANDY_AT} to win a candy. Try again 💪</p>`}
+          ? `<p class="prize win">🎁 Show this screen to a volunteer and win a prize!</p>`
+          : `<p class="prize lose">So close! Guess ${G.CANDY_AT} to win a prize. Try again 💪</p>`}
         ${words.length ? `<ul class="chips" aria-label="Words you guessed">${words.map(w => `<li>✓ ${esc(w)}</li>`).join('')}</ul>` : ''}
         <p class="tally">✗ ${tab} taboo · ↷ ${skip} skipped</p>
         <p class="stamp">FINISHED AT<b>${G.formatTime(r.finishedAt)}</b></p>
-        <div class="actions"><button class="btn2" id="again">🔁 Play again</button></div>
+        <div class="actions"><button class="btn again" id="again">🔁 PLAY AGAIN</button></div>
       </main>`;
       if (won && !reduced) confetti();
       if (!reduced) countUp($('big'), n);
       $('again').onclick = () => {
         if (!won) return playAgain();
         openSheet({
-          html: `<h2 id="sheet-title">Got your candy? 🍬</h2>
+          html: `<h2 id="sheet-title">Got your prize? 🎁</h2>
             <p>Playing again clears this screen. <b>Show it to a volunteer first!</b></p>
             <button class="btn" id="yes">YES, PLAY AGAIN</button>
             <button class="btn2" id="no" data-close>Keep this screen</button>`,

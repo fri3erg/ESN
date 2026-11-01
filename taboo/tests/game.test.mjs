@@ -29,11 +29,11 @@ test('secureRandomInt stays in range', () => {
 test('a whole deck goes by before any card repeats, then it reshuffles without repeating the last card', () => {
   let s = started(G.secureRandomInt);
   const seen = [s.round.current];
-  for (let i = 1; i < WORDS.length; i++) { s = G.answer(s, 'skip', T0 + i); seen.push(s.round.current); }
+  for (let i = 1; i < WORDS.length; i++) { s = G.answer(s, 'taboo', T0 + i); seen.push(s.round.current); }
   assert.equal(new Set(seen).size, WORDS.length);
   for (let k = 0; k < 50; k++) {
     const last = s.round.current;
-    s = G.answer(s, 'skip', T0 + 100);
+    s = G.answer(s, 'taboo', T0 + 100);
     assert.notEqual(s.round.current, last);
   }
 });
@@ -153,4 +153,16 @@ test('safeStorage falls back to memory when localStorage is missing', () => {
 test('card looks a word up', () => {
   assert.deepEqual(G.card('Owl').taboo, ['night', 'bird', 'wise', 'hoot']);
   assert.equal(G.card('Unicorn'), null);
+});
+
+test('only 3 skips per round; a new round gets 3 again', () => {
+  let s = started();
+  assert.equal(G.MAX_SKIPS, 3);
+  assert.equal(G.skipsLeft(s.round), 3);
+  for (let i = 0; i < 3; i++) s = G.answer(s, 'skip', T0 + i);
+  assert.equal(G.skipsLeft(s.round), 0);
+  assert.deepEqual(G.answer(s, 'skip', T0 + 10), s);
+  assert.notDeepEqual(G.answer(s, 'taboo', T0 + 10), s);
+  s = G.start(G.finish(s, T0 + G.ROUND_MS), T0 + 200000);
+  assert.equal(G.skipsLeft(s.round), 3);
 });
