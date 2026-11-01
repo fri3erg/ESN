@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Taboo Night</title>
+  <meta name="description" content="Describe the word without saying the forbidden ones. Guess 5 in 2 minutes and win a candy.">
+  <meta name="theme-color" content="#0e3b43">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230e3b43'/%3E%3Crect x='14' y='30' width='72' height='40' rx='10' fill='%23e5533d'/%3E%3Ctext x='50' y='61' font-size='30' text-anchor='middle' font-family='Arial' font-weight='900' fill='%23fff'%3ET%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #0e3b43; --bg2: #0a2c32; --cream: #fbf1dc; --sand: #f6e7c8; --edge: #ecdcb9;
+      --tomato: #e5533d; --tomato-dark: #a8331f; --ok: #3fbf8a; --ok-dark: #23855e; --gold: #ffc94a; --ink: #0e3b43;
+      --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --mono: ui-monospace, "SF Mono", Consolas, monospace;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--sand); font: 18px/1.45 var(--sans); overflow-x: hidden; }
+    button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    .screen { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 14px; }
+    .kick { font: 800 13px var(--mono); letter-spacing: .2em; color: var(--sand); opacity: .75; margin: 0; }
+    .actions { margin-top: auto; display: grid; gap: 12px; }
+
+    /* top bar: brand or clock on the left, the always-there Rules button on the right */
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; }
+    .pill { background: rgba(246, 231, 200, .12); border-radius: 999px; padding: 7px 14px; font-weight: 900; font-size: 18px; font-variant-numeric: tabular-nums; }
+    .pills { display: flex; gap: 8px; }
+    .rulesbtn { min-height: 44px; border: 2px solid rgba(246, 231, 200, .5); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 16px; color: var(--sand); }
+    .clock.low { background: var(--tomato); color: #fff; animation: beat 1s infinite; }
+    @keyframes beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+    .btn { display: block; width: 100%; min-height: 62px; border: 0; border-radius: 18px; background: var(--tomato); color: #fff; font-size: 21px; font-weight: 900; letter-spacing: .03em; box-shadow: 0 6px 0 var(--tomato-dark); }
+    .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--tomato-dark); }
+    .btn2 { display: block; width: 100%; min-height: 54px; border: 2px solid rgba(246, 231, 200, .55); border-radius: 16px; background: transparent; color: var(--sand); font-size: 18px; font-weight: 800; }
+
+    /* rules */
+    .brand { margin: 4px 0 0; }
+    .brand .t { display: inline-block; background: var(--tomato); color: #fff; font-size: clamp(56px, 19vw, 84px); font-weight: 900; line-height: 1; padding: 6px 16px 10px; border-radius: 18px; letter-spacing: .02em; transform: rotate(-2deg); box-shadow: 0 8px 0 var(--tomato-dark); }
+    .brand .n { display: block; font-size: clamp(30px, 10vw, 42px); font-weight: 900; color: var(--cream); margin-top: 8px; letter-spacing: .12em; }
+    .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .rules li { display: flex; gap: 12px; align-items: center; background: var(--cream); color: var(--ink); border-radius: 16px; padding: 13px 14px; font-weight: 750; font-size: 18px; line-height: 1.3; }
+    .rules b.n { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--tomato); color: #fff; display: grid; place-items: center; font-size: 19px; }
+    .rules .ok-t { color: var(--ok-dark); font-weight: 900; } .rules .no-t { color: var(--tomato); font-weight: 900; }
+
+    /* ready */
+    .ready { text-align: center; }
+    .ready h1 { font-size: clamp(54px, 18vw, 76px); font-weight: 900; color: var(--cream); margin: 18px 0 6px; line-height: 1; }
+    .ready p { margin: 0 auto; max-width: 340px; font-size: 19px; }
+    .go { width: min(62vw, 240px); aspect-ratio: 1; border-radius: 50%; border: 0; margin: auto; background: var(--tomato); color: #fff; font-size: 40px; font-weight: 900; letter-spacing: .04em;
+      box-shadow: 0 10px 0 var(--tomato-dark), 0 0 0 0 rgba(229, 83, 61, .5); animation: ring 1.8s infinite; }
+    .go:active { transform: translateY(6px); box-shadow: 0 4px 0 var(--tomato-dark); }
+    .go small { display: block; font-size: 17px; font-weight: 800; opacity: .9; letter-spacing: .1em; }
+    @keyframes ring { 0%, 100% { box-shadow: 0 10px 0 var(--tomato-dark), 0 0 0 0 rgba(229, 83, 61, .5); } 50% { box-shadow: 0 10px 0 var(--tomato-dark), 0 0 0 22px rgba(229, 83, 61, 0); } }
+    .count { font-size: 42vmin; font-weight: 900; color: var(--cream); margin: auto; line-height: 1; animation: pop .9s ease-out both; }
+    @keyframes pop { from { transform: scale(1.6); opacity: 0; } 30% { transform: scale(1); opacity: 1; } to { transform: scale(.9); opacity: .9; } }
+
+    /* the card */
+    .card { flex: 1; display: flex; flex-direction: column; background: var(--cream); border-radius: 22px; padding: 14px; box-shadow: 0 12px 26px rgba(0, 0, 0, .35); color: var(--ink); min-height: 300px; }
+    .card .cat { font: 800 13px var(--mono); letter-spacing: .22em; text-align: center; opacity: .7; }
+    .card .word { background: var(--tomato); color: #fff; border-radius: 16px; text-align: center; font-size: clamp(28px, 9.5vw, 42px); font-weight: 900; line-height: 1.05; padding: 18px 8px; margin: 8px 0 12px; overflow-wrap: anywhere; text-transform: uppercase; }
+    .card .nosay { font: 800 12px var(--mono); letter-spacing: .2em; text-align: center; color: var(--tomato); margin: 0 0 8px; }
+    .forb { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1; grid-auto-rows: 1fr; }
+    .forb li { display: grid; place-items: center; background: #fff; border: 2px solid var(--edge); border-radius: 12px; padding: 8px 10px; font-weight: 800; font-size: 21px; text-transform: uppercase; text-align: center; }
+    .card.flash-got { animation: fgot .35s ease-out; } .card.flash-taboo { animation: fno .35s ease-out; } .card.flash-skip { animation: fskip .3s ease-out; }
+    @keyframes fgot { from { box-shadow: 0 0 0 8px var(--ok); transform: scale(.97); } }
+    @keyframes fno { 0% { transform: translateX(0); box-shadow: 0 0 0 8px var(--tomato); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
+    @keyframes fskip { from { transform: translateX(14px); opacity: .4; } }
+    .plus { position: fixed; left: 50%; top: 42%; transform: translate(-50%, -50%); font-size: 64px; font-weight: 900; color: var(--ok); text-shadow: 0 4px 0 #0a2c32; pointer-events: none; animation: up .7s ease-out forwards; z-index: 5; }
+    @keyframes up { to { transform: translate(-50%, -150%); opacity: 0; } }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .answers button { min-height: 66px; border: 0; border-radius: 16px; font-size: 21px; font-weight: 900; }
+    .answers .ok { background: var(--ok); color: #062b1d; box-shadow: 0 5px 0 var(--ok-dark); }
+    .answers .no { background: var(--tomato); color: #fff; box-shadow: 0 5px 0 var(--tomato-dark); }
+    .answers .ok:active, .answers .no:active { transform: translateY(3px); box-shadow: none; }
+    .answers .skip { grid-column: 1 / -1; min-height: 50px; border: 2px solid rgba(246, 231, 200, .45); background: transparent; color: var(--sand); font-size: 18px; }
+
+    /* sheet: rules during the game, play-again confirmation */
+    .dim { position: fixed; inset: 0; background: rgba(4, 20, 24, .88); display: flex; align-items: flex-end; justify-content: center; padding: 12px; z-index: 10; overflow-y: auto; }
+    .sheet { width: 100%; max-width: 460px; background: var(--bg2); border: 2px solid var(--edge); border-radius: 22px; padding: 18px; display: grid; gap: 12px; margin: auto 0 env(safe-area-inset-bottom); }
+    .sheet h2 { margin: 0; font-size: 26px; font-weight: 900; color: var(--cream); }
+    .sheet p { margin: 0; font-size: 18px; }
+    .paused { font: 800 13px var(--mono); letter-spacing: .18em; color: var(--gold); }
+
+    /* end: drifting background + light sweeping the score card, so a screenshot looks obviously dead.
+       A determined cheater can still fake it; the stakes are one candy. */
+    body.end { background: linear-gradient(120deg, #0a2c32, #145a63, #7a2a1c, #0a2c32); background-size: 300% 300%; animation: drift 6s linear infinite alternate; }
+    @keyframes drift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+    .ach { position: relative; overflow: hidden; background: var(--cream); color: var(--ink); border-radius: 24px; padding: 20px 16px 18px; text-align: center; box-shadow: 0 12px 30px rgba(0, 0, 0, .4); }
+    .ach::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent); animation: shine 2.6s linear infinite; pointer-events: none; }
+    @keyframes shine { from { transform: translateX(-140%) skewX(-20deg); } to { transform: translateX(300%) skewX(-20deg); } }
+    .ach .trophy { font-size: 52px; line-height: 1; }
+    .ach .lead { margin: 4px 0 0; font-size: 22px; font-weight: 800; }
+    .ach .big { display: block; font-size: clamp(96px, 34vw, 140px); font-weight: 900; line-height: .95; color: var(--tomato); font-variant-numeric: tabular-nums; }
+    .ach .unit { margin: 0; font-size: 26px; font-weight: 900; }
+    .prize { border-radius: 18px; padding: 14px 16px; font-size: 20px; font-weight: 900; line-height: 1.3; text-align: center; }
+    .prize.win { background: var(--gold); color: #3a2400; box-shadow: 0 6px 0 #b8860b; }
+    .prize.lose { border: 2px dashed rgba(246, 231, 200, .6); color: var(--cream); font-weight: 800; }
+    .stamp { text-align: center; font: 800 13px var(--mono); letter-spacing: .18em; margin: 0; }
+    .stamp b { display: block; font-size: 40px; letter-spacing: .02em; color: var(--cream); text-shadow: 0 0 14px rgba(255, 201, 74, .6); }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0; padding: 0; list-style: none; }
+    .chips li { background: rgba(63, 191, 138, .2); border: 1.5px solid var(--ok); border-radius: 999px; padding: 3px 11px; font-weight: 800; font-size: 15px; }
+    .tally { text-align: center; margin: 0; font-size: 15px; opacity: .85; }
+    .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .confetti i { position: absolute; top: -20px; width: 9px; height: 14px; border-radius: 2px; animation: fall linear infinite; }
+    @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+    body.end .screen { position: relative; z-index: 1; }
+
+    @media (max-height: 700px) {
+      .screen { gap: 10px; padding-top: 10px; }
+      .rules li { padding: 10px 12px; font-size: 16.5px; }
+      .card { padding: 10px; min-height: 250px; }
+      .card .word { padding: 12px 8px; margin: 6px 0 8px; }
+      .forb li { font-size: 19px; padding: 5px 8px; }
+      .answers button { min-height: 58px; }
+      .answers .skip { min-height: 44px; }
+      .ach { padding: 10px 12px; } .ach .trophy { font-size: 32px; }
+      .ach .lead { font-size: 19px; margin: 0; } .ach .big { font-size: 84px; } .ach .unit { font-size: 21px; }
+      .prize { padding: 10px 12px; font-size: 17px; }
+      .chips li { font-size: 14px; padding: 2px 9px; }
+      .stamp b { font-size: 28px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .confetti { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript><p style="padding:24px">Please turn on JavaScript, or find a volunteer.</p></noscript>
+  <script type="module">
+    import { CATEGORIES } from './words.js';
+    import * as G from './game.js';
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const app = document.getElementById('app');
+    const store = G.safeStorage();
+
+    if (new URLSearchParams(location.search).has('reset')) {
+      G.clear(store);
+      history.replaceState(null, '', location.pathname);   // so a reload doesn't reset again
+    }
+    let state = G.load(store) || G.fresh();
+    let view = state.round ? 'play' : 'rules';
+    let timers = [];
+    let wakeLock = null;
+
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const stopTimers = () => { timers.forEach(t => { clearInterval(t); clearTimeout(t); }); timers = []; };
+    const persist = () => G.save(store, state);
+    const $ = id => document.getElementById(id);
+    const rulesBtn = '<button class="rulesbtn" id="rulesbtn">📖 Rules</button>';
+
+    const RULES = `<ol class="rules">
+        <li><b class="n">1</b><span>One person holds the phone and describes, the others guess.</span></li>
+        <li><b class="n">2</b><span>Don't say the word or the 4 words under it. No gestures, no sounds!</span></li>
+        <li><b class="n">3</b><span><span class="ok-t">✓</span> they got it, <span class="no-t">✗</span> you said a forbidden word, <b>Skip</b> to pass.</span></li>
+        <li><b class="n">4</b><span>You have 2 minutes. Guess ${G.CANDY_AT} or more and come get a candy 🍬</span></li>
+      </ol>`;
+
+    async function keepAwake(on) {
+      try {
+        if (on && !wakeLock && navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen');
+        if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+      } catch { wakeLock = null; }
+    }
+
+    function render() {
+      stopTimers();
+      $('sheet')?.remove();
+      if (view === 'play' && state.round) {
+        state = G.finish(state);   // a reload after the time ran out lands on the score
+        persist();
+        if (state.round.finishedAt) view = 'end';
+      }
+      document.body.classList.toggle('end', view === 'end');
+      ({ rules: renderRules, ready: renderReady, play: renderPlay, end: renderEnd })[view]();
+      const rb = $('rulesbtn');
+      if (rb) rb.onclick = openRules;
+    }
+
+    function renderRules() {
+      app.innerHTML = `<main class="screen">
+        <p class="kick">ESN BOLOGNA · TANDEM NIGHT</p>
+        <h1 class="brand"><span class="t">TABOO</span><span class="n">NIGHT</span></h1>
+        ${RULES}
+        <div class="actions"><button class="btn" id="ok">GOT IT ▶</button></div>
+      </main>`;
+      $('ok').onclick = () => { view = 'ready'; render(); };
+    }
+
+    function renderReady() {
+      app.innerHTML = `<main class="screen ready">
+        <div class="top"><span class="kick">TABOO NIGHT</span>${rulesBtn}</div>
+        <h1>READY?</h1>
+        <p>Hold the phone so only <b>you</b> can see it. Your friends guess.</p>
+        <button class="go" id="go">START<small>2:00</small></button>
+      </main>`;
+      $('go').onclick = countdown;
+    }
+
+    function countdown() {
+      const steps = reduced ? [] : ['3', '2', '1'];
+      const show = i => {
+        if (i >= steps.length) {
+          state = G.start(state);
+          persist();
+          view = 'play';
+          keepAwake(true);
+          return render();
+        }
+        app.innerHTML = `<main class="screen"><div class="count" aria-live="assertive">${steps[i]}</div></main>`;
+        timers.push(setTimeout(() => show(i + 1), 800));
+      };
+      stopTimers();
+      show(0);
+    }
+
+    function cardHtml(word) {
+      const c = G.card(word);
+      return `<p class="cat">${CATEGORIES[c.cat]}</p>
+        <h2 class="word" aria-live="polite">${esc(c.word)}</h2>
+        <p class="nosay">DON'T SAY</p>
+        <ul class="forb">${c.taboo.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+    }
+
+    function renderPlay() {
+      const r = state.round;
+      app.innerHTML = `<main class="screen">
+        <div class="top"><div class="pills"><span class="pill clock" id="clock" role="timer">⏱ ${G.formatClock(G.timeLeft(r))}</span><span class="pill" id="score">★ ${G.score(r)}</span></div>${rulesBtn}</div>
+        <section class="card" id="card">${cardHtml(r.current)}</section>
+        <div class="answers">
+          <button class="ok" id="got">✓ GOT IT</button>
+          <button class="no" id="taboo">✗ TABOO!</button>
+          <button class="skip" id="skip">Skip →</button>
+        </div>
+      </main>`;
+      for (const k of G.RESULTS) $(k).onclick = () => onAnswer(k);
+      tick();
+      timers.push(setInterval(tick, 250));
+      if (r.pausedLeft != null) openRules();   // reloaded while the rules were open: stay paused
+    }
+
+    function tick() {
+      const r = state.round;
+      const left = G.timeLeft(r);
+      const clock = $('clock');
+      if (clock) { clock.textContent = `⏱ ${G.formatClock(left)}`; clock.classList.toggle('low', left <= 10000 && left > 0); }
+      if (left === 0 && !r.finishedAt) {
+        state = G.finish(state);
+        persist();
+        view = 'end';
+        keepAwake(false);
+        try { navigator.vibrate?.([200, 100, 200]); } catch { /* not supported */ }
+        render();
+      }
+    }
+
+    function onAnswer(result) {
+      const before = state;
+      state = G.answer(state, result);
+      if (state === before) return;
+      persist();
+      const card = $('card');
+      card.innerHTML = cardHtml(state.round.current);
+      card.className = 'card';
+      void card.offsetWidth;   // restart the flash animation
+      card.classList.add(`flash-${result}`);
+      $('score').textContent = `★ ${G.score(state.round)}`;
+      if (result === 'got' && !reduced) {
+        const p = document.createElement('div');
+        p.className = 'plus'; p.textContent = '+1'; p.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 700);
+      }
+      if (result === 'taboo') { try { navigator.vibrate?.(120); } catch { /* not supported */ } }
+    }
+
+    // Bottom sheet; used for the rules (from any screen) and to confirm playing again.
+    function openSheet({ html, onClose, focusId }) {
+      if ($('sheet')) return;
+      const opener = document.activeElement;
+      const dim = document.createElement('div');
+      dim.className = 'dim';
+      dim.id = 'sheet';
+      dim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${html}</div>`;
+      document.body.appendChild(dim);
+      const onKey = e => { if (e.key === 'Escape') close(); };
+      const close = () => {
+        dim.remove();
+        document.removeEventListener('keydown', onKey);
+        onClose?.();
+        if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+      };
+      document.addEventListener('keydown', onKey);
+      dim.onclick = e => { if (e.target === dim) close(); };
+      dim.querySelectorAll('[data-close]').forEach(b => { b.onclick = close; });
+      $(focusId)?.focus({ preventScroll: true });
+      return close;
+    }
+
+    function openRules() {
+      const playing = view === 'play' && state.round && !state.round.finishedAt;
+      if (playing) { state = G.pause(state); persist(); }
+      openSheet({
+        html: `${playing ? '<p class="paused">⏸ TIMER PAUSED</p>' : ''}<h2 id="sheet-title">How to play</h2>${RULES}
+          <button class="btn" id="back" data-close>${playing ? 'BACK TO THE GAME ▶' : 'GOT IT'}</button>`,
+        focusId: 'back',
+        onClose: () => { if (playing) { state = G.resume(state); persist(); } },
+      });
+    }
+
+    function playAgain() { state = { ...state, round: null }; persist(); view = 'ready'; render(); }
+
+    function renderEnd() {
+      const r = state.round;
+      const n = G.score(r);
+      const won = G.earnsCandy(n);
+      const words = G.guessed(r);
+      const tab = r.results.filter(x => x.result === 'taboo').length;
+      const skip = r.results.filter(x => x.result === 'skip').length;
+      app.innerHTML = `<main class="screen">
+        <div class="top"><span class="kick">⏰ TIME'S UP!</span>${rulesBtn}</div>
+        <section class="ach">
+          <div class="trophy" aria-hidden="true">${won ? '🏆' : n > 0 ? '👏' : '🙈'}</div>
+          <p class="lead">You guessed</p>
+          <span class="big" id="big">${reduced ? n : 0}</span>
+          <p class="unit">${n === 1 ? 'word!' : 'words!'}</p>
+        </section>
+        ${won
+          ? `<p class="prize win">🍬 Show this screen to a volunteer and come get a candy!</p>`
+          : `<p class="prize lose">So close! Guess ${G.CANDY_AT} to win a candy. Try again 💪</p>`}
+        ${words.length ? `<ul class="chips" aria-label="Words you guessed">${words.map(w => `<li>✓ ${esc(w)}</li>`).join('')}</ul>` : ''}
+        <p class="tally">✗ ${tab} taboo · ↷ ${skip} skipped</p>
+        <p class="stamp">FINISHED AT<b>${G.formatTime(r.finishedAt)}</b></p>
+        <div class="actions"><button class="btn2" id="again">🔁 Play again</button></div>
+      </main>`;
+      if (won && !reduced) confetti();
+      if (!reduced) countUp($('big'), n);
+      $('again').onclick = () => {
+        if (!won) return playAgain();
+        openSheet({
+          html: `<h2 id="sheet-title">Got your candy? 🍬</h2>
+            <p>Playing again clears this screen. <b>Show it to a volunteer first!</b></p>
+            <button class="btn" id="yes">YES, PLAY AGAIN</button>
+            <button class="btn2" id="no" data-close>Keep this screen</button>`,
+          focusId: 'no',
+        });
+        $('yes').onclick = playAgain;
+      };
+    }
+
+    function countUp(el, n) {
+      const t0 = performance.now(), dur = Math.min(1400, 250 + n * 110);
+      const step = now => {
+        const p = Math.min(1, (now - t0) / dur);
+        el.textContent = Math.round(n * (1 - (1 - p) ** 3));
+        if (p < 1 && el.isConnected) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    function confetti() {
+      const box = document.createElement('div');
+      box.className = 'confetti';
+      box.setAttribute('aria-hidden', 'true');
+      const colours = ['#e5533d', '#ffc94a', '#3fbf8a', '#fbf1dc'];
+      box.innerHTML = Array.from({ length: 36 }, (_, i) =>
+        `<i style="left:${(i * 2.83 + Math.random() * 3) % 100}%;background:${colours[i % 4]};animation-duration:${2.6 + Math.random() * 2.4}s;animation-delay:${-Math.random() * 4}s"></i>`).join('');
+      app.prepend(box);
+    }
+
+    render();
+  </script>
+</body>
+</html>
