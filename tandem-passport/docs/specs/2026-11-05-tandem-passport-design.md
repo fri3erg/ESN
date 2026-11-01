@@ -27,6 +27,8 @@ A Rules button is on every screen after the cover. State lives in localStorage (
 Theme C "Sticker book" from the mockups (chosen by the organisers): sunny yellow #ffd23f, brown text #2b1d0e, pink #ff5d73 buttons,
 purple #7b4fd6 completion screen, one bright colour per mission sticker. System fonts only, no external requests.
 
-## Open
+## Prize draw
 
-- Prize draw: how volunteers collect the finishers (names via a Telegram bot was proposed) or whether it becomes a direct prize.
+The cover asks for the player's name (required). A full passport is sent to the organisers' Telegram chat through the Vercel
+function `api/finish.js` (bot token and chat id as environment variables); the finish screen shows the name and whether it got through.
+The winner proves it with the finish screen on their phone (same name and draw number).

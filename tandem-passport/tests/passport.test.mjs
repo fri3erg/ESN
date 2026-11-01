@@ -82,6 +82,32 @@ test('the last stamp completes the passport with a time and a draw number', () =
   assert.equal(s5.drawNo, null);
 });
 
+test('the player name is trimmed, capped and required to start', () => {
+  assert.equal(P.hasName(P.fresh()), false);
+  const s = P.setName(P.fresh(), '   Anna   Rossi  ');
+  assert.equal(s.name, 'Anna Rossi');
+  assert.equal(P.hasName(s), true);
+  assert.equal(P.setName(P.fresh(), 'x'.repeat(80)).name.length, P.NAME_MAX);
+  assert.equal(P.hasName(P.setName(P.fresh(), '   ')), false);
+  assert.equal(P.setName(P.fresh(), 'Ann\u0000a\n').name, 'Ann a');
+});
+
+test('the finish is reported once: markSent only after completing', () => {
+  const s = stampAll();
+  assert.equal(s.sent, false);
+  assert.equal(P.needsSending(s), true);
+  const done = P.markSent(s);
+  assert.equal(done.sent, true);
+  assert.equal(P.needsSending(done), false);
+  assert.deepEqual(P.markSent(P.fresh()), P.fresh());
+  assert.equal(P.needsSending(P.fresh()), false);
+});
+
+test('a new passport keeps the name', () => {
+  const s = P.restart(P.markSent(P.setName(stampAll(), 'Anna')));
+  assert.deepEqual(s, { ...P.fresh(), name: 'Anna' });
+});
+
 test('formatTime and formatDraw', () => {
   assert.equal(P.formatTime(new Date(2026, 10, 5, 7, 5).toISOString()), '07:05');
   assert.equal(P.formatDraw(427), '0427');
@@ -109,6 +135,8 @@ test('load treats corrupt or outdated data as no passport', () => {
     JSON.stringify({ ...good, stamps: { ...good.stamps, word: 'yesterday' } }),
     JSON.stringify({ ...good, drawNo: 12 }),
     JSON.stringify({ ...good, completedAt: null }),
+    JSON.stringify({ ...good, name: 42 }),
+    JSON.stringify({ ...good, sent: 'yes' }),
   ];
   for (const raw of bad) { st.setItem(P.KEY, raw); assert.equal(P.load(st), null, raw); }
 });

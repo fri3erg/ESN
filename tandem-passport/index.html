@@ -57,6 +57,7 @@
     .rules b.n { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-size: 18px; }
     .qm { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 7px; border: 2.5px dashed var(--edge); background: var(--cream); color: #8a6d1d; font-weight: 900; font-size: .95em; vertical-align: -.15em; }
     .cover .btn { margin-top: auto; }
+    .cover .field input { font: 800 20px var(--sans); }
 
     /* passport page */
     .page { flex: 1; display: flex; flex-direction: column; padding: 0 14px calc(16px + env(safe-area-inset-bottom)); gap: 10px; }
@@ -125,6 +126,8 @@
     @keyframes shine { from { transform: translateX(-140%) skewX(-20deg); } to { transform: translateX(300%) skewX(-20deg); } }
     .ach h1 { margin: 0 0 6px; font: 900 34px/1 var(--sans); color: var(--purple); }
     .ach p { margin: 0; font-weight: 800; font-size: 18px; line-height: 1.3; }
+    .ach .who { font: 900 26px/1.1 var(--sans); margin: 2px 0 8px; overflow-wrap: anywhere; }
+    .sendst { text-align: center; margin: 0; font-weight: 800; font-size: 15px; background: rgba(0, 0, 0, .22); border-radius: 999px; padding: 5px 12px; align-self: center; }
     .ticket { display: inline-block; margin-top: 12px; background: var(--sun); border-radius: 14px; padding: 6px 14px; font: 900 24px var(--mono); letter-spacing: .1em; }
     .stamp-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; justify-items: center; padding: 4px 10px; }
     .stamp-row .stamp { --size: 78px; font-size: 6.5px; animation: pop .5s both; }
@@ -158,7 +161,9 @@
       .qcard .text { font-size: 16.5px; }
       .ach { padding: 12px; } .ach h1 { font-size: 27px; } .ach p { font-size: 16px; }
       .ticket { font-size: 20px; margin-top: 8px; }
-      .stamp-row { gap: 6px 10px; } .stamp-row .stamp { --size: 58px; font-size: 5px; }
+      .ach .who { font-size: 22px; margin-bottom: 4px; }
+      .stamp-row { gap: 4px 10px; padding: 0 10px; } .stamp-row .stamp { --size: 52px; font-size: 4.5px; }
+      .done { gap: 9px; } .done .bar { padding: 6px 0; min-height: 54px; }
       .stampt b { font-size: 28px; }
       .btn.again { min-height: 62px; font-size: 22px; }
     }
@@ -185,7 +190,8 @@
       history.replaceState(null, '', location.pathname);   // so a reload doesn't reset again
     }
     let state = P.load(store) || P.fresh();
-    let view = P.isComplete(state) ? 'done' : state.slots.some(Boolean) ? 'passport' : 'cover';
+    let view = P.isComplete(state) ? 'done' : P.hasName(state) && state.slots.some(Boolean) ? 'passport' : 'cover';
+    let sending = false;
     let openId = null, freshId = null;
     let timers = [];
 
@@ -229,9 +235,21 @@
         <h1>TANDEM<br><span>PASSPORT</span> ✈️</h1>
         <div class="deco" aria-hidden="true">${deco}</div>
         ${RULES}
+        <label class="field"><span>YOUR NAME (FOR THE PRIZE DRAW)</span><input id="name" maxlength="${P.NAME_MAX}" autocomplete="name" enterkeyhint="go" value="${esc(state.name)}"></label>
         <button class="btn" id="open">OPEN MY PASSPORT ▶</button>
       </main>`;
-      $('open').onclick = () => { view = 'passport'; render(); };
+      const input = $('name'), btn = $('open');
+      const sync = () => { btn.disabled = !input.value.trim(); };
+      input.oninput = sync; sync();
+      const go = () => {
+        state = P.setName(state, input.value);
+        if (!P.hasName(state)) return input.focus();
+        persist();
+        view = 'passport';
+        render();
+      };
+      btn.onclick = go;
+      input.onkeydown = e => { if (e.key === 'Enter') go(); };
     }
 
     function slotHtml(i) {
@@ -341,16 +359,49 @@
         <div class="bar"><button class="barbtn" id="view">📖 My passport</button><button class="barbtn" id="rulesbtn">📖 Rules</button></div>
         <section class="ach">
           <h1>PASSPORT FULL! 🏆</h1>
+          <p class="who">${esc(state.name)}</p>
           <p>Show this screen to a volunteer to enter the prize draw 🎁</p>
           <div class="ticket">DRAW Nº ${P.formatDraw(state.drawNo)}</div>
         </section>
         <div class="stamp-row" aria-hidden="true">${state.slots.map(id => stampHtml(id)).join('')}</div>
         ${w ? `<p class="newword">Your new word: <b>${esc(w.word)}</b>${w.meaning ? ` · ${esc(w.meaning)}` : ''}</p>` : ''}
+        <p class="sendst" id="sendst" role="status"></p>
         <p class="stampt">FINISHED AT<b>${P.formatTime(state.completedAt)}</b></p>
         <div class="actions"><button class="btn sun again" id="again">🔁 PLAY AGAIN</button></div>
       </main>`;
       $('view').onclick = () => { view = 'passport'; render(); };
       $('again').onclick = openAgain;
+      showSend();
+      sendFinish();
+    }
+
+    // Tell the organisers' Telegram (through /api/finish) who finished. Retries while this screen is open,
+    // and on the next visit, until it gets through.
+    function showSend(status) {
+      const el = $('sendst');
+      if (!el) return;
+      el.textContent = state.sent ? '✓ Your name is in the draw'
+        : status === 'fail' ? '⚠️ No connection: show this screen to a volunteer' : 'Sending your name…';
+    }
+
+    async function sendFinish() {
+      if (!P.needsSending(state) || sending) return;
+      sending = true;
+      let ok = false;
+      try {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), 8000);
+        const r = await fetch('/api/finish', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctl.signal,
+          body: JSON.stringify({ name: state.name, drawNo: state.drawNo, finishedAt: state.completedAt }),
+        });
+        clearTimeout(t);
+        ok = r.ok;
+      } catch { /* offline or timed out */ }
+      sending = false;
+      if (ok) { state = P.markSent(state); persist(); }
+      showSend(ok ? 'ok' : 'fail');
+      if (!ok && view === 'done') timers.push(setTimeout(sendFinish, 15000));
     }
 
     function openAgain() {
@@ -358,7 +409,7 @@
         <p>This clears your stickers and this screen. <b>Show it to a volunteer first!</b></p>
         <button class="btn" id="yes">YES, NEW PASSPORT</button>
         <button class="btn2" id="close">Keep this screen</button>`, 'close');
-      $('yes').onclick = () => { P.clear(store); state = P.fresh(); view = 'cover'; render(); };
+      $('yes').onclick = () => { state = P.restart(state); persist(); view = 'cover'; render(); };
     }
 
     // Bottom sheet; used for the rules and to confirm a new passport. The element with id closeId closes it.

@@ -1,9 +1,11 @@
 // Tandem Passport state: pure functions over a small JSON object kept in localStorage.
-// state = { slots: [missionId|null x SLOTS], stamps: { missionId: iso }, word: {word, meaning}|null, completedAt: iso|null, drawNo: int|null }
+// state = { name, slots: [missionId|null x SLOTS], stamps: { missionId: iso }, word: {word, meaning}|null,
+//           completedAt: iso|null, drawNo: int|null, sent: bool (the finish reached the organisers' Telegram) }
 import { MISSIONS } from './missions.js';
 
 export const KEY = 'tandempassport.v1';
 export const SLOTS = MISSIONS.length;
+export const NAME_MAX = 40;
 const IDS = MISSIONS.map(m => m.id);
 
 export function mission(id) {
@@ -23,8 +25,21 @@ export function secureRandomInt(n) {
 }
 
 export function fresh() {
-  return { slots: Array(SLOTS).fill(null), stamps: {}, word: null, completedAt: null, drawNo: null };
+  return { name: '', slots: Array(SLOTS).fill(null), stamps: {}, word: null, completedAt: null, drawNo: null, sent: false };
 }
+
+// The name goes to the prize draw: control characters out, spaces squashed, capped.
+export function setName(state, name) {
+  const clean = String(name ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX).trim();
+  return { ...state, name: clean };
+}
+export const hasName = state => state.name.length > 0;
+
+export const needsSending = state => isComplete(state) && !state.sent;
+export const markSent = state => (isComplete(state) ? { ...state, sent: true } : state);
+
+// Play again: a blank passport for the same person.
+export const restart = state => ({ ...fresh(), name: state.name });
 
 // Tapping a "?" slot puts a random mission that isn't in the passport yet behind it.
 export function reveal(state, slot, rng = secureRandomInt) {
@@ -62,6 +77,7 @@ const isIso = v => typeof v === 'string' && !Number.isNaN(Date.parse(v));
 
 export function isValid(s) {
   if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
+  if (typeof s.name !== 'string' || s.name.length > NAME_MAX || typeof s.sent !== 'boolean') return false;
   if (!Array.isArray(s.slots) || s.slots.length !== SLOTS) return false;
   const shown = s.slots.filter(x => x !== null);
   if (!shown.every(id => IDS.includes(id)) || new Set(shown).size !== shown.length) return false;
