@@ -1,8 +1,8 @@
 # Tandem Passport 🛂
 
-One-page game for the ESN Bologna Tandem night: scan the QR, open your passport, tap a "?" visa to get a random
-mission, talk to someone new to complete it, stamp it. Everyone gets the same 6 missions in a random order;
-with every stamp, show the screen to a volunteer and enter the prize draw 🎁.
+One-page game for the ESN Bologna Tandem night: scan the QR, open your passport, tap a "?" to get a random
+mission, talk to someone new to complete it, stamp it with a sticker. Everyone gets the same 6 missions in a random order;
+with a full passport, show the screen to a volunteer and enter the prize draw 🎁.
 
 Live: https://esn-tandem-passport.vercel.app
 
@@ -11,7 +11,7 @@ Live: https://esn-tandem-passport.vercel.app
 
 ## Editing the missions
 
-All the missions are in [`missions.js`](missions.js): title, emoji, text, conversation starter, the text and ink colour of the stamp.
+All the missions are in [`missions.js`](missions.js): title, emoji, text, conversation starter, the text and colour of the sticker.
 `input: true` makes the mission ask for what they learned (Word Exchange: the word and its meaning) before it can be stamped.
 
 ## Print

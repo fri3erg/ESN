@@ -4,157 +4,163 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tandem Passport</title>
-  <meta name="description" content="Talk to new people, collect every stamp in your passport, enter the prize draw.">
-  <meta name="theme-color" content="#1d2a4a">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%231d2a4a'/%3E%3Ccircle cx='50' cy='50' r='27' fill='none' stroke='%23e8c872' stroke-width='6'/%3E%3Cellipse cx='50' cy='50' rx='11' ry='27' fill='none' stroke='%23e8c872' stroke-width='5'/%3E%3Cpath d='M23 50h54' stroke='%23e8c872' stroke-width='5'/%3E%3C/svg%3E">
+  <meta name="description" content="Talk to new people, collect every sticker in your passport, enter the prize draw.">
+  <meta name="theme-color" content="#ffd23f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23ffd23f'/%3E%3Ccircle cx='50' cy='52' r='30' fill='%23ff5d73' stroke='%23fff' stroke-width='7'/%3E%3Ctext x='50' y='64' font-size='34' text-anchor='middle' font-family='Arial' font-weight='900' fill='%23fff'%3E%E2%9C%93%3C/text%3E%3C/svg%3E">
   <style>
     :root {
-      --navy: #1d2a4a; --navy2: #131d36; --gold: #e8c872; --gold-dark: #b8902f; --paper: #f5ecd7; --paper2: #efe2c4; --ink: #1d2a4a; --red: #b23a48;
+      --sun: #ffd23f; --sun-dark: #e0b11c; --cream: #fff6d6; --edge: #c9a227; --ink: #2b1d0e;
+      --pink: #ff5d73; --pink-dark: #c23347; --purple: #7b4fd6; --purple-dark: #4f2c9e;
       --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      --serif: Georgia, "Times New Roman", serif;
       --mono: ui-monospace, "SF Mono", Consolas, monospace;
+      --hand: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
       color-scheme: light;
     }
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
-    body { margin: 0; background: var(--navy2); color: var(--ink); font: 18px/1.45 var(--sans); overflow-x: hidden; }
+    body { margin: 0; background: var(--sun); color: var(--ink); font: 18px/1.45 var(--sans); overflow-x: hidden; }
     button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
     .screen { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
-    /* cream passport paper with a fine security pattern */
-    .paper { background-color: var(--paper);
-      background-image: repeating-radial-gradient(circle at 50% 115%, transparent 0 11px, rgba(29, 42, 74, .045) 11px 12px),
-                        repeating-linear-gradient(45deg, transparent 0 18px, rgba(178, 58, 72, .025) 18px 19px); }
     .kick { font: 800 12px var(--mono); letter-spacing: .2em; margin: 0; }
 
-    .btn { display: block; width: 100%; min-height: 62px; border: 0; border-radius: 16px; background: var(--navy); color: var(--gold); font-size: 20px; font-weight: 900; letter-spacing: .05em; box-shadow: 0 6px 0 #0b1224; }
-    .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #0b1224; }
+    .btn { display: block; width: 100%; min-height: 62px; border: 0; border-radius: 18px; background: var(--pink); color: #fff; font-size: 20px; font-weight: 900; letter-spacing: .04em; box-shadow: 0 6px 0 var(--pink-dark); }
+    .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-dark); }
     .btn:disabled { opacity: .45; cursor: default; transform: none; }
-    .btn.gold { background: var(--gold); color: var(--navy); box-shadow: 0 6px 0 var(--gold-dark); }
-    .btn.gold:active { box-shadow: 0 2px 0 var(--gold-dark); }
-    .btn2 { display: block; width: 100%; min-height: 54px; border: 2px solid rgba(232, 200, 114, .7); border-radius: 16px; background: transparent; color: var(--gold); font-size: 18px; font-weight: 800; }
+    .btn.sun { background: var(--sun); color: var(--ink); box-shadow: 0 6px 0 var(--sun-dark); }
+    .btn.sun:active { box-shadow: 0 2px 0 var(--sun-dark); }
+    .btn2 { display: block; width: 100%; min-height: 54px; border: 2.5px solid currentColor; border-radius: 16px; background: transparent; font-size: 18px; font-weight: 800; }
 
     /* top bar on every screen after the cover */
-    .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--navy); color: var(--gold); padding: 10px 14px; min-height: 60px; }
-    .bar .kick { color: var(--gold); }
-    .barbtn { min-height: 44px; border: 2px solid rgba(232, 200, 114, .55); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 16px; color: var(--gold); }
+    .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; min-height: 62px; }
+    .barbtn { min-height: 44px; border: 0; background: var(--ink); color: var(--sun); border-radius: 999px; padding: 6px 15px; font-weight: 900; font-size: 16px; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); }
+
+    /* round sticker: white die-cut edge, colour, emoji, name */
+    .stamp { --size: min(100%, 124px); width: var(--size); aspect-ratio: 1; border-radius: 50%; background: var(--c); color: #fff; border: .45em solid #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(var(--r)); font: 900 10px/1.1 var(--sans);
+      box-shadow: 0 .45em 0 rgba(43, 29, 14, .22), 0 .2em .8em rgba(43, 29, 14, .25); position: relative; overflow: hidden; }
+    .stamp::after { content: ""; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255, 255, 255, .45), transparent 45%); }
+    .stamp i { font-style: normal; font-size: 3em; line-height: 1; }
+    .stamp b { font-size: 1.15em; letter-spacing: .02em; margin-top: .35em; padding: 0 .4em; }
+    .stamp small { font: 800 .85em var(--mono); margin-top: .2em; opacity: .9; }
+    .stamp.big { --size: min(74vw, 270px); font-size: clamp(18px, 6vw, 24px); }
 
     /* cover */
-    .cover { background: radial-gradient(ellipse at 50% 25%, #2a3a63, var(--navy) 55%, var(--navy2)); color: var(--gold); padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); gap: 16px; text-align: center; }
-    .cover .kick { opacity: .85; }
-    .crest { width: 92px; height: 92px; margin: 4px auto 0; }
-    .cover h1 { margin: 0; font: 900 clamp(40px, 13vw, 60px)/1 var(--serif); letter-spacing: .06em; text-shadow: 0 2px 0 rgba(0, 0, 0, .35); }
-    .cover h1 small { display: block; font-size: .42em; letter-spacing: .35em; margin-bottom: 6px; }
-    .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; text-align: left; }
-    .rules li { display: flex; gap: 12px; align-items: center; background: var(--paper); color: var(--ink); border-radius: 14px; padding: 13px 14px; font-weight: 700; font-size: 17.5px; line-height: 1.3; }
-    .rules b.n { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--navy); color: var(--gold); display: grid; place-items: center; font: 900 17px var(--serif); }
+    .cover { padding: 20px 18px calc(22px + env(safe-area-inset-bottom)); gap: 16px; }
+    .cover h1 { margin: 2px 0 0; font: 900 clamp(48px, 15vw, 66px)/.95 var(--sans); transform: rotate(-2deg); letter-spacing: -.01em; }
+    .cover h1 span { color: var(--purple); }
+    .deco { position: relative; height: 92px; }
+    .deco .stamp { position: absolute; --size: 78px; font-size: 7px; }
+    .deco .stamp i { font-size: 4.2em; }
+    .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .rules li { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 16px; padding: 13px 14px; font-weight: 750; font-size: 17.5px; line-height: 1.3; box-shadow: 0 4px 0 rgba(43, 29, 14, .18); }
+    .rules b.n { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-size: 18px; }
+    .qm { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 7px; border: 2.5px dashed var(--edge); background: var(--cream); color: #8a6d1d; font-weight: 900; font-size: .95em; vertical-align: -.15em; }
     .cover .btn { margin-top: auto; }
 
     /* passport page */
-    .page { flex: 1; display: flex; flex-direction: column; padding: 12px 14px calc(16px + env(safe-area-inset-bottom)); gap: 10px; }
-    .pagehead { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid rgba(29, 42, 74, .25); padding-bottom: 6px; }
-    .pagehead h2 { margin: 0; font: 900 24px var(--serif); }
-    .pagehead .kick { color: var(--red); }
-    .slots { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); gap: 10px; min-height: 390px; }
-    .slot { position: relative; border-radius: 14px; border: 2px dashed rgba(29, 42, 74, .35); background: rgba(255, 255, 255, .25); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; min-height: 0; color: var(--ink); }
-    .slot .no { position: absolute; top: 6px; left: 9px; font: 800 10px var(--mono); letter-spacing: .14em; opacity: .55; }
-    .slot.hidden .q { font: 900 60px/1 var(--serif); color: var(--navy); opacity: .8; }
-    .slot.hidden .tap { font: 800 11px var(--mono); letter-spacing: .18em; opacity: .55; margin-top: 4px; }
-    .slot.hidden:active { transform: scale(.97); }
-    .slot.open { border: 2.5px solid var(--navy); background: #fffaf0; animation: glow 1.8s infinite; }
-    .slot.open .e { font-size: 34px; line-height: 1; }
-    .slot.open b { font: 900 17px/1.15 var(--serif); margin-top: 6px; }
-    .slot.open small { font: 800 11px var(--mono); letter-spacing: .14em; color: var(--red); margin-top: 6px; }
-    @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(29, 42, 74, .35); } 50% { box-shadow: 0 0 0 7px rgba(29, 42, 74, 0); } }
-    .slot.done { border-color: transparent; background: transparent; }
+    .page { flex: 1; display: flex; flex-direction: column; padding: 0 14px calc(16px + env(safe-area-inset-bottom)); gap: 10px; }
+    .pagehead h2 { margin: 0; font: 900 30px/1 var(--sans); transform: rotate(-1.5deg); }
+    .dots { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
+    .dots i { flex: 1; max-width: 46px; height: 11px; border-radius: 999px; background: rgba(43, 29, 14, .18); }
+    .dots i.on { background: var(--pink); }
+    .dots .kick { margin-left: auto; }
+    .slots { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); gap: 12px; min-height: 390px; }
+    .slot { position: relative; border-radius: 18px; border: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; min-height: 0; }
+    .slot .no { position: absolute; top: 7px; left: 10px; font: 800 10px var(--mono); letter-spacing: .14em; opacity: .6; }
+    .slot.hidden { background: var(--cream); border: 3px dashed var(--edge); color: #8a6d1d; }
+    .slot.hidden .q { font: 900 58px/1 var(--sans); }
+    .slot.hidden .tap { font: 800 11px var(--mono); letter-spacing: .18em; margin-top: 2px; }
+    .slot.hidden:active { transform: scale(.96); }
+    .slot.open { background: var(--c); color: #fff; box-shadow: 0 5px 0 rgba(43, 29, 14, .25); animation: wiggle 2.4s ease-in-out infinite; }
+    .slot.open .e { font-size: 36px; line-height: 1; }
+    .slot.open b { font-size: 18px; line-height: 1.1; margin-top: 6px; }
+    .slot.open small { font: 800 11px var(--mono); letter-spacing: .14em; margin-top: 7px; background: rgba(255, 255, 255, .25); border-radius: 999px; padding: 3px 9px; }
+    @keyframes wiggle { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-2.5deg); } 90% { transform: rotate(2.5deg); } 95% { transform: rotate(-1deg); } }
+    .slot.done { background: transparent; }
     .slot.flipin { animation: flipin .5s ease-out both; }
     @keyframes flipin { from { transform: perspective(500px) rotateY(90deg); } to { transform: perspective(500px) rotateY(0); } }
-    .slot.fresh .stamp { animation: fresh 1.2s ease-out; }
-    @keyframes fresh { 0% { transform: rotate(var(--r)) scale(1.25); filter: brightness(1.4); } 100% { transform: rotate(var(--r)) scale(1); } }
-    .qm { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 6px; border: 2px dashed currentColor; font: 900 .95em var(--serif); vertical-align: -.15em; }
-    .hint { margin: 0; text-align: center; font-weight: 700; font-size: 16px; opacity: .75; }
-
-    /* ink stamp: double ring, worn ink, slightly crooked */
-    .stamp { --size: min(100%, 124px); width: var(--size); aspect-ratio: 1; border-radius: 50%; border: .3em solid var(--ink-c); color: var(--ink-c); position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(var(--r)); font: 900 10px/1.1 var(--mono); padding: 1.1em; opacity: .9;
-      -webkit-mask-image: radial-gradient(circle at 28% 32%, #000 52%, rgba(0, 0, 0, .72) 78%, #000 100%); mask-image: radial-gradient(circle at 28% 32%, #000 52%, rgba(0, 0, 0, .72) 78%, #000 100%); }
-    .stamp::before { content: ""; position: absolute; inset: .45em; border-radius: 50%; border: .14em solid var(--ink-c); }
-    .stamp small { font-size: .78em; letter-spacing: .12em; opacity: .9; }
-    .stamp b { font-size: 1.25em; letter-spacing: .04em; margin: .35em 0; overflow-wrap: anywhere; }
-    .stamp.big { --size: min(76vw, 280px); font-size: clamp(19px, 6.4vw, 25px); }
+    .slot.fresh .stamp { animation: fresh .9s ease-out; }
+    @keyframes fresh { 0% { transform: rotate(var(--r)) scale(1.3); } 60% { transform: rotate(var(--r)) scale(.95); } 100% { transform: rotate(var(--r)) scale(1); } }
+    .hint { margin: 0; text-align: center; font-weight: 800; font-size: 16px; }
 
     /* mission */
-    .mission { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px calc(18px + env(safe-area-inset-bottom)); }
-    .mission .no { font: 800 12px var(--mono); letter-spacing: .2em; color: var(--red); margin: 0; }
-    .mission .e { font-size: 54px; line-height: 1; }
-    .mission h2 { margin: 0; font: 900 clamp(32px, 10vw, 40px)/1.05 var(--serif); }
-    .mission .text { margin: 0; font-size: 19px; font-weight: 650; line-height: 1.35; }
-    .starter { background: #fff8e6; border-left: 5px solid var(--red); border-radius: 6px; padding: 10px 12px; }
-    .starter small { display: block; font: 800 11px var(--mono); letter-spacing: .16em; color: var(--red); margin-bottom: 3px; }
-    .starter i { font-size: 18px; }
-    .field { display: grid; gap: 2px; }
+    .mission { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 14px calc(18px + env(safe-area-inset-bottom)); }
+    .qcard { background: #fff; border-radius: 24px; padding: 16px; transform: rotate(-1deg); box-shadow: 0 8px 0 rgba(43, 29, 14, .2); display: flex; flex-direction: column; gap: 10px; border-top: 10px solid var(--c); }
+    .qcard .no { font: 800 12px var(--mono); letter-spacing: .2em; opacity: .6; margin: 0; }
+    .qcard .e { font-size: 50px; line-height: 1; }
+    .qcard h2 { margin: 0; font: 900 clamp(30px, 9.5vw, 38px)/1.05 var(--sans); color: var(--c); }
+    .qcard .text { margin: 0; font-size: 18.5px; font-weight: 700; line-height: 1.35; }
+    .starter { background: var(--sun); border-radius: 14px; padding: 10px 12px; transform: rotate(.8deg); }
+    .starter small { display: block; font: 800 11px var(--mono); letter-spacing: .16em; margin-bottom: 3px; }
+    .starter i { font-size: 18px; font-weight: 600; }
+    .field { display: grid; gap: 3px; }
     .field span { font: 800 11px var(--mono); letter-spacing: .16em; opacity: .7; }
-    .field input { font: 22px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; color: var(--navy); background: transparent; border: 0; border-bottom: 2.5px solid var(--navy); padding: 6px 2px; border-radius: 0; width: 100%; }
-    .field input:focus { outline: none; border-bottom-color: var(--red); }
+    .field input { font: 21px var(--hand); color: var(--ink); background: #fff; border: 2.5px solid var(--ink); padding: 7px 10px; border-radius: 12px; width: 100%; }
+    .field input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255, 93, 115, .25); }
     .mission .actions { margin-top: auto; padding-top: 6px; }
-    .stamped-here { display: flex; justify-content: center; margin: 6px 0; }
-    .saved { font: 20px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; text-align: center; margin: 0; }
+    .stamped-here { display: flex; justify-content: center; margin: 4px 0; }
+    .saved { font: 20px var(--hand); text-align: center; margin: 0; }
 
-    /* the stamp coming down */
-    .fx { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: rgba(245, 236, 215, .97); }
+    /* the sticker getting slapped on */
+    .fx { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; background: rgba(255, 210, 63, .97); overflow: hidden; }
     .fx .stamp { animation: slam .55s cubic-bezier(.55, 0, .75, .4) both; }
-    .fx h2 { margin: 0; font: 900 40px var(--serif); color: var(--navy); letter-spacing: .06em; animation: appear .3s .55s both; }
-    .fx .splat { position: absolute; border-radius: 50%; background: var(--ink-c); opacity: 0; animation: splat .5s .5s ease-out forwards; }
+    .fx h2 { margin: 0; font: 900 44px var(--sans); color: var(--ink); transform: rotate(-3deg); animation: appear .3s .55s both; }
+    .fx .bit { position: absolute; width: 12px; height: 18px; border-radius: 3px; opacity: 0; animation: burst .7s .5s ease-out forwards; }
     body.shake .fx { animation: shake .35s .5s; }
-    @keyframes slam { 0% { transform: translateY(-30vh) rotate(-34deg) scale(2.6); opacity: 0; } 70% { opacity: 1; } 100% { transform: rotate(var(--r)) scale(1); opacity: .92; } }
-    @keyframes appear { from { transform: translateY(10px); opacity: 0; } }
-    @keyframes splat { from { transform: scale(0); opacity: .9; } to { transform: scale(1); opacity: .75; } }
+    @keyframes slam { 0% { transform: translateY(-30vh) rotate(-40deg) scale(2.8); opacity: 0; } 70% { opacity: 1; } 100% { transform: rotate(var(--r)) scale(1); } }
+    @keyframes appear { from { transform: translateY(12px) rotate(-3deg); opacity: 0; } }
+    @keyframes burst { from { transform: translate(0, 0) rotate(0); opacity: 1; } to { transform: translate(var(--x), var(--y)) rotate(320deg); opacity: 0; } }
     @keyframes shake { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-7px, 5px); } 40% { transform: translate(6px, -4px); } 60% { transform: translate(-4px, 3px); } 80% { transform: translate(3px, -2px); } }
 
     /* complete: drifting background + light sweeping the card, so a screenshot looks obviously dead.
        A determined cheater can still fake it; the stakes are a ticket in the draw. */
-    body.end { background: linear-gradient(120deg, #131d36, #2a3a63, #5a4a1c, #131d36); background-size: 300% 300%; animation: drift 6s linear infinite alternate; }
+    body.end { background: linear-gradient(120deg, #4f2c9e, #7b4fd6, #ff5d73, #4f2c9e); background-size: 300% 300%; animation: drift 6s linear infinite alternate; }
     @keyframes drift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
-    .done { padding: 16px 16px calc(18px + env(safe-area-inset-bottom)); gap: 12px; color: var(--gold); }
-    .ach { position: relative; overflow: hidden; border-radius: 22px; padding: 18px 16px; text-align: center; color: var(--ink); box-shadow: 0 12px 30px rgba(0, 0, 0, .4); }
-    .ach::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .6), transparent); animation: shine 2.6s linear infinite; pointer-events: none; }
+    .done { padding: 0 14px calc(18px + env(safe-area-inset-bottom)); gap: 12px; color: #fff; }
+    .done .bar { padding: 10px 0; }
+    .done .barbtn { background: var(--sun); color: var(--ink); }
+    .ach { position: relative; overflow: hidden; background: #fff; color: var(--ink); border-radius: 24px; padding: 18px 16px; text-align: center; box-shadow: 0 8px 0 rgba(0, 0, 0, .2); transform: rotate(-1deg); }
+    .ach::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .7), transparent); animation: shine 2.6s linear infinite; pointer-events: none; }
     @keyframes shine { from { transform: translateX(-140%) skewX(-20deg); } to { transform: translateX(300%) skewX(-20deg); } }
-    .medal { width: 104px; height: 104px; border-radius: 50%; margin: 0 auto; background: radial-gradient(circle at 35% 30%, #fff3c4, var(--gold) 45%, var(--gold-dark)); display: grid; place-items: center; font-size: 50px; box-shadow: 0 0 0 5px var(--navy), 0 8px 18px rgba(0, 0, 0, .25); animation: bob 2.4s ease-in-out infinite; }
-    @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-5px) rotate(4deg); } }
-    .ach h1 { margin: 12px 0 6px; font: 900 32px/1.05 var(--serif); }
+    .ach h1 { margin: 0 0 6px; font: 900 34px/1 var(--sans); color: var(--purple); }
     .ach p { margin: 0; font-weight: 800; font-size: 18px; line-height: 1.3; }
-    .ticket { display: inline-block; margin-top: 12px; border: 2.5px dashed var(--red); color: var(--red); border-radius: 12px; padding: 6px 14px; font: 900 24px var(--mono); letter-spacing: .1em; }
-    .stamp-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
-    .stamp-row .stamp { font-size: 4.6px; padding: .8em; opacity: 1; background: rgba(245, 236, 215, .92); }
+    .ticket { display: inline-block; margin-top: 12px; background: var(--sun); border-radius: 14px; padding: 6px 14px; font: 900 24px var(--mono); letter-spacing: .1em; }
+    .stamp-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 14px; justify-items: center; padding: 4px 10px; }
+    .stamp-row .stamp { --size: 78px; font-size: 6.5px; animation: pop .5s both; }
+    .stamp-row .stamp:nth-child(2) { animation-delay: .1s; } .stamp-row .stamp:nth-child(3) { animation-delay: .2s; } .stamp-row .stamp:nth-child(4) { animation-delay: .3s; }
+    .stamp-row .stamp:nth-child(5) { animation-delay: .4s; } .stamp-row .stamp:nth-child(6) { animation-delay: .5s; }
+    @keyframes pop { from { transform: rotate(var(--r)) scale(0); } 70% { transform: rotate(var(--r)) scale(1.15); } to { transform: rotate(var(--r)) scale(1); } }
     .stamp-row .stamp small { display: none; }
-    .stamp-row .stamp b { font-size: 1.5em; }
+    .newword { text-align: center; margin: 0; font-size: 16px; font-weight: 700; }
+    .newword b { font: 20px var(--hand); color: var(--sun); }
     .stampt { text-align: center; font: 800 12px var(--mono); letter-spacing: .2em; margin: 0; }
-    .stampt b { display: block; font-size: 38px; letter-spacing: .02em; color: #fff; text-shadow: 0 0 14px rgba(232, 200, 114, .7); }
-    .newword { text-align: center; margin: 0; color: var(--paper); font-size: 16px; }
-    .newword b { font: 20px "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive; color: var(--gold); }
+    .stampt b { display: block; font-size: 36px; letter-spacing: .02em; color: var(--sun); text-shadow: 0 3px 0 rgba(0, 0, 0, .2); }
     .done .actions { margin-top: auto; }
+    .btn.again { min-height: 72px; font-size: 24px; }
 
-    /* rules sheet */
-    .dim { position: fixed; inset: 0; background: rgba(10, 16, 32, .85); display: flex; align-items: flex-end; justify-content: center; padding: 12px; z-index: 40; overflow-y: auto; }
-    .sheet { width: 100%; max-width: 460px; background: var(--navy); border: 2px solid var(--gold); border-radius: 22px; padding: 18px; display: grid; gap: 12px; margin: auto 0 env(safe-area-inset-bottom); color: var(--gold); }
-    .sheet h2 { margin: 0; font: 900 26px var(--serif); }
+    /* bottom sheet */
+    .dim { position: fixed; inset: 0; background: rgba(43, 29, 14, .7); display: flex; align-items: flex-end; justify-content: center; padding: 12px; z-index: 40; overflow-y: auto; }
+    .sheet { width: 100%; max-width: 460px; background: var(--sun); border-radius: 24px; padding: 18px; display: grid; gap: 12px; margin: auto 0 env(safe-area-inset-bottom); box-shadow: 0 8px 0 rgba(0, 0, 0, .25); color: var(--ink); }
+    .sheet h2 { margin: 0; font: 900 28px var(--sans); }
+    .sheet p { margin: 0; font-size: 18px; }
 
     @media (max-height: 700px) {
-      .cover { gap: 10px; padding-top: 14px; }
-      .crest { width: 64px; height: 64px; }
+      .cover { gap: 10px; padding-top: 12px; }
+      .deco { height: 64px; } .deco .stamp { --size: 58px; font-size: 5.2px; }
       .rules li { padding: 9px 12px; font-size: 16px; }
-      .slots { min-height: 300px; gap: 8px; }
-      .slot.hidden .q { font-size: 48px; }
-      .slot .stamp { --size: min(100%, 92px); font-size: 9px; }
+      .slots { min-height: 300px; gap: 9px; }
+      .slot.hidden .q { font-size: 46px; }
+      .slot .stamp { --size: min(100%, 92px); font-size: 8.5px; }
       .page .btn { min-height: 54px; font-size: 18px; }
-      .mission { gap: 9px; padding-top: 12px; }
-      .mission .e { font-size: 40px; }
-      .mission .text { font-size: 17px; }
-      .medal { width: 76px; height: 76px; font-size: 36px; }
-      .ach { padding: 12px; } .ach h1 { font-size: 26px; margin-top: 8px; } .ach p { font-size: 16px; }
+      .qcard { gap: 8px; padding: 12px 14px; }
+      .qcard .e { font-size: 38px; }
+      .qcard .text { font-size: 16.5px; }
+      .ach { padding: 12px; } .ach h1 { font-size: 27px; } .ach p { font-size: 16px; }
       .ticket { font-size: 20px; margin-top: 8px; }
-      .stampt b { font-size: 30px; }
+      .stamp-row { gap: 6px 10px; } .stamp-row .stamp { --size: 58px; font-size: 5px; }
+      .stampt b { font-size: 28px; }
+      .btn.again { min-height: 62px; font-size: 22px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -164,14 +170,15 @@
 </head>
 <body>
   <div id="app"></div>
-  <noscript><p style="padding:24px;color:#e8c872">Please turn on JavaScript, or find a volunteer.</p></noscript>
+  <noscript><p style="padding:24px">Please turn on JavaScript, or find a volunteer.</p></noscript>
   <script type="module">
+    import { MISSIONS } from './missions.js';
     import * as P from './passport.js';
 
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const app = document.getElementById('app');
     const store = P.safeStorage();
-    const TILT = [-12, 9, -5, 7, -9, 4];
+    const TILT = [-10, 8, -5, 7, -8, 4];
 
     if (new URLSearchParams(location.search).has('reset')) {
       P.clear(store);
@@ -186,28 +193,27 @@
     const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const persist = () => P.save(store, state);
     const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
-    const visaNo = id => String(state.slots.indexOf(id) + 1).padStart(2, '0');
-    const crest = `<svg class="crest" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor">
-        <circle cx="50" cy="50" r="46" stroke-width="2.5"/><circle cx="50" cy="50" r="40" stroke-width="1" stroke-dasharray="2 3"/>
-        <circle cx="50" cy="50" r="27" stroke-width="3.5"/><ellipse cx="50" cy="50" rx="11" ry="27" stroke-width="3"/>
-        <path d="M23 50h54M27 37h46M27 63h46" stroke-width="2.5"/></svg>`;
+    const slotNo = id => String(state.slots.indexOf(id) + 1).padStart(2, '0');
     const RULES = `<ol class="rules">
         <li><b class="n">1</b><span>Tap a <b class="qm">?</b> in your passport to get a mission.</span></li>
         <li><b class="n">2</b><span>Talk to someone new to complete it, then stamp it.</span></li>
         <li><b class="n">3</b><span>Passport full? Show a volunteer and enter the prize draw 🎁</span></li>
       </ol>`;
-    const bar = (left) => `<div class="bar">${left}<button class="barbtn" id="rulesbtn">📖 Rules</button></div>`;
+    const bar = left => `<div class="bar">${left}<button class="barbtn" id="rulesbtn">📖 Rules</button></div>`;
 
+    // A sticker. Its tilt follows the slot, so it looks the same everywhere it appears.
     function stampHtml(id, cls = '') {
       const m = P.mission(id);
-      const i = P.SLOTS > 0 ? Math.max(0, state.slots.indexOf(id)) : 0;
-      const t = state.stamps[id] ? P.formatTime(state.stamps[id]) : P.formatTime(new Date().toISOString());
-      return `<div class="stamp ${cls}" style="--ink-c:${m.ink};--r:${TILT[i % TILT.length]}deg"><small>ESN BOLOGNA</small><b>${esc(m.stamp)}</b><small>✓ ${t}</small></div>`;
+      const i = Math.max(0, state.slots.indexOf(id));
+      const t = P.formatTime(state.stamps[id] || new Date().toISOString());
+      return `<div class="stamp ${cls}" style="--c:${m.ink};--r:${TILT[i % TILT.length]}deg"><i aria-hidden="true">${m.emoji}</i><b>${esc(m.stamp)}</b><small>✓ ${t}</small></div>`;
     }
 
     function render() {
       stopTimers();
       $('sheet')?.remove();
+      $('fx')?.remove();
+      document.body.classList.remove('shake');
       document.body.classList.toggle('end', view === 'done');
       ({ cover: renderCover, passport: renderPassport, mission: renderMission, done: renderDone })[view]();
       const rb = $('rulesbtn');
@@ -216,34 +222,37 @@
     }
 
     function renderCover() {
+      const deco = MISSIONS.slice(0, 5).map((m, i) =>
+        `<div class="stamp" style="--c:${m.ink};--r:${TILT[i]}deg;left:${4 + i * 19}%;top:${i % 2 ? 14 : 0}px"><i>${m.emoji}</i></div>`).join('');
       app.innerHTML = `<main class="screen cover">
         <p class="kick">ESN BOLOGNA · TANDEM NIGHT</p>
-        ${crest}
-        <h1><small>TANDEM</small>PASSPORT</h1>
+        <h1>TANDEM<br><span>PASSPORT</span> ✈️</h1>
+        <div class="deco" aria-hidden="true">${deco}</div>
         ${RULES}
-        <button class="btn gold" id="open">OPEN MY PASSPORT ▶</button>
+        <button class="btn" id="open">OPEN MY PASSPORT ▶</button>
       </main>`;
       $('open').onclick = () => { view = 'passport'; render(); };
     }
 
     function slotHtml(i) {
       const id = state.slots[i];
-      const no = `<span class="no">VISA ${String(i + 1).padStart(2, '0')}</span>`;
+      const no = `<span class="no">Nº ${String(i + 1).padStart(2, '0')}</span>`;
       if (!id) return `<button class="slot hidden" data-i="${i}" aria-label="Mystery mission ${i + 1}: tap to reveal">${no}<span class="q">?</span><span class="tap">TAP</span></button>`;
       const m = P.mission(id);
       if (P.isStamped(state, id)) return `<button class="slot done ${freshId === id ? 'fresh' : ''}" data-i="${i}" aria-label="${esc(m.title)}: stamped">${stampHtml(id)}</button>`;
-      return `<button class="slot open" data-i="${i}">${no}<span class="e" aria-hidden="true">${m.emoji}</span><b>${esc(m.title)}</b><small>OPEN →</small></button>`;
+      return `<button class="slot open" data-i="${i}" style="--c:${m.ink}">${no}<span class="e" aria-hidden="true">${m.emoji}</span><b>${esc(m.title)}</b><small>OPEN →</small></button>`;
     }
 
     function renderPassport() {
       const n = P.stampCount(state);
       app.innerHTML = `<main class="screen">
-        ${bar('<span class="kick">🛂 TANDEM PASSPORT</span>')}
-        <section class="page paper">
-          <div class="pagehead"><h2>Visas</h2><span class="kick">STAMPS ${n} / ${P.SLOTS}</span></div>
+        ${bar('<span class="kick">ESN · TANDEM NIGHT</span>')}
+        <section class="page">
+          <div class="pagehead"><h2>My Passport ✈️</h2>
+            <div class="dots">${state.slots.map((_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}<span class="kick">STAMPS ${n} / ${P.SLOTS}</span></div></div>
           <div class="slots" id="slots">${state.slots.map((_, i) => slotHtml(i)).join('')}</div>
           ${P.isComplete(state)
-            ? '<button class="btn" id="back-done">🏅 MY COMPLETED PASSPORT</button>'
+            ? '<button class="btn" id="back-done">🏆 MY COMPLETED PASSPORT</button>'
             : `<p class="hint">${state.slots.includes(null) ? 'Tap a <b class="qm">?</b> to get your next mission' : 'Complete your missions to fill the passport'}</p>`}
         </section>
       </main>`;
@@ -264,8 +273,7 @@
       openId = state.slots[i];
       $('slots').dataset.busy = '1';
       el.outerHTML = slotHtml(i);
-      const fresh = $('slots').children[i];
-      fresh.classList.add('flipin');
+      $('slots').children[i].classList.add('flipin');
       timers.push(setTimeout(() => { view = 'mission'; render(); }, reduced ? 0 : 750));
     }
 
@@ -278,13 +286,15 @@
       const saved = m.input && done && state.word ? `<p class="saved">${esc(state.word.word)}${state.word.meaning ? ` · ${esc(state.word.meaning)}` : ''}</p>` : '';
       app.innerHTML = `<main class="screen">
         ${bar('<button class="barbtn" id="back">← Passport</button>')}
-        <section class="mission paper">
-          <p class="no">VISA Nº ${visaNo(m.id)}</p>
-          <div class="e" aria-hidden="true">${m.emoji}</div>
-          <h2>${esc(m.title)}</h2>
-          <p class="text">${esc(m.text)}</p>
-          <div class="starter"><small>💬 TRY ASKING</small><i>"${esc(m.starter)}"</i></div>
-          ${input}${saved}
+        <section class="mission">
+          <div class="qcard" style="--c:${m.ink}">
+            <p class="no">MISSION Nº ${slotNo(m.id)}</p>
+            <div class="e" aria-hidden="true">${m.emoji}</div>
+            <h2>${esc(m.title)}</h2>
+            <p class="text">${esc(m.text)}</p>
+            <div class="starter"><small>💬 TRY ASKING</small><i>"${esc(m.starter)}"</i></div>
+            ${input}${saved}
+          </div>
           ${done ? `<div class="stamped-here">${stampHtml(m.id)}</div>` : '<div class="actions"><button class="btn" id="stamp">STAMP IT ✓</button></div>'}
         </section>
       </main>`;
@@ -313,48 +323,63 @@
       fx.className = 'fx';
       fx.id = 'fx';
       fx.setAttribute('role', 'status');
-      fx.style.setProperty('--ink-c', m.ink);
-      const splats = [[-130, -90, 14], [120, -70, 10], [-110, 100, 9], [135, 85, 16], [10, -150, 7], [-30, 150, 11]]
-        .map(([x, y, s]) => `<i class="splat" style="left:calc(50% + ${x}px);top:calc(45% + ${y}px);width:${s}px;height:${s}px"></i>`).join('');
-      fx.innerHTML = `${splats}${stampHtml(m.id, 'big')}<h2>STAMPED!</h2>`;
+      const colours = MISSIONS.map(x => x.ink);
+      const bits = Array.from({ length: 14 }, (_, k) => {
+        const a = (k / 14) * Math.PI * 2, d = 150 + (k % 3) * 40;
+        return `<i class="bit" style="left:50%;top:45%;background:${colours[k % colours.length]};--x:${Math.round(Math.cos(a) * d)}px;--y:${Math.round(Math.sin(a) * d)}px"></i>`;
+      }).join('');
+      fx.innerHTML = `${bits}${stampHtml(m.id, 'big')}<h2>STAMPED!</h2>`;
       document.body.appendChild(fx);
       document.body.classList.add('shake');
       timers.push(setTimeout(() => { try { navigator.vibrate?.(70); } catch { /* not supported */ } }, 500));
-      timers.push(setTimeout(() => { fx.remove(); document.body.classList.remove('shake'); after(); }, 1700));
+      timers.push(setTimeout(after, 1700));
     }
 
     function renderDone() {
       const w = state.word;
       app.innerHTML = `<main class="screen done">
-        <div class="bar" style="background:transparent;padding:0"><span class="kick">🛂 TANDEM PASSPORT</span><button class="barbtn" id="rulesbtn">📖 Rules</button></div>
-        <section class="ach paper">
-          <div class="medal" aria-hidden="true">🏅</div>
-          <h1>Passport complete!</h1>
+        <div class="bar"><button class="barbtn" id="view">📖 My passport</button><button class="barbtn" id="rulesbtn">📖 Rules</button></div>
+        <section class="ach">
+          <h1>PASSPORT FULL! 🏆</h1>
           <p>Show this screen to a volunteer to enter the prize draw 🎁</p>
           <div class="ticket">DRAW Nº ${P.formatDraw(state.drawNo)}</div>
         </section>
         <div class="stamp-row" aria-hidden="true">${state.slots.map(id => stampHtml(id)).join('')}</div>
         ${w ? `<p class="newword">Your new word: <b>${esc(w.word)}</b>${w.meaning ? ` · ${esc(w.meaning)}` : ''}</p>` : ''}
         <p class="stampt">FINISHED AT<b>${P.formatTime(state.completedAt)}</b></p>
-        <div class="actions"><button class="btn2" id="view">📖 See my passport</button></div>
+        <div class="actions"><button class="btn sun again" id="again">🔁 PLAY AGAIN</button></div>
       </main>`;
       $('view').onclick = () => { view = 'passport'; render(); };
+      $('again').onclick = openAgain;
     }
 
-    function openRules() {
+    function openAgain() {
+      openSheet(`<h2 id="sheet-title">Start a new passport?</h2>
+        <p>This clears your stickers and this screen. <b>Show it to a volunteer first!</b></p>
+        <button class="btn" id="yes">YES, NEW PASSPORT</button>
+        <button class="btn2" id="close">Keep this screen</button>`, 'close');
+      $('yes').onclick = () => { P.clear(store); state = P.fresh(); view = 'cover'; render(); };
+    }
+
+    // Bottom sheet; used for the rules and to confirm a new passport. The element with id closeId closes it.
+    function openSheet(html, closeId) {
       if ($('sheet')) return;
       const opener = document.activeElement;
       const dim = document.createElement('div');
       dim.className = 'dim';
       dim.id = 'sheet';
-      dim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title"><h2 id="sheet-title">How it works</h2>${RULES}<button class="btn gold" id="close">GOT IT</button></div>`;
+      dim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${html}</div>`;
       document.body.appendChild(dim);
       const onKey = e => { if (e.key === 'Escape') close(); };
       const close = () => { dim.remove(); document.removeEventListener('keydown', onKey); if (opener?.isConnected) opener.focus({ preventScroll: true }); };
       document.addEventListener('keydown', onKey);
       dim.onclick = e => { if (e.target === dim) close(); };
-      $('close').onclick = close;
-      $('close').focus({ preventScroll: true });
+      $(closeId).onclick = close;
+      $(closeId).focus({ preventScroll: true });
+    }
+
+    function openRules() {
+      openSheet(`<h2 id="sheet-title">How it works</h2>${RULES}<button class="btn" id="close">GOT IT</button>`, 'close');
     }
 
     render();
