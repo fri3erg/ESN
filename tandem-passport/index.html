@@ -100,6 +100,13 @@
     .field input { font: 21px var(--hand); color: var(--ink); background: #fff; border: 2.5px solid var(--ink); padding: 7px 10px; border-radius: 12px; width: 100%; }
     .field input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255, 93, 115, .25); }
     .mission .actions { margin-top: auto; padding-top: 6px; }
+    /* the card fills the space down to the button; its content sits in the middle, the number stays on top */
+    .mission .qcard { flex: 1; gap: 14px; align-items: center; text-align: center; }
+    .mission .qcard .no { margin-bottom: auto; align-self: flex-start; }
+    .mission .qcard .e { font-size: 58px; width: 112px; height: 112px; border-radius: 50%; border: 4px dashed var(--c); display: grid; place-items: center; }
+    .mission .qcard .starter, .mission .qcard .field { align-self: stretch; text-align: left; }
+    .mission .qcard .starter { text-align: center; }
+    .nexthint { margin: auto 0 0; font: 800 12px var(--mono); letter-spacing: .14em; opacity: .55; }
     .stamped-here { display: flex; justify-content: center; margin: 4px 0; }
     .saved { font: 20px var(--hand); text-align: center; margin: 0; }
 
@@ -158,6 +165,9 @@
       .page .btn { min-height: 54px; font-size: 18px; }
       .qcard { gap: 8px; padding: 12px 14px; }
       .qcard .e { font-size: 38px; }
+      .mission .qcard { gap: 9px; }
+      .mission .qcard .e { font-size: 38px; width: 70px; height: 70px; border-width: 3px; }
+      .mission .qcard:has(.field) .e { display: none; }
       .qcard .text { font-size: 16.5px; }
       .ach { padding: 12px; } .ach h1 { font-size: 27px; } .ach p { font-size: 16px; }
       .ticket { font-size: 20px; margin-top: 8px; }
@@ -312,6 +322,7 @@
             <p class="text">${esc(m.text)}</p>
             <div class="starter"><small>💬 TRY ASKING</small><i>"${esc(m.starter)}"</i></div>
             ${input}${saved}
+            <p class="nexthint">${done ? 'STICKER COLLECTED ✓' : 'DONE? STAMP IT BELOW 👇'}</p>
           </div>
           ${done ? `<div class="stamped-here">${stampHtml(m.id)}</div>` : '<div class="actions"><button class="btn" id="stamp">STAMP IT ✓</button></div>'}
         </section>
