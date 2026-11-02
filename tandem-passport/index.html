@@ -55,7 +55,6 @@
     .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
     .rules li { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 16px; padding: 13px 14px; font-weight: 750; font-size: 17.5px; line-height: 1.3; box-shadow: 0 4px 0 rgba(43, 29, 14, .18); }
     .rules b.n { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--pink); color: #fff; display: grid; place-items: center; font-size: 18px; }
-    .qm { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 7px; border: 2.5px dashed var(--edge); background: var(--cream); color: #8a6d1d; font-weight: 900; font-size: .95em; vertical-align: -.15em; }
     .cover .btn { margin-top: auto; }
     .cover .field input { font: 800 20px var(--sans); }
 
@@ -211,7 +210,7 @@
     const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
     const slotNo = id => String(state.slots.indexOf(id) + 1).padStart(2, '0');
     const RULES = `<ol class="rules">
-        <li><b class="n">1</b><span>Tap a <b class="qm">?</b> in your passport to get a mission.</span></li>
+        <li><b class="n">1</b><span>Tap a "?" in your passport to get a mission.</span></li>
         <li><b class="n">2</b><span>Talk to someone new to complete it, then stamp it.</span></li>
         <li><b class="n">3</b><span>Passport full? Show a volunteer and enter the prize draw 🎁</span></li>
       </ol>`;
@@ -281,7 +280,7 @@
           <div class="slots" id="slots">${state.slots.map((_, i) => slotHtml(i)).join('')}</div>
           ${P.isComplete(state)
             ? '<button class="btn" id="back-done">🏆 MY COMPLETED PASSPORT</button>'
-            : `<p class="hint">${state.slots.includes(null) ? 'Tap a <b class="qm">?</b> to get your next mission' : 'Complete your missions to fill the passport'}</p>`}
+            : `<p class="hint">${state.slots.includes(null) ? 'Tap a "?" to get your next mission' : 'Complete your missions to fill the passport'}</p>`}
         </section>
       </main>`;
       freshId = null;
