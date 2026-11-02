@@ -12,7 +12,7 @@ Live: https://esn-tandem-passport.vercel.app
 ## Editing the missions
 
 All the missions are in [`missions.js`](missions.js): title, emoji, text, conversation starter, the text and colour of the sticker.
-`input: true` makes the mission ask for what they learned (Word Exchange: the word and its meaning) before it can be stamped.
+`fields` is what they write down before stamping (the dish, the country, the phrase…): the first one is required to unlock STAMP IT, the others are optional. The answers stay in the passport and show again when the stamped mission is opened.
 
 ## Print
 

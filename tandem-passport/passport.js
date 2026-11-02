@@ -1,11 +1,12 @@
 // Tandem Passport state: pure functions over a small JSON object kept in localStorage.
-// state = { name, slots: [missionId|null x SLOTS], stamps: { missionId: iso }, word: {word, meaning}|null,
+// state = { name, slots: [missionId|null x SLOTS], stamps: { missionId: iso }, notes: { missionId: { fieldKey: text } },
 //           completedAt: iso|null, drawNo: int|null, sent: bool (the finish reached the organisers' Telegram) }
 import { MISSIONS } from './missions.js';
 
 export const KEY = 'tandempassport.v1';
 export const SLOTS = MISSIONS.length;
 export const NAME_MAX = 40;
+export const NOTE_MAX = 60;
 const IDS = MISSIONS.map(m => m.id);
 
 export function mission(id) {
@@ -25,13 +26,15 @@ export function secureRandomInt(n) {
 }
 
 export function fresh() {
-  return { name: '', slots: Array(SLOTS).fill(null), stamps: {}, word: null, completedAt: null, drawNo: null, sent: false };
+  return { name: '', slots: Array(SLOTS).fill(null), stamps: {}, notes: {}, completedAt: null, drawNo: null, sent: false };
 }
 
-// The name goes to the prize draw: control characters out, spaces squashed, capped.
+// Typed text: control characters out, spaces squashed, capped.
+const cleanText = (v, max) => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max).trim();
+
+// The name goes to the prize draw.
 export function setName(state, name) {
-  const clean = String(name ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX).trim();
-  return { ...state, name: clean };
+  return { ...state, name: cleanText(name, NAME_MAX) };
 }
 export const hasName = state => state.name.length > 0;
 
@@ -55,17 +58,14 @@ export const isStamped = (state, id) => !!state.stamps[id];
 export const stampCount = state => Object.keys(state.stamps).length;
 export const isComplete = state => stampCount(state) === SLOTS;
 
-// note: { word, meaning } for the mission with input: true (the word is required).
-export function stamp(state, id, now = new Date(), rng = secureRandomInt, note) {
+// answers: { fieldKey: text } for the mission's fields; a required one left blank means no stamp.
+export function stamp(state, id, now = new Date(), rng = secureRandomInt, answers) {
   const m = mission(id);
   if (!m || !state.slots.includes(id) || isStamped(state, id)) return state;
-  let word = state.word;
-  if (m.input) {
-    const w = String(note?.word ?? '').trim();
-    if (!w) return state;
-    word = { word: w, meaning: String(note?.meaning ?? '').trim() };
-  }
-  const next = { ...state, word, stamps: { ...state.stamps, [id]: now.toISOString() } };
+  const saved = Object.fromEntries((m.fields || []).map(f => [f.key, cleanText(answers?.[f.key], NOTE_MAX)]));
+  if ((m.fields || []).some(f => f.required && !saved[f.key])) return state;
+  const notes = m.fields?.length ? { ...state.notes, [id]: saved } : state.notes;
+  const next = { ...state, notes, stamps: { ...state.stamps, [id]: now.toISOString() } };
   if (isComplete(next)) {
     next.completedAt = now.toISOString();
     next.drawNo = 1000 + rng(9000);
@@ -83,7 +83,9 @@ export function isValid(s) {
   if (!shown.every(id => IDS.includes(id)) || new Set(shown).size !== shown.length) return false;
   if (!s.stamps || typeof s.stamps !== 'object' || Array.isArray(s.stamps)) return false;
   if (!Object.entries(s.stamps).every(([id, t]) => shown.includes(id) && isIso(t))) return false;
-  if (s.word !== null && !(s.word && typeof s.word.word === 'string' && typeof s.word.meaning === 'string')) return false;
+  if (!s.notes || typeof s.notes !== 'object' || Array.isArray(s.notes)) return false;
+  const okNote = n => n && typeof n === 'object' && !Array.isArray(n) && Object.values(n).every(v => typeof v === 'string' && v.length <= NOTE_MAX);
+  if (!Object.entries(s.notes).every(([id, n]) => s.stamps[id] && okNote(n))) return false;
   if (isComplete(s)) return isIso(s.completedAt) && Number.isInteger(s.drawNo) && s.drawNo >= 1000 && s.drawNo <= 9999;
   return s.completedAt === null && s.drawNo === null;
 }
@@ -109,11 +111,18 @@ export function safeStorage() {
   }
 }
 
+// Passports saved before every mission had fields kept only the Word Exchange answer, as `word`.
+function upgrade(s) {
+  if (!s || typeof s !== 'object' || Array.isArray(s) || 'notes' in s || !('word' in s)) return s;
+  const { word, ...rest } = s;
+  return { ...rest, notes: word && typeof word === 'object' ? { word: { word: word.word, meaning: word.meaning } } : {} };
+}
+
 export function load(storage) {
   try {
     const raw = storage.getItem(KEY);
     if (!raw) return null;
-    const s = JSON.parse(raw);
+    const s = upgrade(JSON.parse(raw));
     return isValid(s) ? s : null;
   } catch {
     return null;

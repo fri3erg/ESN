@@ -11,6 +11,15 @@ test('every mission is complete and ids are unique', () => {
   }
 });
 
+test('every mission asks for at least one answer, the first one required', () => {
+  for (const m of MISSIONS) {
+    assert.ok(Array.isArray(m.fields) && m.fields.length >= 1, m.id);
+    assert.equal(m.fields[0].required, true, `${m.id}: first field must be required`);
+    assert.equal(new Set(m.fields.map(f => f.key)).size, m.fields.length, `${m.id}: duplicate field key`);
+    for (const f of m.fields) assert.ok(/^[a-z]+$/.test(f.key) && typeof f.label === 'string' && f.label.trim(), `${m.id}.${f.key}`);
+  }
+});
+
 test('no wording promises candy', () => {
   assert.ok(!JSON.stringify(MISSIONS).toLowerCase().includes('candy'));
 });

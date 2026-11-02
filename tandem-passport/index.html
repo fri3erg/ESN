@@ -307,10 +307,11 @@
     function renderMission() {
       const m = P.mission(openId);
       const done = P.isStamped(state, m.id);
-      const input = m.input && !done ? `
-        <label class="field"><span>THEIR WORD</span><input id="w-word" autocomplete="off" maxlength="40" enterkeyhint="next"></label>
-        <label class="field"><span>WHAT IT MEANS (OPTIONAL)</span><input id="w-meaning" autocomplete="off" maxlength="60" enterkeyhint="done"></label>` : '';
-      const saved = m.input && done && state.word ? `<p class="saved">${esc(state.word.word)}${state.word.meaning ? ` · ${esc(state.word.meaning)}` : ''}</p>` : '';
+      const fields = m.fields || [];
+      const input = done ? '' : fields.map((f, i) => `
+        <label class="field"><span>${esc(f.label)}</span><input data-k="${f.key}" autocomplete="off" maxlength="${P.NOTE_MAX}" enterkeyhint="${i < fields.length - 1 ? 'next' : 'done'}"></label>`).join('');
+      const answers = Object.values(state.notes[m.id] || {}).filter(Boolean);
+      const saved = done && answers.length ? `<p class="saved">${answers.map(esc).join(' · ')}</p>` : '';
       app.innerHTML = `<main class="screen">
         ${bar('<button class="barbtn" id="back">← Passport</button>')}
         <section class="mission">
@@ -329,19 +330,23 @@
       $('back').onclick = () => { view = 'passport'; render(); };
       if (done) return;
       const btn = $('stamp');
-      if (m.input) {
-        const w = $('w-word');
-        const sync = () => { btn.disabled = !w.value.trim(); };
-        w.oninput = sync; sync();
-        w.onkeydown = e => { if (e.key === 'Enter') $('w-meaning').focus(); };
-      }
+      const inputs = [...app.querySelectorAll('.field input')];
+      const sync = () => { btn.disabled = fields.some((f, i) => f.required && !inputs[i].value.trim()); };
+      inputs.forEach((el, i) => {
+        el.oninput = sync;
+        el.onkeydown = e => {
+          if (e.key !== 'Enter') return;
+          if (inputs[i + 1]) inputs[i + 1].focus(); else el.blur();   // last field: close the keyboard, the button is right there
+        };
+      });
+      sync();
       btn.onclick = () => doStamp(m);
     }
 
     function doStamp(m) {
-      const note = m.input ? { word: $('w-word').value, meaning: $('w-meaning').value } : undefined;
+      const answers = Object.fromEntries([...app.querySelectorAll('.field input')].map(el => [el.dataset.k, el.value]));
       const before = state;
-      state = P.stamp(state, m.id, new Date(), P.secureRandomInt, note);
+      state = P.stamp(state, m.id, new Date(), P.secureRandomInt, answers);
       if (state === before) return;
       persist();
       document.activeElement?.blur();
@@ -364,7 +369,7 @@
     }
 
     function renderDone() {
-      const w = state.word;
+      const w = state.notes.word;
       app.innerHTML = `<main class="screen done">
         <div class="bar"><button class="barbtn" id="view">📖 My passport</button><button class="barbtn" id="rulesbtn">📖 Rules</button></div>
         <section class="ach">

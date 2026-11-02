@@ -13,7 +13,9 @@ Changes from the brief, agreed with the organisers:
 2. **Passport page**: 6 slots, each a "?" until tapped. Tapping one flips it and puts a random mission that isn't in the passport yet behind it.
    Revealed-but-not-done slots show the mission in its colour and wiggle; done ones show the round sticker.
 3. **Mission**: mission number, emoji, title, what to do, "Try asking" conversation starter, big "STAMP IT ✓".
-   Word Exchange also asks for the word they learned (required) and its meaning (optional), shown again at the end.
+   Every mission asks them to write down what they got from the conversation: one required answer (the word, the dish, the country,
+   the tradition, what you have in common, the phrase) and one optional (meaning, where, tip, origin, their name). STAMP IT unlocks
+   with the required one; the answers show again on the stamped mission, and the Word Exchange word on the finish screen.
 4. **Stamp**: the mission sticker slaps down full screen with a shake and confetti bits (~1.7 s), then back to the passport with the sticker in its slot.
 5. **Complete** (after the last stamp): "Passport complete! Show this screen to a volunteer to enter the prize draw", a 4-digit draw number,
    the six stickers, the saved word, "FINISHED AT HH:MM"; drifting background and a light sweep so a screenshot looks dead.

@@ -6,12 +6,14 @@ import { MISSIONS } from '../missions.js';
 const first = () => 0;
 const T = new Date(2026, 10, 5, 22, 41, 7);
 const reveal = (s, slot) => P.reveal(s, slot, first);
+// Answers for every field of a mission.
+const fill = (m, v = 'x') => Object.fromEntries(m.fields.map(f => [f.key, v]));
 const stampAll = (rng = P.secureRandomInt) => {
   let s = P.fresh();
   for (let i = 0; i < P.SLOTS; i++) {
     s = P.reveal(s, i, rng);
     const m = P.mission(s.slots[i]);
-    s = P.stamp(s, m.id, T, rng, m.input ? { word: 'gezellig', meaning: 'cosy' } : undefined);
+    s = P.stamp(s, m.id, T, rng, fill(m, 'gezellig'));
   }
   return s;
 };
@@ -48,7 +50,7 @@ test('stamp marks the mission with the time; twice keeps the first time', () => 
   let s = reveal(P.fresh(), 0);
   const id = s.slots[0];
   const m = P.mission(id);
-  s = P.stamp(s, id, T, first, m.input ? { word: 'x', meaning: '' } : undefined);
+  s = P.stamp(s, id, T, first, fill(m));
   assert.equal(s.stamps[id], T.toISOString());
   assert.equal(P.stampCount(s), 1);
   assert.deepEqual(P.stamp(s, id, new Date(2026, 10, 5, 23, 0)), s);
@@ -60,15 +62,39 @@ test('cannot stamp a mission that is not revealed yet', () => {
   assert.deepEqual(P.stamp(s, 'nope', T), s);
 });
 
-test('Word Exchange needs the word before it can be stamped, and saves it', () => {
+test('every mission needs its main answer before it can be stamped, and saves the answers', () => {
   let s = P.fresh();
-  let i = 0;
-  while (s.slots.indexOf('word') === -1) s = P.reveal(s, i++);
-  assert.deepEqual(P.stamp(s, 'word', T), s);
-  assert.deepEqual(P.stamp(s, 'word', T, first, { word: '   ', meaning: 'x' }), s);
-  s = P.stamp(s, 'word', T, first, { word: ' gezellig ', meaning: ' cosy, nice together ' });
-  assert.deepEqual(s.word, { word: 'gezellig', meaning: 'cosy, nice together' });
-  assert.ok(s.stamps.word);
+  for (let i = 0; i < P.SLOTS; i++) s = reveal(s, i);
+  for (const m of MISSIONS) {
+    const [main, ...rest] = m.fields;
+    assert.deepEqual(P.stamp(s, m.id, T), s, `${m.id}: no answers`);
+    assert.deepEqual(P.stamp(s, m.id, T, first, { ...fill(m), [main.key]: '   ' }), s, `${m.id}: blank main answer`);
+    const answers = { [main.key]: '  gezellig  ' };
+    if (rest[0]) answers[rest[0].key] = ' cosy,\n nice ';
+    s = P.stamp(s, m.id, T, first, answers);
+    assert.ok(s.stamps[m.id], m.id);
+    const want = Object.fromEntries(m.fields.map(f => [f.key, '']));
+    want[main.key] = 'gezellig';
+    if (rest[0]) want[rest[0].key] = 'cosy, nice';
+    assert.deepEqual(s.notes[m.id], want, m.id);
+  }
+});
+
+test('answers are capped', () => {
+  let s = reveal(P.fresh(), 0);
+  const m = P.mission(s.slots[0]);
+  s = P.stamp(s, m.id, T, first, fill(m, 'y'.repeat(300)));
+  assert.equal(s.notes[m.id][m.fields[0].key].length, P.NOTE_MAX);
+});
+
+test('a passport saved by the old version (one word field) still loads', () => {
+  const st = P.memoryStorage();
+  const { notes, ...old } = stampAll();
+  st.setItem(P.KEY, JSON.stringify({ ...old, word: { word: 'gezellig', meaning: 'cosy' } }));
+  const s = P.load(st);
+  assert.ok(s);
+  assert.deepEqual(s.notes, { word: { word: 'gezellig', meaning: 'cosy' } });
+  assert.equal('word' in s, false);
 });
 
 test('the last stamp completes the passport with a time and a draw number', () => {
@@ -76,7 +102,7 @@ test('the last stamp completes the passport with a time and a draw number', () =
   assert.equal(P.isComplete(s), true);
   assert.equal(s.completedAt, T.toISOString());
   assert.ok(Number.isInteger(s.drawNo) && s.drawNo >= 1000 && s.drawNo <= 9999, String(s.drawNo));
-  const s5 = (() => { let x = P.fresh(); for (let i = 0; i < 5; i++) { x = reveal(x, i); const m = P.mission(x.slots[i]); x = P.stamp(x, m.id, T, first, m.input ? { word: 'a', meaning: '' } : undefined); } return x; })();
+  const s5 = (() => { let x = P.fresh(); for (let i = 0; i < 5; i++) { x = reveal(x, i); const m = P.mission(x.slots[i]); x = P.stamp(x, m.id, T, first, fill(m, 'a')); } return x; })();
   assert.equal(P.isComplete(s5), false);
   assert.equal(s5.completedAt, null);
   assert.equal(s5.drawNo, null);
@@ -136,6 +162,9 @@ test('load treats corrupt or outdated data as no passport', () => {
     JSON.stringify({ ...good, drawNo: 12 }),
     JSON.stringify({ ...good, completedAt: null }),
     JSON.stringify({ ...good, name: 42 }),
+    JSON.stringify({ ...good, notes: null }),
+    JSON.stringify({ ...P.fresh(), notes: { bologna: { dish: 'x' } } }),                        // notes for a mission not stamped
+    JSON.stringify({ ...good, notes: { ...good.notes, word: { word: 42 } } }),
     JSON.stringify({ ...good, sent: 'yes' }),
   ];
   for (const raw of bad) { st.setItem(P.KEY, raw); assert.equal(P.load(st), null, raw); }
