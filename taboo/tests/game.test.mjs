@@ -151,7 +151,7 @@ test('safeStorage falls back to memory when localStorage is missing', () => {
 });
 
 test('card looks a word up', () => {
-  assert.deepEqual(G.card('Owl').taboo, ['night', 'bird', 'wise', 'hoot']);
+  assert.deepEqual(G.card('Owl').taboo, ['Hoot', 'Wisdom', 'Night', 'Feathers']);
   assert.equal(G.card('Unicorn'), null);
 });
 
