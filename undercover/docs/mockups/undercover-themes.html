@@ -20,169 +20,180 @@
   .scr { height: 100%; display: flex; flex-direction: column; font-size: 13px; position: relative; overflow: hidden; }
   footer { color: #666; font-size: 14px; padding-bottom: 30px; }
   .links { display: flex; justify-content: space-between; white-space: nowrap; padding: 0 14px 12px; font-size: 10px; font-weight: 700; }
+  .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 14px; }
+  .tick { white-space: nowrap; }
 
-  /* ---------- A: spy dossier ---------- */
-  .A { background: #d9b779; color: #2a1e10; font-family: "Courier New", ui-monospace, Consolas, monospace;
-       background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 2px, transparent 2px 5px); }
-  .A .tab { margin: 14px 14px 0; width: 120px; background: #c9a463; border-radius: 8px 8px 0 0; padding: 5px 10px; font-weight: 700; font-size: 10px; letter-spacing: .2em; }
-  .A .file { margin: 0 14px; background: #f3ead6; border-radius: 0 8px 8px 8px; padding: 14px 12px; box-shadow: 0 4px 10px rgba(0,0,0,.18); position: relative; }
-  .A h1 { margin: 0; font: 900 34px/1 "Courier New", monospace; letter-spacing: .04em; }
-  .A .sub { font-size: 11px; letter-spacing: .14em; margin-top: 4px; }
-  .A .stampR { position: absolute; right: 6px; top: 46px; transform: rotate(12deg); border: 3px solid #c0262d; color: #c0262d; font-weight: 900; font-size: 11px; padding: 3px 6px; letter-spacing: .12em; opacity: .85; }
-  .A ol { margin: 12px 0 0; padding-left: 18px; font-size: 11.5px; line-height: 1.45; }
-  .A .lbl { font-size: 10px; letter-spacing: .2em; font-weight: 700; margin: 14px 14px 4px; }
-  .A .numin { margin: 0 14px; background: #f3ead6; border: 2px solid #2a1e10; border-radius: 6px; padding: 8px; font: 900 34px "Courier New", monospace; text-align: center; letter-spacing: .1em; }
-  .A .btn { margin: auto 14px 14px; background: #2a1e10; color: #f3ead6; border-radius: 8px; text-align: center; padding: 13px; font-weight: 900; letter-spacing: .14em; box-shadow: 0 5px 0 #0f0a05; }
-  .A .top { display: flex; justify-content: space-between; padding: 12px 14px 0; font-size: 10px; font-weight: 700; letter-spacing: .14em; }
-  .A .photo { width: 112px; height: 128px; margin: 0 auto; background: #fff; padding: 7px 7px 22px; box-shadow: 0 4px 10px rgba(0,0,0,.25); transform: rotate(-4deg); position: relative; }
-  .A .photo div { height: 100%; background: #3b3328; color: #f3ead6; display: grid; place-items: center; font-size: 52px; }
-  .A .photo b { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 13px; }
-  .A .tgt { font: 900 50px/1 "Courier New", monospace; text-align: center; margin-top: 8px; }
-  .A .mis { margin: 10px 14px 0; background: #f3ead6; border-left: 5px solid #c0262d; padding: 9px 10px; }
-  .A .mis small { display: block; font-size: 9.5px; letter-spacing: .18em; font-weight: 700; color: #7a5a2a; }
-  .A .mis b { font-size: 26px; letter-spacing: .06em; }
-  .A.kill { background: #2a1e10; color: #f3ead6; }
-  .A .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 14px; }
-  .A .xstamp { border: 5px solid #e0453c; color: #e0453c; font: 900 30px "Courier New", monospace; letter-spacing: .1em; padding: 6px 12px; transform: rotate(-10deg); }
-  .A .count { font: 900 70px/1 "Courier New", monospace; color: #e7c27c; }
-  .A .tick { white-space: nowrap; font-size: 11.5px !important; border: 2px dashed #e7c27c; color: #e7c27c; padding: 5px 10px; font-weight: 900; letter-spacing: .1em; }
+  /* ---------- A: masquerade ---------- */
+  .A { background: radial-gradient(circle at 50% -10%, #5b2a86, #22103a 55%, #120820); color: #f6e7c1; }
+  .A .mask { font-size: 54px; text-align: center; margin-top: 18px; filter: drop-shadow(0 0 14px rgba(233,196,106,.5)); }
+  .A h1 { margin: 8px 0 0; text-align: center; font: 700 28px/1 Georgia, "Times New Roman", serif; letter-spacing: .08em; color: #e9c46a; }
+  .A .sub { text-align: center; font: italic 13px Georgia, serif; color: #d9c6f0; margin-top: 4px; }
+  .A .rules { margin: 14px 16px 0; display: grid; gap: 7px; }
+  .A .rule { display: flex; gap: 9px; align-items: flex-start; font-size: 11.5px; line-height: 1.35; }
+  .A .rule i { font: italic 700 15px Georgia, serif; color: #e9c46a; min-width: 14px; }
+  .A .numin { margin: 14px 16px 0; border: 1.5px solid #e9c46a; border-radius: 999px; padding: 6px; text-align: center; font: 700 28px Georgia, serif; color: #fff; background: rgba(233,196,106,.08); }
+  .A .numin small { display: block; font: 700 8.5px system-ui, sans-serif; letter-spacing: .22em; color: #e9c46a; }
+  .A .btn { margin: auto 16px 14px; background: linear-gradient(180deg, #f3d68a, #c99a3a); color: #22103a; border-radius: 999px; text-align: center; padding: 13px; font-weight: 900; letter-spacing: .14em; box-shadow: 0 5px 0 #7d5a17; }
+  .A .top { display: flex; justify-content: space-between; padding: 14px 16px 0; font-size: 10px; font-weight: 800; letter-spacing: .16em; color: #d9c6f0; }
+  .A .masked { margin: 16px auto 0; width: 190px; height: 110px; border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%; background: linear-gradient(135deg, #e9c46a, #b98a2e); display: grid; place-items: center; position: relative; box-shadow: 0 0 26px rgba(233,196,106,.35); }
+  .A .masked::before, .A .masked::after { content: ""; position: absolute; top: 30px; width: 46px; height: 24px; border-radius: 50%; background: #22103a; }
+  .A .masked::before { left: 30px; } .A .masked::after { right: 30px; }
+  .A .masked b { position: absolute; bottom: 8px; font: 700 30px Georgia, serif; color: #22103a; }
+  .A .masked.mini { width: 104px; height: 60px; margin-top: 22px; }
+  .A .masked.mini::before, .A .masked.mini::after { top: 16px; width: 26px; height: 14px; }
+  .A .masked.mini::before { left: 16px; } .A .masked.mini::after { right: 16px; }
+  .A .lbl { text-align: center; font-size: 9.5px; letter-spacing: .24em; font-weight: 800; color: #e9c46a; margin-top: 10px; }
+  .A .mis { margin: 14px 16px 0; border-top: 1px solid rgba(233,196,106,.45); border-bottom: 1px solid rgba(233,196,106,.45); padding: 10px 4px; text-align: center; }
+  .A .mis small { display: block; font-size: 9px; letter-spacing: .22em; font-weight: 800; color: #e9c46a; }
+  .A .mis b { font: 700 26px Georgia, serif; color: #fff; }
+  .A .hint { margin: 10px 18px 0; text-align: center; font: italic 11.5px/1.4 Georgia, serif; color: #d9c6f0; }
+  .A .links { color: #d9c6f0; }
+  .A .crack { font: 700 32px Georgia, serif; letter-spacing: .12em; color: #e9c46a; }
+  .A .count { font: 700 76px/1 Georgia, serif; color: #fff; text-shadow: 0 0 22px rgba(233,196,106,.6); }
+  .A .tick { border: 1.5px solid #e9c46a; color: #e9c46a; border-radius: 999px; padding: 5px 12px; font-weight: 800; font-size: 11.5px; letter-spacing: .1em; }
 
-  /* ---------- B: neon night ---------- */
-  .B { background: radial-gradient(circle at 50% 0%, #2a0d3d, #0b0710 65%); color: #f2ecff; }
-  .B .pill { margin: 16px 14px 0; align-self: flex-start; border: 1.5px solid #39ff88; color: #39ff88; border-radius: 999px; font: 800 9px ui-monospace, Consolas, monospace; letter-spacing: .2em; padding: 4px 9px; }
-  .B h1 { margin: 10px 14px 0; font-size: 40px; line-height: .95; font-weight: 900; letter-spacing: .02em; color: #ff2fb0; text-shadow: 0 0 12px rgba(255,47,176,.7); }
-  .B .sub { margin: 4px 14px 0; font-weight: 800; letter-spacing: .24em; font-size: 10px; color: #b9a8d8; }
+  /* ---------- B: night vision ---------- */
+  .B { background: #031a0c; color: #8dffb0; font-family: ui-monospace, Consolas, "Courier New", monospace;
+       background-image: repeating-linear-gradient(0deg, rgba(141,255,176,.05) 0 1px, transparent 1px 3px), radial-gradient(circle at 50% 40%, #0b4a24, #031a0c 70%); }
+  .B .hud { margin: 14px 14px 0; display: flex; justify-content: space-between; font-size: 9.5px; letter-spacing: .14em; opacity: .85; }
+  .B .rec::before { content: "● "; color: #ff4d4d; }
+  .B h1 { margin: 24px 14px 0; font-size: 40px; line-height: .95; font-weight: 900; letter-spacing: .04em; text-shadow: 0 0 12px rgba(141,255,176,.7); }
+  .B .sub { margin: 6px 14px 0; font-size: 10px; letter-spacing: .3em; opacity: .8; }
   .B .rules { margin: 14px 14px 0; display: grid; gap: 6px; }
-  .B .rule { display: flex; gap: 8px; align-items: flex-start; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 7px 9px; font-size: 11.5px; line-height: 1.35; }
-  .B .rule i { font-style: normal; color: #0b0710; background: #39ff88; border-radius: 6px; font-weight: 900; min-width: 20px; height: 20px; display: grid; place-items: center; }
-  .B .numin { margin: 12px 14px 0; border: 2px solid #ff2fb0; border-radius: 12px; padding: 6px; text-align: center; font: 900 30px ui-monospace, Consolas, monospace; box-shadow: 0 0 14px rgba(255,47,176,.45); }
-  .B .numin small { display: block; font-size: 9px; letter-spacing: .2em; color: #b9a8d8; }
-  .B .btn { margin: auto 14px 14px; background: #39ff88; color: #0b0710; border-radius: 14px; text-align: center; padding: 13px; font-weight: 900; font-size: 15px; letter-spacing: .08em; box-shadow: 0 5px 0 #17a352, 0 0 18px rgba(57,255,136,.4); }
-  .B .top { display: flex; justify-content: space-between; padding: 14px 14px 0; font: 800 10px ui-monospace, Consolas, monospace; letter-spacing: .16em; color: #b9a8d8; }
-  .B .scope { width: 150px; height: 150px; margin: 14px auto 0; border-radius: 50%; border: 2px solid #ff2fb0; box-shadow: 0 0 20px rgba(255,47,176,.5), inset 0 0 20px rgba(255,47,176,.25); display: grid; place-items: center; position: relative; }
-  .B .scope::before, .B .scope::after { content: ""; position: absolute; background: rgba(255,47,176,.55); }
-  .B .scope::before { left: 50%; top: -8px; bottom: -8px; width: 2px; }
-  .B .scope::after { top: 50%; left: -8px; right: -8px; height: 2px; }
-  .B .scope b { font-size: 58px; font-weight: 900; z-index: 1; background: #0b0710; padding: 0 6px; text-shadow: 0 0 10px #fff; }
-  .B .mis { margin: 16px 14px 0; border-radius: 14px; padding: 10px 12px; background: rgba(57,255,136,.1); border: 1.5px solid #39ff88; }
-  .B .mis small { display: block; font: 800 9px ui-monospace, Consolas, monospace; letter-spacing: .2em; color: #39ff88; }
-  .B .mis b { font-size: 28px; letter-spacing: .04em; }
-  .B .links { color: #b9a8d8; }
-  .B.kill { background: radial-gradient(circle at 50% 40%, #ff2fb0, #4a0b45 55%, #0b0710); }
-  .B .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 14px; }
-  .B .big h3 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; text-shadow: 0 0 16px #fff; }
-  .B .count { font-size: 76px; font-weight: 900; line-height: 1; color: #39ff88; text-shadow: 0 0 18px rgba(57,255,136,.8); }
-  .B .tick { white-space: nowrap; font-size: 11.5px !important; background: #0b0710; border: 1.5px solid #39ff88; color: #39ff88; border-radius: 10px; padding: 5px 12px; font: 900 17px ui-monospace, Consolas, monospace; letter-spacing: .12em; }
+  .B .rule { font-size: 11px; line-height: 1.4; border-left: 2px solid #8dffb0; padding: 2px 0 2px 8px; }
+  .B .rule i { font-style: normal; font-weight: 900; }
+  .B .numin { margin: 12px 14px 0; border: 1.5px solid #8dffb0; padding: 6px; text-align: center; font-size: 28px; font-weight: 900; }
+  .B .numin small { display: block; font-size: 8.5px; letter-spacing: .24em; opacity: .8; }
+  .B .btn { margin: auto 14px 14px; background: #8dffb0; color: #031a0c; text-align: center; padding: 13px; font-weight: 900; letter-spacing: .16em; box-shadow: 0 5px 0 #2f9a55, 0 0 18px rgba(141,255,176,.35); border-radius: 6px; }
+  .B .lock { margin: 18px auto 0; width: 160px; height: 150px; position: relative; display: grid; place-items: center; }
+  .B .lock i { position: absolute; width: 28px; height: 28px; border-color: #8dffb0; border-style: solid; }
+  .B .lock i:nth-child(1) { top: 0; left: 0; border-width: 3px 0 0 3px; }
+  .B .lock i:nth-child(2) { top: 0; right: 0; border-width: 3px 3px 0 0; }
+  .B .lock i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+  .B .lock i:nth-child(4) { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+  .B .lock b { font-size: 62px; font-weight: 900; text-shadow: 0 0 16px rgba(141,255,176,.8); }
+  .B .lock small { position: absolute; bottom: 8px; font-size: 9px; letter-spacing: .24em; }
+  .B .mis { margin: 14px 14px 0; background: rgba(141,255,176,.1); border: 1px solid rgba(141,255,176,.5); padding: 9px 11px; border-radius: 4px; }
+  .B .mis small { display: block; font-size: 9px; letter-spacing: .22em; opacity: .85; }
+  .B .mis b { font-size: 21px; color: #eafff0; }
+  .B .hint { margin: 8px 14px 0; font-size: 10.5px; line-height: 1.45; opacity: .8; }
+  .B.kill { background-color: #062b14; }
+  .B .ok { font-size: 26px; font-weight: 900; letter-spacing: .1em; border: 3px solid #8dffb0; padding: 8px 14px; text-shadow: 0 0 12px rgba(141,255,176,.8); }
+  .B .count { font-size: 80px; font-weight: 900; line-height: 1; text-shadow: 0 0 22px rgba(141,255,176,.8); }
+  .B .tick { border: 1px dashed #8dffb0; padding: 5px 10px; font-size: 11px; letter-spacing: .1em; font-weight: 800; }
 
-  /* ---------- C: pop wanted poster ---------- */
-  .C { background: #ffd23f; color: #141414;
-       background-image: radial-gradient(rgba(0,0,0,.09) 1.2px, transparent 1.4px); background-size: 9px 9px; }
-  .C .hd { margin: 14px 12px 0; background: #ef3e36; color: #fff; border: 3px solid #141414; border-radius: 14px; padding: 10px 12px; box-shadow: 5px 5px 0 #141414; transform: rotate(-1.5deg); }
-  .C .hd small { font-weight: 900; font-size: 9px; letter-spacing: .2em; }
-  .C .hd b { display: block; font-size: 29px; font-weight: 900; line-height: 1; letter-spacing: .02em; }
-  .C .hd span { font-weight: 800; font-size: 11px; }
-  .C .rules { margin: 14px 12px 0; display: grid; gap: 6px; }
-  .C .rule { background: #fff; border: 2.5px solid #141414; border-radius: 12px; padding: 6px 9px; font-size: 11.5px; font-weight: 600; line-height: 1.3; display: flex; gap: 8px; box-shadow: 3px 3px 0 #141414; }
-  .C .rule i { font-style: normal; background: #2b59c3; color: #fff; border-radius: 50%; min-width: 20px; height: 20px; display: grid; place-items: center; font-weight: 900; }
-  .C .numin { margin: 12px 12px 0; background: #fff; border: 3px solid #141414; border-radius: 12px; padding: 4px; text-align: center; font-size: 30px; font-weight: 900; }
-  .C .numin small { display: block; font-size: 9px; letter-spacing: .18em; }
-  .C .btn { margin: auto 12px 14px; background: #2b59c3; color: #fff; border: 3px solid #141414; border-radius: 14px; text-align: center; padding: 12px; font-weight: 900; font-size: 16px; letter-spacing: .06em; box-shadow: 0 6px 0 #141414; }
-  .C .top { display: flex; justify-content: space-between; padding: 12px 12px 0; font-weight: 900; font-size: 11px; }
-  .C .poster { margin: 10px 18px 0; background: #fff6dc; border: 3px solid #141414; padding: 8px 10px 10px; text-align: center; transform: rotate(1.5deg); box-shadow: 5px 5px 0 #141414; }
-  .C .poster small { font-weight: 900; letter-spacing: .3em; font-size: 10px; }
-  .C .poster b { display: block; font-size: 30px; font-weight: 900; color: #ef3e36; letter-spacing: .08em; line-height: 1; }
-  .C .poster .n { font-size: 66px; font-weight: 900; line-height: 1; }
-  .C .mis { margin: 14px 12px 0; background: #2b59c3; color: #fff; border: 3px solid #141414; border-radius: 14px; padding: 8px 12px; box-shadow: 4px 4px 0 #141414; }
-  .C .mis small { display: block; font-weight: 900; font-size: 9.5px; letter-spacing: .18em; color: #ffd23f; }
-  .C .mis b { font-size: 26px; }
-  .C.kill { background-color: #ef3e36; color: #fff; }
-  .C .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 14px; }
-  .C .boom { background: #ffd23f; color: #141414; border: 4px solid #141414; font-size: 30px; font-weight: 900; padding: 14px 16px; transform: rotate(-6deg); box-shadow: 6px 6px 0 #141414;
-             clip-path: polygon(0 12%, 12% 0, 30% 8%, 50% 0, 70% 8%, 88% 0, 100% 14%, 94% 50%, 100% 86%, 86% 100%, 66% 92%, 50% 100%, 30% 92%, 12% 100%, 0 86%, 6% 50%); }
-  .C .count { font-size: 76px; font-weight: 900; line-height: 1; text-shadow: 4px 4px 0 #141414; }
-  .C .tick { white-space: nowrap; font-size: 11.5px !important; background: #fff; color: #141414; border: 3px solid #141414; border-radius: 10px; padding: 4px 12px; font-weight: 900; font-size: 18px; letter-spacing: .1em; }
+  /* ---------- C: incognito pop ---------- */
+  .C { background: #ff5fa2; color: #1b1033;
+       background-image: radial-gradient(circle at 15% 12%, #ffd23f 0 34px, transparent 35px), radial-gradient(circle at 92% 70%, #2ad4c5 0 60px, transparent 61px); }
+  .C .hd { margin: 16px 14px 0; text-align: center; }
+  .C .hd .e { font-size: 54px; line-height: 1; display: block; transform: rotate(-8deg); }
+  .C .hd b { display: block; font-size: 30px; font-weight: 900; letter-spacing: .02em; color: #fff; -webkit-text-stroke: 1.5px #1b1033; text-shadow: 3px 3px 0 #1b1033; margin-top: 4px; }
+  .C .hd span { display: inline-block; background: #1b1033; color: #ffd23f; font-weight: 900; font-size: 10px; letter-spacing: .2em; padding: 3px 9px; border-radius: 999px; margin-top: 6px; }
+  .C .rules { margin: 12px 12px 0; display: grid; gap: 5px; }
+  .C .rule { background: #fff; border-radius: 12px; padding: 6px 9px; font-size: 11px; font-weight: 600; line-height: 1.3; display: flex; gap: 8px; box-shadow: 0 3px 0 #1b1033; }
+  .C .rule i { font-style: normal; background: #2ad4c5; color: #1b1033; border-radius: 50%; min-width: 19px; height: 19px; display: grid; place-items: center; font-weight: 900; }
+  .C .numin { margin: 10px 12px 0; background: #fff; border-radius: 14px; padding: 4px; text-align: center; font-size: 28px; font-weight: 900; box-shadow: 0 3px 0 #1b1033; }
+  .C .numin small { display: block; font-size: 8.5px; letter-spacing: .2em; color: #8a7aa6; }
+  .C .btn { margin: auto 12px 14px; background: #1b1033; color: #ffd23f; border-radius: 16px; text-align: center; padding: 13px; font-weight: 900; font-size: 15px; letter-spacing: .08em; box-shadow: 0 6px 0 #000; }
+  .C .top { display: flex; justify-content: space-between; padding: 14px 14px 0; font-weight: 900; font-size: 11px; }
+  .C .disg { margin: 12px auto 0; width: 170px; height: 170px; border-radius: 50%; background: #ffd23f; border: 4px solid #1b1033; display: grid; place-items: center; position: relative; box-shadow: 6px 6px 0 #1b1033; }
+  .C .disg b { font-size: 60px; font-weight: 900; line-height: 1; margin-top: 18px; }
+  .C .disg .e { position: absolute; top: 10px; font-size: 40px; }
+  .C .disg small { position: absolute; bottom: 18px; font-weight: 900; font-size: 9.5px; letter-spacing: .2em; }
+  .C .mis { margin: 14px 12px 0; background: #fff; border-radius: 16px; padding: 9px 12px; box-shadow: 0 4px 0 #1b1033; }
+  .C .mis small { display: block; font-weight: 900; font-size: 9.5px; letter-spacing: .18em; color: #ff5fa2; }
+  .C .mis b { font-size: 20px; line-height: 1.15; }
+  .C .hint { margin: 8px 14px 0; font-size: 11px; font-weight: 700; line-height: 1.35; color: #fff; }
+  .C .links { color: #fff; }
+  .C.kill { background-color: #2ad4c5; }
+  .C .busted { background: #fff; border: 4px solid #1b1033; border-radius: 20px; font-size: 32px; font-weight: 900; padding: 8px 18px; transform: rotate(-6deg); box-shadow: 6px 6px 0 #1b1033; }
+  .C .count { font-size: 80px; font-weight: 900; line-height: 1; color: #fff; -webkit-text-stroke: 2px #1b1033; text-shadow: 4px 4px 0 #1b1033; }
+  .C .tick { background: #1b1033; color: #ffd23f; border-radius: 999px; padding: 6px 14px; font-weight: 900; font-size: 11.5px; letter-spacing: .08em; }
 </style>
 </head>
 <body>
 <header>
-  <h1>🕵️ Undercover: pick a theme</h1>
-  <p>Three looks for the same game. Everyone types the number on their post-it, gets a secret target (another number) and a secret mission: a word to make them say, or something to make them do (missions from your list). When the target falls for it, tap <b>Eliminated</b> and you get a new target. Each row shows the start screen, your target, and the screen after an elimination (sent to the prize draw).</p>
-  <p>Every elimination is a ticket for the prize draw. Which one do you like: <b>A</b>, <b>B</b> or <b>C</b>?</p>
+  <h1>🕶️ Undercover: pick a theme</h1>
+  <p>Three looks for the same game. Everyone types the number on their post-it and gets a secret target (another number) with a secret mission from your list: a word to make them say, or something to make them do. You can't say the word yourself, and if they guess your mission it doesn't count. When the target falls for it, tap <b>Eliminated</b> and you get a new target.</p>
+  <p>Each row shows the start screen, your target, and the screen after an elimination. Every elimination is a ticket for the prize draw. Which one do you like: <b>A</b>, <b>B</b> or <b>C</b>?</p>
 </header>
 
 <!-- ================= A ================= -->
 <section class="theme">
-  <h2>A · Secret dossier</h2>
-  <p>Kraft folder, typewriter letters, red TOP SECRET stamps. Your target is a polaroid with only a number on it. Feels like a real spy file.</p>
+  <h2>A · Masquerade</h2>
+  <p>A masked ball: deep purple and gold, elegant letters. Your target hides behind a golden mask with only their number on it; an elimination "unmasks" them.</p>
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr A">
-      <div class="tab">FILE 007</div>
-      <div class="file"><span class="stampR">TOP SECRET</span>
-        <h1>UNDER<br>COVER</h1><div class="sub">ESN BOLOGNA · NOBODY IS SAFE</div>
-        <ol><li>Type the number on your post-it.</li><li>Find your target and make them say the word or do the action.</li><li>Never reveal your mission.</li><li>Every elimination = a ticket for the prize draw 🎁</li></ol>
+      <div class="masked mini"></div>
+      <h1>UNDERCOVER</h1><div class="sub">nobody is safe</div>
+      <div class="rules">
+        <div class="rule"><i>1</i>Type the number on your post-it.</div>
+        <div class="rule"><i>2</i>Make your target say the word or do the action, without saying the word yourself.</div>
+        <div class="rule"><i>3</i>Don't get caught: if they guess your mission, it doesn't count.</div>
+        <div class="rule"><i>4</i>Every elimination = a ticket for the prize draw 🎁</div>
       </div>
-      <div class="lbl">YOUR AGENT NUMBER</div>
-      <div class="numin">12</div>
-      <div class="btn">OPEN MY FILE</div>
+      <div class="numin"><small>MY NUMBER</small>12</div>
+      <div class="btn">PUT ON THE MASK</div>
     </div></div><figcaption>Start: rules + your number</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr A">
-      <div class="top"><span>AGENT #12</span><span>☠ 1 · RULES</span></div>
-      <div style="margin-top:14px"><div class="photo"><div>?</div><b>TARGET</b></div></div>
-      <div class="tgt">#25</div>
-      <div class="mis"><small>MAKE THEM SAY</small><b>"SHREK"</b></div>
-      <div class="mis"><small>DON'T GET CAUGHT</small>Talk to them naturally. If they guess your mission, it doesn't count.</div>
+      <div class="top"><span>YOU · #12</span><span>☠ 1 · RULES</span></div>
+      <div class="lbl" style="margin-top:16px">YOUR TARGET</div>
+      <div class="masked" style="margin-top:8px"><b>#25</b></div>
+      <div class="mis"><small>MAKE THEM SAY</small><b>“Shrek” 🟢</b></div>
+      <div class="hint">Don't say it first yourself.<br>If they guess your mission, it doesn't count.</div>
       <div class="btn">☠ ELIMINATED</div>
       <div class="links"><span>Target already out?</span><span>I got eliminated</span></div>
     </div></div><figcaption>Your target and mission</figcaption></figure>
 
-    <figure class="shot"><div class="phone"><div class="scr A kill">
+    <figure class="shot"><div class="phone"><div class="scr A">
       <div class="big">
-        <div class="xstamp">ELIMINATED</div>
-        <div style="letter-spacing:.2em;font-size:11px;margin-top:10px">AGENT #12 · TARGETS DOWN</div>
+        <div class="masked mini" style="margin:0;transform:rotate(-14deg)"></div>
+        <div class="crack">UNMASKED</div>
+        <div style="font-size:10px;letter-spacing:.24em;font-weight:800;color:#d9c6f0;margin-top:6px">#12 · ELIMINATIONS</div>
         <div class="count">2</div>
         <div class="tick">🎟 2 TICKETS · PRIZE DRAW</div>
-        <div style="font-size:11px;opacity:.75">22:41</div>
+        <div style="font-size:11px;opacity:.7">22:41</div>
       </div>
-      <div class="btn" style="background:#e7c27c;color:#2a1e10;box-shadow:0 5px 0 #8e6a2c">NEXT TARGET →</div>
+      <div class="btn">NEXT TARGET →</div>
     </div></div><figcaption>After an elimination</figcaption></figure>
   </div>
 </section>
 
 <!-- ================= B ================= -->
 <section class="theme">
-  <h2>B · Neon night</h2>
-  <p>Dark like the club, neon pink and green that glow. Your target sits in a sniper scope. The most "party" of the three.</p>
+  <h2>B · Night vision</h2>
+  <p>A secret agent's gadget: green night-vision screen with scan lines and a blinking REC. Your target is locked in the viewfinder.</p>
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr B">
-      <span class="pill">ESN BOLOGNA · TANDEM</span>
+      <div class="hud"><span class="rec">REC</span><span>ESN BOLOGNA</span><span>23:07</span></div>
       <h1>UNDER<br>COVER</h1><div class="sub">NOBODY IS SAFE</div>
       <div class="rules">
-        <div class="rule"><i>1</i>Type the number on your post-it.</div>
-        <div class="rule"><i>2</i>Make your target say the word or do the action.</div>
-        <div class="rule"><i>3</i>Never reveal your mission.</div>
-        <div class="rule"><i>4</i>Every elimination = a ticket for the prize draw 🎁</div>
+        <div class="rule"><i>01</i> Type the number on your post-it.</div>
+        <div class="rule"><i>02</i> Make your target say the word or do the action, never say the word yourself.</div>
+        <div class="rule"><i>03</i> If they guess your mission, it doesn't count.</div>
+        <div class="rule"><i>04</i> Every elimination = a ticket for the prize draw 🎁</div>
       </div>
-      <div class="numin"><small>MY NUMBER</small>12</div>
+      <div class="numin"><small>AGENT NUMBER</small>12</div>
       <div class="btn">GO UNDERCOVER</div>
     </div></div><figcaption>Start: rules + your number</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr B">
-      <div class="top"><span>YOU #12</span><span>☠ 1 · RULES</span></div>
-      <div class="scope"><b>25</b></div>
+      <div class="hud"><span>AGENT #12</span><span class="rec">REC</span><span>☠ 1 · RULES</span></div>
+      <div class="lock"><i></i><i></i><i></i><i></i><b>25</b><small>TARGET LOCKED</small></div>
       <div class="mis"><small>MAKE THEM…</small><b>Do 3 squats 🏋️</b></div>
-      <div style="margin:10px 14px 0;font-size:11.5px;color:#b9a8d8;line-height:1.4">Talk to them naturally. If they guess your mission, it doesn't count.</div>
+      <div class="hint">Stay natural. If they guess your mission, it doesn't count.</div>
       <div class="btn">☠ ELIMINATED</div>
       <div class="links"><span>Target already out?</span><span>I got eliminated</span></div>
     </div></div><figcaption>Your target and mission</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr B kill">
       <div class="big">
-        <h3>TARGET<br>DOWN</h3>
-        <div style="font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.2em;margin-top:8px">#12 · ELIMINATIONS</div>
+        <div class="ok">MISSION<br>COMPLETE</div>
+        <div style="font-size:10px;letter-spacing:.24em;margin-top:8px">AGENT #12 · ELIMINATIONS</div>
         <div class="count">2</div>
         <div class="tick">🎟 2 TICKETS · PRIZE DRAW</div>
-        <div style="font-size:11px;opacity:.75">22:41</div>
+        <div style="font-size:11px;opacity:.7">22:41</div>
       </div>
       <div class="btn">NEXT TARGET →</div>
     </div></div><figcaption>After an elimination</figcaption></figure>
@@ -191,43 +202,43 @@
 
 <!-- ================= C ================= -->
 <section class="theme">
-  <h2>C · Wanted poster</h2>
-  <p>Bright comic book: yellow with halftone dots, red and blue, thick black outlines. Your target is a WANTED poster, eliminations go BOOM.</p>
+  <h2>C · Incognito</h2>
+  <p>Silly disguise party: hot pink, yellow and aqua, the glasses-and-moustache 🥸. Your target wears a disguise with their number; eliminations say BUSTED. The most playful one.</p>
   <div class="row">
     <figure class="shot"><div class="phone"><div class="scr C">
-      <div class="hd"><small>ESN BOLOGNA · TANDEM</small><b>UNDERCOVER</b><span>Nobody is safe 👀</span></div>
+      <div class="hd"><span class="e">🥸</span><b>UNDERCOVER</b><span>NOBODY IS SAFE</span></div>
       <div class="rules">
         <div class="rule"><i>1</i>Type the number on your post-it.</div>
-        <div class="rule"><i>2</i>Make your target say the word or do the action.</div>
-        <div class="rule"><i>3</i>Never reveal your mission.</div>
+        <div class="rule"><i>2</i>Make your target say the word or do the action, without saying the word yourself.</div>
+        <div class="rule"><i>3</i>If they guess your mission, it doesn't count.</div>
         <div class="rule"><i>4</i>Every elimination = a ticket for the prize draw 🎁</div>
       </div>
       <div class="numin"><small>MY NUMBER</small>12</div>
-      <div class="btn">START HUNTING</div>
+      <div class="btn">GO INCOGNITO</div>
     </div></div><figcaption>Start: rules + your number</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr C">
       <div class="top"><span>YOU #12</span><span>☠ 1 · RULES</span></div>
-      <div class="poster"><small>WANTED</small><b>TARGET</b><div class="n">#25</div></div>
-      <div class="mis"><small>MAKE THEM SAY</small><b>"MAMMA MIA" 🤌</b></div>
-      <div style="margin:10px 14px 0;font-size:11.5px;font-weight:600;line-height:1.4">Talk to them naturally. If they guess your mission, it doesn't count.</div>
+      <div class="disg"><span class="e">🥸</span><b>#25</b><small>YOUR TARGET</small></div>
+      <div class="mis"><small>MAKE THEM SAY</small><b>“Mamma mia” 🤌</b></div>
+      <div class="hint">Don't say it first yourself. If they guess your mission, it doesn't count.</div>
       <div class="btn">☠ ELIMINATED</div>
       <div class="links"><span>Target already out?</span><span>I got eliminated</span></div>
     </div></div><figcaption>Your target and mission</figcaption></figure>
 
     <figure class="shot"><div class="phone"><div class="scr C kill">
       <div class="big">
-        <div class="boom">BOOM! 💥</div>
+        <div class="busted">BUSTED! 🥸</div>
         <div style="font-weight:900;font-size:11px;letter-spacing:.18em;margin-top:12px">#12 · ELIMINATIONS</div>
         <div class="count">2</div>
         <div class="tick">🎟 2 TICKETS · PRIZE DRAW</div>
-        <div style="font-size:11px;opacity:.85">22:41</div>
+        <div style="font-size:11px;font-weight:700">22:41</div>
       </div>
-      <div class="btn" style="background:#ffd23f;color:#141414">NEXT TARGET →</div>
+      <div class="btn">NEXT TARGET →</div>
     </div></div><figcaption>After an elimination</figcaption></figure>
   </div>
 </section>
 
-<footer>Mockup only: colours, texts and missions can all change.</footer>
+<footer>Mockup only: colours and texts can all change.</footer>
 </body>
 </html>

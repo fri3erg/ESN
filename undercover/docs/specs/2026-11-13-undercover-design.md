@@ -2,7 +2,8 @@
 
 A secret-assassin game for a tandem night. Every player wears a post-it with a number (1–200, written by the
 organisers). Each player has a secret target (another number) and a secret mission: make the target **say** a word,
-or **do** an action, without them realising. Live at `https://esn-undercover.vercel.app` (Vercel project `esn-undercover`).
+or **do** an action, without them realising. Rules: you can never say the word yourself first, and if the target
+guesses your mission it does not count. Live at `https://esn-undercover.vercel.app` (Vercel project `esn-undercover`).
 
 ## The circle
 
@@ -34,9 +35,9 @@ a prize among the tickets. On screen: "We draw a prize 🎁 · every elimination
 
 ## Look
 
-Theme to be picked from `docs/mockups/undercover-themes.html` (A secret dossier, B neon night, C wanted poster).
+Theme to be picked from `docs/mockups/undercover-themes.html`: A masquerade, B night vision, C incognito (secret / undercover, not detective).
 
 ## Content
 
-`missions.js`: still the two examples from the brief; the organisers pick from
-`docs/missioni-eventi-precedenti.pdf` and send their own words/actions.
+`missions.js`: the organisers' list (undercover.pdf), minus the ones cut as too easy (Pizza, high five, native language)
+and "dance for 5 s" (same as the dance move); "Ex-boyfriend" became "Ex".
