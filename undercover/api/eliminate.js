@@ -1,7 +1,7 @@
 // Vercel function: every elimination tells the organisers' Telegram chat, one message = one ticket in the prize draw.
 // Same bot as Tandem Passport. Settings (Vercel → Project → Settings → Environment Variables):
 // TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID.
-import { MISSIONS, KINDS } from '../missions.js';
+import { MISSIONS, sentence } from '../missions.js';
 import { MAX_NUMBER } from '../game.js';
 
 const isNumber = n => Number.isInteger(n) && n >= 1 && n <= MAX_NUMBER;
@@ -21,7 +21,7 @@ export default async function handler(req, res, deps = { env: process.env, fetch
   const at = Date.parse(b.at);
   const time = Number.isNaN(at) ? '' : ` · ${new Date(at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' })}`;
   // Plain text (no parse_mode): only numbers and our own mission text go in.
-  const text = `☠ #${me} eliminated #${target}\n${KINDS[m.kind]}: ${m.text}\n🎟 Draw ticket · elimination nº ${n} for #${me}${time}`;
+  const text = `☠ #${me} eliminated #${target}\n${sentence(m)}\n🎟 Draw ticket · elimination nº ${n} for #${me}${time}`;
   try {
     const r = await deps.fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',

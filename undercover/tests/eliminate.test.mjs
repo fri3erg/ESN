@@ -12,7 +12,7 @@ const call = async (body, { method = 'POST', env = { TELEGRAM_BOT_TOKEN: 'T0K', 
   });
   return { res, sent };
 };
-const ok = { me: 12, target: 25, n: 2, mission: 'dog', at: '2026-11-20T21:41:00.000Z' };
+const ok = { me: 12, target: 25, n: 2, mission: 'shrek', at: '2026-11-20T21:41:00.000Z' };
 
 test('an elimination is sent to the Telegram chat as a draw ticket', async () => {
   const { res, sent } = await call(ok);
@@ -21,7 +21,7 @@ test('an elimination is sent to the Telegram chat as a draw ticket', async () =>
   assert.equal(sent[0].url, 'https://api.telegram.org/botT0K/sendMessage');
   assert.equal(sent[0].body.chat_id, '-100');
   assert.match(sent[0].body.text, /#12 eliminated #25/);
-  assert.match(sent[0].body.text, /MAKE THEM SAY: Dog/);
+  assert.match(sent[0].body.text, /Make your target say "Shrek"/);
   assert.match(sent[0].body.text, /22:41/);
   assert.equal(sent[0].body.parse_mode, undefined);
 });
