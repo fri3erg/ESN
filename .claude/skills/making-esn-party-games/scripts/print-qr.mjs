@@ -2,6 +2,7 @@
 // Usage: node print-qr.mjs config.json      Example config:
 // {
 //   "url": "https://esn-taboo.vercel.app", "outDir": "D:/git/ESN_Stuff/taboo/print", "slug": "taboo",
+//   (optional "titleSize": "21mm" for a long title; default 28mm)
 //   "kicker": "ESN BOLOGNA · TANDEM NIGHT", "title": "TABOO", "subtitle": "NIGHT",
 //   "tagline": "Describe the word. Don't say the forbidden ones! 🤐", "scan": "SCAN TO PLAY",
 //   "steps": ["Scan and read the rules", "Describe, your friends guess", "Guess 5 in 2 minutes, win a prize 🎁"],
@@ -31,7 +32,7 @@ function poster(bw) {
   body { width: 210mm; height: 297mm; background: ${C.bg}; color: ${C.text}; font-family: ${SANS}; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .page { height: 297mm; padding: 14mm 15mm 13mm; display: flex; flex-direction: column; align-items: center; text-align: center; ${bw ? 'border: 2.5mm solid #0a0a0a;' : ''} }
   .kick { font: 800 5mm ${MONO}; letter-spacing: .22em; margin: 0; }
-  .t { display: inline-block; background: ${C.band}; color: ${C.bandText}; font-size: 28mm; font-weight: 900; line-height: 1; padding: 2mm 8mm 4mm; border-radius: 7mm; transform: rotate(-2deg); box-shadow: 0 2.5mm 0 ${C.bandShadow}; margin: 7mm 0 0; }
+  .t { display: inline-block; background: ${C.band}; color: ${C.bandText}; font-size: ${cfg.titleSize || "28mm"}; font-weight: 900; line-height: 1; padding: 2mm 8mm 4mm; border-radius: 7mm; transform: rotate(-2deg); box-shadow: 0 2.5mm 0 ${C.bandShadow}; margin: 7mm 0 0; }
   .n { font-size: 14mm; font-weight: 900; letter-spacing: .12em; margin: 4mm 0 2mm; }
   .tag { font-size: 6.4mm; font-weight: 800; margin: 0 0 6mm; }
   .scan { font: 900 7mm ${SANS}; letter-spacing: .04em; color: ${C.accent}; margin: 0 0 4mm; }

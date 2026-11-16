@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#031a0c">
+  <title>Undercover · ESN Bologna</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%95%B6%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --g: #8dffb0; --g2: #2f9a55; --bg: #031a0c; --hi: #eafff0; --rec: #ff4d4d; --mono: ui-monospace, "Cascadia Mono", Consolas, "Courier New", monospace; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--bg); color: var(--g); font-family: var(--mono); -webkit-tap-highlight-color: transparent;
+      background-image: repeating-linear-gradient(0deg, rgba(141,255,176,.05) 0 1px, transparent 1px 3px), radial-gradient(circle at 50% 40%, #0b4a24, var(--bg) 70%);
+      background-attachment: fixed;
+    }
+    body.win { background-color: #062b14; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    .screen { min-height: 100svh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; padding: 16px 18px max(18px, env(safe-area-inset-bottom)); }
+
+    .hud { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; letter-spacing: .14em; }
+    .rec { opacity: .9; }
+    .rec::before { content: "● "; color: var(--rec); animation: blink 1.2s steps(2, start) infinite; }
+    @keyframes blink { to { visibility: hidden; } }
+    .hudbtn { background: none; border: 1.5px solid rgba(141,255,176,.6); border-radius: 6px; padding: 7px 10px; font-size: 12px; letter-spacing: .12em; font-weight: 800; }
+
+    h1.title { margin: 30px 0 0; font-size: 64px; line-height: .92; font-weight: 900; letter-spacing: .03em; color: var(--g); text-shadow: 0 0 16px rgba(141,255,176,.7); }
+    .sub { margin: 8px 0 0; font-size: 13px; letter-spacing: .32em; opacity: .85; }
+    .rules { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 9px; }
+    .rules li { font-size: 15px; line-height: 1.4; border-left: 3px solid var(--g); padding: 3px 0 3px 11px; color: var(--hi); }
+    .rules b { color: var(--g); margin-right: 4px; }
+
+    .numin { margin: 20px 0 0; display: block; border: 2px solid var(--g); padding: 8px 8px 4px; text-align: center; border-radius: 6px; }
+    .numin span { display: block; font-size: 11px; letter-spacing: .26em; opacity: .85; }
+    .numin input { width: 100%; background: none; border: 0; outline: 0; color: var(--hi); text-align: center; font: 900 46px var(--mono); caret-color: var(--g); padding: 0; }
+    .numin input::placeholder { color: rgba(141,255,176,.25); }
+    .numin:focus-within { box-shadow: 0 0 18px rgba(141,255,176,.45); }
+    .err { min-height: 18px; margin: 6px 0 0; font-size: 13px; color: var(--rec); text-align: center; }
+
+    .btn { display: block; width: 100%; border: 0; border-radius: 8px; background: var(--g); color: var(--bg); padding: 19px 14px; font-weight: 900; font-size: 19px; letter-spacing: .16em;
+           box-shadow: 0 6px 0 var(--g2), 0 0 22px rgba(141,255,176,.35); transition: transform .08s, box-shadow .08s; }
+    .btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 var(--g2); }
+    .btn:disabled { opacity: .35; box-shadow: 0 6px 0 var(--g2); cursor: default; }
+    .btn2 { display: block; width: 100%; margin-top: 12px; background: none; border: 1.5px solid rgba(141,255,176,.6); border-radius: 8px; padding: 14px; font-weight: 800; letter-spacing: .1em; }
+    .push { margin-top: auto; padding-top: 18px; }
+
+    /* hunting */
+    .lock { margin: 26px auto 0; width: 220px; height: 200px; position: relative; display: grid; place-items: center; }
+    .lock i { position: absolute; width: 38px; height: 38px; border-color: var(--g); border-style: solid; animation: lockon .7s ease-out both; }
+    .lock i:nth-child(1) { top: 0; left: 0; border-width: 4px 0 0 4px; --dx: -24px; --dy: -24px; }
+    .lock i:nth-child(2) { top: 0; right: 0; border-width: 4px 4px 0 0; --dx: 24px; --dy: -24px; }
+    .lock i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 4px 4px; --dx: -24px; --dy: 24px; }
+    .lock i:nth-child(4) { bottom: 0; right: 0; border-width: 0 4px 4px 0; --dx: 24px; --dy: 24px; }
+    @keyframes lockon { from { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+    .lock b { font-size: 92px; font-weight: 900; color: var(--hi); text-shadow: 0 0 20px rgba(141,255,176,.9); line-height: 1; }
+    .lock b::before { content: "#"; font-size: .45em; vertical-align: .9em; color: var(--g); margin-right: 2px; }
+    .lock small { position: absolute; bottom: 12px; font-size: 11px; letter-spacing: .28em; }
+    .mis { margin: 22px 0 0; background: rgba(141,255,176,.1); border: 1.5px solid rgba(141,255,176,.55); border-radius: 6px; padding: 13px 15px; }
+    .mis small { display: block; font-size: 11.5px; letter-spacing: .24em; opacity: .9; }
+    .mis b { display: block; font-size: 29px; line-height: 1.15; color: var(--hi); margin-top: 3px; }
+    .mis b.long { font-size: 22px; }
+    .hint { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.45; opacity: .85; }
+    .tickets { margin: 14px 0 0; font-size: 13px; letter-spacing: .06em; text-align: center; }
+    .links { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; }
+    .links button { background: none; border: 0; padding: 8px 2px; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; opacity: .85; }
+
+    /* result screens */
+    .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 16px 0; }
+    .ok { font-size: 34px; font-weight: 900; letter-spacing: .1em; border: 4px solid var(--g); padding: 10px 18px; text-shadow: 0 0 14px rgba(141,255,176,.8); line-height: 1.1; }
+    .ok.red { border-color: var(--rec); color: var(--rec); text-shadow: 0 0 14px rgba(255,77,77,.6); }
+    .lbl { font-size: 12px; letter-spacing: .26em; margin-top: 8px; }
+    .count { font-size: 120px; font-weight: 900; line-height: 1; color: var(--g); text-shadow: 0 0 26px rgba(141,255,176,.85); }
+    .tick { border: 1.5px dashed var(--g); padding: 7px 14px; font-size: 14px; letter-spacing: .1em; font-weight: 800; }
+    .sendst { font-size: 13px; min-height: 18px; opacity: .9; }
+    .when { font-size: 13px; opacity: .8; letter-spacing: .14em; }
+    .when b { display: block; font-size: 30px; color: var(--hi); letter-spacing: .06em; }
+    .kills { list-style: none; padding: 0; margin: 4px 0 0; font-size: 13px; line-height: 1.6; opacity: .9; }
+    .win .count { animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 50% { text-shadow: 0 0 46px rgba(141,255,176,1); } }
+    .sweep { position: fixed; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 0 45%, rgba(141,255,176,.13) 50%, transparent 55%); background-size: 100% 200%; animation: sweep 3.2s linear infinite; }
+    @keyframes sweep { from { background-position: 0 100%; } to { background-position: 0 -100%; } }
+
+    /* full-screen flash on an elimination */
+    .fx { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(3,26,12,.92); animation: fxin 1.6s ease both; }
+    .fx div { font-size: 46px; font-weight: 900; letter-spacing: .1em; text-align: center; line-height: 1.05; color: var(--hi); text-shadow: 0 0 24px var(--g); border: 5px solid var(--g); padding: 16px 22px; animation: stamp .45s cubic-bezier(.2,1.6,.4,1) both; }
+    .fx::before { content: ""; position: absolute; inset: 0; background: var(--g); animation: flash .5s ease-out both; }
+    @keyframes flash { from { opacity: .9; } to { opacity: 0; } }
+    @keyframes stamp { from { transform: scale(2.4); opacity: 0; } }
+    @keyframes fxin { 85% { opacity: 1; } to { opacity: 0; } }
+
+    /* sheet */
+    .dim { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.65); display: flex; align-items: flex-end; justify-content: center; }
+    .sheet { width: 100%; max-width: 480px; background: #052812; border: 2px solid var(--g); border-bottom: 0; border-radius: 14px 14px 0 0; padding: 22px 20px max(22px, env(safe-area-inset-bottom)); color: var(--hi); max-height: 90svh; overflow: auto; }
+    .sheet h2 { margin: 0 0 10px; color: var(--g); font-size: 22px; letter-spacing: .06em; }
+    .sheet p { margin: 0 0 16px; line-height: 1.5; font-size: 15px; }
+    .sheet .rules { margin: 0 0 18px; }
+    .sheet .small { margin-top: 16px; text-align: center; }
+    .sheet .small button { background: none; border: 0; color: var(--g); text-decoration: underline; font-size: 13px; opacity: .8; }
+
+    @media (max-height: 700px) {
+      .screen { padding-top: 12px; }
+      h1.title { margin-top: 16px; font-size: 50px; }
+      .rules { margin-top: 14px; gap: 6px; }
+      .rules li { font-size: 13.5px; }
+      .numin { margin-top: 12px; }
+      .numin input { font-size: 38px; }
+      .lock { margin-top: 14px; width: 180px; height: 150px; }
+      .lock b { font-size: 72px; }
+      .mis { margin-top: 14px; padding: 10px 13px; }
+      .mis b { font-size: 24px; }
+      .mis b.long { font-size: 19px; }
+      .btn { padding: 16px 12px; }
+      .count { font-size: 92px; }
+      .ok { font-size: 28px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <noscript><p style="padding:24px">Please turn on JavaScript, or find a volunteer.</p></noscript>
+  <script type="module">
+    import { KINDS } from './missions.js';
+    import * as G from './game.js';
+
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const app = document.getElementById('app');
+    const store = G.safeStorage();
+
+    if (new URLSearchParams(location.search).has('reset')) {
+      G.clear(store);
+      history.replaceState(null, '', location.pathname);   // so a reload doesn't reset again
+    }
+    let state = G.load(store) || G.fresh();
+    let view = state.me === null ? 'start' : state.out ? 'out' : G.isLastStanding(state) ? 'win' : 'hunt';
+    let timers = [], sending = false, retry = null;
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const persist = () => G.save(store, state);
+    const stopTimers = () => { timers.forEach(clearTimeout); timers = []; };
+    const clock = () => G.formatTime(new Date().toISOString());
+    const tickets = n => `🎟 ${n} TICKET${n === 1 ? '' : 'S'} · PRIZE DRAW`;
+    const RULES = `<ol class="rules">
+        <li><b>01</b> Type the number on your post-it.</li>
+        <li><b>02</b> Make your target say the word or do the action. Never say the word yourself.</li>
+        <li><b>03</b> If they guess your mission, it doesn't count.</li>
+        <li><b>04</b> Every elimination = a ticket for the prize draw 🎁</li>
+      </ol>`;
+
+    function render() {
+      stopTimers();
+      $('sheet')?.remove();
+      document.body.classList.toggle('win', view === 'kill' || view === 'win');
+      ({ start: renderStart, hunt: renderHunt, kill: renderKill, out: renderOut, win: renderWin })[view]();
+      const rb = $('rulesbtn');
+      if (rb) rb.onclick = openRules;
+      scrollTo(0, 0);
+      send();
+    }
+
+    function hud() {
+      return `<div class="hud"><span>AGENT #${state.me}</span><span class="rec">REC</span>
+        <button class="hudbtn" id="rulesbtn">☠ ${state.kills.length} · RULES</button></div>`;
+    }
+
+    function renderStart() {
+      app.innerHTML = `<main class="screen">
+        <div class="hud"><span class="rec">REC</span><span>ESN BOLOGNA</span><span id="clk">${clock()}</span></div>
+        <h1 class="title">UNDER<br>COVER</h1>
+        <p class="sub">NOBODY IS SAFE</p>
+        ${RULES}
+        <label class="numin"><span>YOUR AGENT NUMBER (POST-IT)</span>
+          <input id="num" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" enterkeyhint="go" placeholder="00" aria-label="Your number, 1 to ${G.MAX_NUMBER}"></label>
+        <p class="err" id="err" role="alert"></p>
+        <div class="push"><button class="btn" id="go" disabled>GO UNDERCOVER</button></div>
+      </main>`;
+      const input = $('num'), btn = $('go');
+      const value = () => Number(input.value);
+      const valid = () => /^\d{1,3}$/.test(input.value) && value() >= 1 && value() <= G.MAX_NUMBER;
+      input.oninput = () => {
+        input.value = input.value.replace(/\D/g, '').slice(0, 3);
+        btn.disabled = !valid();
+        $('err').textContent = input.value && !valid() ? `Numbers go from 1 to ${G.MAX_NUMBER}` : '';
+      };
+      const go = () => {
+        if (!valid()) return input.focus();
+        state = G.start(G.fresh(), value());
+        persist();
+        document.activeElement?.blur();
+        view = 'hunt';
+        render();
+      };
+      btn.onclick = go;
+      input.onkeydown = e => { if (e.key === 'Enter') go(); };
+    }
+
+    function renderHunt() {
+      const m = G.mission(state.mission);
+      const isSay = m.kind === 'say';
+      const text = isSay ? `“${esc(m.text)}”` : esc(m.text);
+      const n = state.kills.length;
+      app.innerHTML = `<main class="screen">
+        ${hud()}
+        <div class="lock" aria-label="Your target: number ${state.target}"><i></i><i></i><i></i><i></i><b>${state.target}</b><small>TARGET LOCKED</small></div>
+        <div class="mis"><small>${esc(KINDS[m.kind])}</small><b class="${m.text.length > 22 ? 'long' : ''}">${text} <span aria-hidden="true">${m.emoji}</span></b></div>
+        <p class="hint">${isSay ? "Don't say it first yourself. " : 'Stay natural. '}If they guess your mission, it doesn't count.</p>
+        ${n ? `<p class="tickets">${tickets(n)}</p>` : ''}
+        <div class="push"><button class="btn" id="kill">☠ ELIMINATED</button>
+          <div class="links"><button id="skip">Target already out?</button><button id="dead">I got eliminated</button></div></div>
+      </main>`;
+      $('kill').onclick = () => openSheet(`<h2 id="sheet-title">Target down?</h2>
+          <p>Did <b>#${state.target}</b> ${isSay ? `say <b>“${esc(m.text)}”</b>` : `<b>${esc(m.text[0].toLowerCase() + m.text.slice(1))}</b>`} without guessing your mission?</p>
+          <button class="btn" id="yes">YES, ELIMINATED ☠</button><button class="btn2" id="close">Not yet</button>`, 'close', doKill);
+      $('skip').onclick = () => openSheet(`<h2 id="sheet-title">Target already out?</h2>
+          <p>Use this if <b>#${state.target}</b> was already eliminated by someone else, or nobody is wearing that number. You get the next target and a new mission. It doesn't count as an elimination.</p>
+          <button class="btn" id="yes">NEXT TARGET →</button><button class="btn2" id="close">Keep hunting #${state.target}</button>`, 'close', () => {
+        state = G.skip(state); persist(); view = G.isLastStanding(state) ? 'win' : 'hunt'; render();
+      });
+      $('dead').onclick = () => openSheet(`<h2 id="sheet-title">Got eliminated?</h2>
+          <p>Someone made you say their word or do their action. Your game ends here, your eliminations stay in the draw.</p>
+          <button class="btn" id="yes">YES, I'M OUT</button><button class="btn2" id="close">No, keep playing</button>`, 'close', () => {
+        state = G.gotOut(state); persist(); view = 'out'; render();
+      });
+    }
+
+    function doKill() {
+      state = G.eliminate(state);
+      persist();
+      const after = () => { view = 'kill'; render(); };
+      if (reduced) return after();
+      $('sheet')?.remove();
+      const fx = document.createElement('div');
+      fx.className = 'fx';
+      fx.setAttribute('role', 'status');
+      fx.innerHTML = '<div>TARGET<br>DOWN</div>';
+      document.body.appendChild(fx);
+      try { navigator.vibrate?.([60, 40, 90]); } catch { /* not supported */ }
+      timers.push(setTimeout(() => { fx.remove(); after(); }, 1500));
+    }
+
+    function countUp(el, to) {
+      if (reduced || to < 1) { el.textContent = to; return; }
+      let i = Math.max(0, to - 1);
+      el.textContent = i;
+      timers.push(setTimeout(() => { el.textContent = to; el.animate?.([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'ease-out' }); }, 350));
+    }
+
+    function renderKill() {
+      const last = state.kills[state.kills.length - 1];
+      app.innerHTML = `<main class="screen">
+        <div class="sweep" aria-hidden="true"></div>
+        <div class="hud"><span>AGENT #${state.me}</span><span class="rec">REC</span><span>${G.formatTime(last.at)}</span></div>
+        <section class="big">
+          <div class="ok">MISSION<br>COMPLETE</div>
+          <p class="lbl">#${last.target} ELIMINATED · YOUR ELIMINATIONS</p>
+          <div class="count" id="count">${state.kills.length}</div>
+          <div class="tick">${tickets(state.kills.length)}</div>
+          <p class="sendst" id="sendst" role="status"></p>
+        </section>
+        <button class="btn" id="next">${state.target === null ? 'SEE RESULT →' : 'NEXT TARGET →'}</button>
+      </main>`;
+      countUp($('count'), state.kills.length);
+      $('next').onclick = () => { view = G.isLastStanding(state) ? 'win' : 'hunt'; render(); };
+      showSend();
+    }
+
+    function results(title, cls) {
+      const n = state.kills.length;
+      return `<section class="big">
+          <div class="ok ${cls}">${title}</div>
+          <p class="lbl">AGENT #${state.me} · ELIMINATIONS</p>
+          <div class="count" id="count">${n}</div>
+          ${n ? `<div class="tick">${tickets(n)}</div>` : '<p class="sendst">No tickets this time. Stay for the draw anyway 🎁</p>'}
+          ${n ? `<ul class="kills">${state.kills.map(k => `<li>☠ #${k.target} · ${G.formatTime(k.at)}</li>`).join('')}</ul>` : ''}
+          <p class="sendst" id="sendst" role="status"></p>
+        </section>`;
+    }
+
+    function renderOut() {
+      app.innerHTML = `<main class="screen">
+        <div class="hud"><span>AGENT #${state.me}</span><span class="rec">REC</span><button class="hudbtn" id="rulesbtn">RULES</button></div>
+        ${results('AGENT<br>DOWN', 'red')}
+        <p class="when">OUT AT<b>${G.formatTime(state.out)}</b></p>
+      </main>`;
+      countUp($('count'), state.kills.length);
+      showSend();
+    }
+
+    function renderWin() {
+      app.innerHTML = `<main class="screen">
+        <div class="sweep" aria-hidden="true"></div>
+        <div class="hud"><span>AGENT #${state.me}</span><span class="rec">REC</span><button class="hudbtn" id="rulesbtn">RULES</button></div>
+        ${results('LAST AGENT<br>STANDING 🏆', '')}
+        <p class="when">Show this screen to a volunteer · <b id="clk">${clock()}</b></p>
+      </main>`;
+      countUp($('count'), state.kills.length);
+      timers.push(setInterval(() => { const c = $('clk'); if (c) c.textContent = clock(); }, 10000));
+      showSend();
+    }
+
+    // Every elimination goes to the organisers' Telegram (through /api/eliminate): one message = one draw ticket.
+    // Unsent ones retry every 15 s while the page is open, and on the next visit.
+    function showSend(status) {
+      const el = $('sendst');
+      if (!el || !state.kills.length) return;
+      const left = G.unsent(state).length;
+      el.textContent = !left ? '✓ Your tickets are in the draw'
+        : status === 'fail' ? '⚠️ No connection: retrying. Show this screen to a volunteer' : 'Sending your ticket…';
+    }
+
+    async function send() {
+      if (sending) return;
+      const k = G.unsent(state)[0];
+      if (!k) return;
+      sending = true;
+      clearTimeout(retry);
+      let ok = false;
+      try {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), 8000);
+        const r = await fetch('/api/eliminate', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, signal: ctl.signal,
+          body: JSON.stringify({ me: state.me, target: k.target, n: k.n, mission: k.mission, at: k.at }),
+        });
+        clearTimeout(t);
+        ok = r.ok;
+      } catch { /* offline or timed out */ }
+      sending = false;
+      if (ok) { state = G.markSent(state, k.n); persist(); showSend('ok'); send(); }
+      else { showSend('fail'); retry = setTimeout(send, 15000); }
+    }
+
+    // Bottom sheet. closeId closes it; an element with id "yes" runs onYes.
+    function openSheet(html, closeId, onYes) {
+      if ($('sheet')) return;
+      const opener = document.activeElement;
+      const dim = document.createElement('div');
+      dim.className = 'dim';
+      dim.id = 'sheet';
+      dim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">${html}</div>`;
+      document.body.appendChild(dim);
+      const onKey = e => { if (e.key === 'Escape') close(); };
+      const close = () => { dim.remove(); document.removeEventListener('keydown', onKey); if (opener?.isConnected) opener.focus({ preventScroll: true }); };
+      document.addEventListener('keydown', onKey);
+      dim.onclick = e => { if (e.target === dim) close(); };
+      $(closeId).onclick = close;
+      if (onYes && $('yes')) $('yes').onclick = () => { document.removeEventListener('keydown', onKey); onYes(); };
+      $(closeId).focus({ preventScroll: true });
+    }
+
+    function openRules() {
+      const canRestart = view === 'hunt' && !state.kills.length;
+      openSheet(`<h2 id="sheet-title">How it works</h2>${RULES}<button class="btn" id="close">GOT IT</button>
+        ${canRestart ? '<div class="small"><button id="wrong">Typed the wrong number?</button></div>' : ''}`, 'close');
+      const w = $('wrong');
+      if (w) w.onclick = () => { $('sheet').remove(); state = G.fresh(); persist(); view = 'start'; render(); };
+    }
+
+    render();
+  </script>
+</body>
+</html>
