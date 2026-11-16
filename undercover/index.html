@@ -25,13 +25,13 @@
     @keyframes blink { to { visibility: hidden; } }
     .hudbtn { background: none; border: 1.5px solid rgba(141,255,176,.6); border-radius: 6px; padding: 7px 10px; font-size: 12px; letter-spacing: .12em; font-weight: 800; }
 
-    h1.title { margin: 30px 0 0; font-size: 64px; line-height: .92; font-weight: 900; letter-spacing: .03em; color: var(--g); text-shadow: 0 0 16px rgba(141,255,176,.7); }
-    .sub { margin: 8px 0 0; font-size: 13px; letter-spacing: .32em; opacity: .85; }
-    .rules { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 9px; }
+    h1.title { margin: 40px 0 0; font-size: 64px; line-height: .92; font-weight: 900; letter-spacing: .03em; color: var(--g); text-shadow: 0 0 16px rgba(141,255,176,.7); }
+    .sub { margin: 12px 0 0; font-size: 13px; letter-spacing: .32em; opacity: .85; }
+    .rules { list-style: none; margin: 32px 0 0; padding: 0; display: grid; gap: 14px; }
     .rules li { font-size: 15px; line-height: 1.4; border-left: 3px solid var(--g); padding: 3px 0 3px 11px; color: var(--hi); }
     .rules b { color: var(--g); margin-right: 4px; }
 
-    .numin { margin: 20px 0 0; display: block; border: 2px solid var(--g); padding: 8px 8px 4px; text-align: center; border-radius: 6px; }
+    .numin { margin: 30px 0 0; display: block; border: 2px solid var(--g); padding: 8px 8px 4px; text-align: center; border-radius: 6px; }
     .numin span { display: block; font-size: 11px; letter-spacing: .26em; opacity: .85; }
     .numin input { width: 100%; background: none; border: 0; outline: 0; color: var(--hi); text-align: center; font: 900 46px var(--mono); caret-color: var(--g); padding: 0; }
     .numin input::placeholder { color: rgba(141,255,176,.25); }
@@ -43,10 +43,10 @@
     .btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 var(--g2); }
     .btn:disabled { opacity: .35; box-shadow: 0 6px 0 var(--g2); cursor: default; }
     .btn2 { display: block; width: 100%; margin-top: 12px; background: none; border: 1.5px solid rgba(141,255,176,.6); border-radius: 8px; padding: 14px; font-weight: 800; letter-spacing: .1em; }
-    .push { margin-top: auto; padding-top: 18px; }
+    .push { margin-top: auto; padding-top: 26px; }
 
     /* hunting */
-    .lock { margin: 26px auto 0; width: 220px; height: 200px; position: relative; display: grid; place-items: center; }
+    .lock { margin: 36px auto 0; width: 220px; height: 200px; position: relative; display: grid; place-items: center; }
     .lock i { position: absolute; width: 38px; height: 38px; border-color: var(--g); border-style: solid; animation: lockon .7s ease-out both; }
     .lock i:nth-child(1) { top: 0; left: 0; border-width: 4px 0 0 4px; --dx: -24px; --dy: -24px; }
     .lock i:nth-child(2) { top: 0; right: 0; border-width: 4px 4px 0 0; --dx: 24px; --dy: -24px; }
@@ -56,17 +56,17 @@
     .lock b { font-size: 92px; font-weight: 900; color: var(--hi); text-shadow: 0 0 20px rgba(141,255,176,.9); line-height: 1; }
     .lock b::before { content: "#"; font-size: .45em; vertical-align: .9em; color: var(--g); margin-right: 2px; }
     .lock small { position: absolute; bottom: 12px; font-size: 11px; letter-spacing: .28em; }
-    .mis { margin: 22px 0 0; background: rgba(141,255,176,.1); border: 1.5px solid rgba(141,255,176,.55); border-radius: 6px; padding: 13px 15px; }
+    .mis { margin: 34px 0 0; background: rgba(141,255,176,.1); border: 1.5px solid rgba(141,255,176,.55); border-radius: 6px; padding: 13px 15px; }
     .mis small { display: block; font-size: 11.5px; letter-spacing: .24em; opacity: .9; }
     .mis b { display: block; font-size: 29px; line-height: 1.15; color: var(--hi); margin-top: 3px; }
     .mis b.long { font-size: 22px; }
-    .hint { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.45; opacity: .85; }
-    .tickets { margin: 14px 0 0; font-size: 13px; letter-spacing: .06em; text-align: center; }
-    .links { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; }
+    .hint { margin: 16px 2px 0; font-size: 13.5px; line-height: 1.45; opacity: .85; }
+    .tickets { margin: 22px 0 0; font-size: 13px; letter-spacing: .06em; text-align: center; }
+    .links { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
     .links button { background: none; border: 0; padding: 8px 2px; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; opacity: .85; }
 
     /* result screens */
-    .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 16px 0; }
+    .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 16px 0; }
     .ok { font-size: 34px; font-weight: 900; letter-spacing: .1em; border: 4px solid var(--g); padding: 10px 18px; text-shadow: 0 0 14px rgba(141,255,176,.8); line-height: 1.1; }
     .ok.red { border-color: var(--rec); color: var(--rec); text-shadow: 0 0 14px rgba(255,77,77,.6); }
     .lbl { font-size: 12px; letter-spacing: .26em; margin-top: 8px; }
@@ -100,14 +100,19 @@
 
     @media (max-height: 700px) {
       .screen { padding-top: 12px; }
-      h1.title { margin-top: 16px; font-size: 50px; }
-      .rules { margin-top: 14px; gap: 6px; }
+      h1.title { margin-top: 20px; font-size: 50px; }
+      .sub { margin-top: 8px; }
+      .rules { margin-top: 18px; gap: 9px; }
       .rules li { font-size: 13.5px; }
-      .numin { margin-top: 12px; }
+      .numin { margin-top: 18px; }
       .numin input { font-size: 38px; }
-      .lock { margin-top: 14px; width: 180px; height: 150px; }
+      .lock { margin-top: 20px; width: 180px; height: 150px; }
       .lock b { font-size: 72px; }
-      .mis { margin-top: 14px; padding: 10px 13px; }
+      .mis { margin-top: 20px; padding: 10px 13px; }
+      .hint { margin-top: 12px; }
+      .tickets { margin-top: 14px; }
+      .big { gap: 12px; }
+      .push { padding-top: 18px; }
       .mis b { font-size: 24px; }
       .mis b.long { font-size: 19px; }
       .btn { padding: 16px 12px; }
