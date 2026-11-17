@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mystery Night II: cases and alibis</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ece6d2; color: #141414; font: 15px/1.5 "Courier New", ui-monospace, monospace; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 30px; margin: 0; letter-spacing: .04em; }
+  .draft { display: inline-block; border: 3px double #b3261e; color: #b3261e; padding: 1px 8px; transform: rotate(-3deg); font-weight: 700; margin: 8px 0; }
+  .intro { color: #444; }
+  .suspects { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+  .suspects div { background: #fffdf6; border-left: 4px solid #141414; padding: 8px 10px; font-size: 13.5px; }
+  .suspects b { display: block; font-size: 16px; }
+  .case { background: #f6edc6; border: 2px solid #141414; border-radius: 4px 14px 4px 4px; padding: 16px; margin: 26px 0 0; break-inside: avoid-page; }
+  h2 { margin: 0; font-size: 22px; } h2 span { color: #b3261e; margin-right: 6px; } h2 small { display: block; font-size: 14px; color: #555; font-weight: 400; }
+  .meta { margin: 2px 0 10px; color: #555; font-size: 13px; }
+  .crime { background: #fffdf6; padding: 10px 12px; border-left: 4px solid #b3261e; }
+  .crime p { margin: 4px 0; }
+  .it { color: #666; font-size: 13px; font-style: italic; }
+  table { border-collapse: collapse; width: 100%; }
+  .clues { margin: 12px 0; background: #fffdf6; }
+  .clues th, .clues td { border: 1px solid #c9bd8f; padding: 6px 8px; vertical-align: top; text-align: left; }
+  .clues th { background: #141414; color: #f6edc6; font-size: 12px; letter-spacing: .1em; }
+  .clues p { margin: 0 0 4px; }
+  .l { font-weight: 700; font-size: 18px; color: #b3261e; text-align: center !important; }
+  .code { font-weight: 700; white-space: nowrap; } .who { white-space: nowrap; font-weight: 700; }
+  .bottom { display: flex; gap: 14px; flex-wrap: wrap; align-items: stretch; }
+  .grid { width: auto; background: #fffdf6; font-size: 13px; }
+  .grid th, .grid td { border: 1px solid #c9bd8f; padding: 3px 7px; text-align: center; min-width: 34px; }
+  .grid tr.sol td { color: #b3261e; font-size: 16px; }
+  .solution { flex: 1; min-width: 200px; border: 3px solid #b3261e; padding: 8px 12px; background: #fff; }
+  .solution b { display: block; color: #b3261e; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .solution span { font-size: 22px; font-weight: 700; }
+  @media (max-width: 640px) { .clues td, .clues th { display: block; border-width: 0 0 1px; } .clues tr { display: block; border-bottom: 2px solid #141414; } .clues tr:first-child { display: none; } .code, .who { white-space: normal; } .grid { overflow-x: auto; display: block; } }
+  @media print { body { background: #fff; } .case { break-inside: avoid; } }
+</style></head><body><main>
+<h1>ESN MYSTERY NIGHT · SECOND EDITION</h1>
+<div class="draft">DRAFT · 2026-11-17</div>
+<p class="intro">International dinner edition: 3 cases, 6 suspects, 4 clues per case.
+Every player gets one clue per case; to solve a case they need to find people with the other clues.
+Each clue gives an alibi to one or two suspects; whoever is left at the end is guilty. English is what players read; the Italian is underneath.</p>
+<h3>The suspects</h3>
+<div class="suspects"><div><b>Elia</b>Built this website. Restarts routers for fun.</div><div><b>Leo</b>Will freestyle at you if you stand still. Owns only Spain shirts.</div><div><b>Davide</b>Yes, he’s Luka Modrić’s brother. Equally blonde, inside and out.</div><div><b>Dario</b>Looks like a model. Knows it. Has never walked past a mirror.</div><div><b>Sisto</b>Old and wise. Was doing Erasmus before Erasmus existed.</div><div><b>Riccardo</b>Nobody knows what he is famous for. Suspicious.</div></div>
+<section class="case">
+  <h2><span>CASE 01</span> The Carbonara Crime <small>Il Delitto della Carbonara</small></h2>
+  <p class="meta">1 culprit · 4 clues</p>
+  <div class="crime"><b>The crime</b><p>At 21:00, while the guests were finding their seats, someone sneaked into the kitchen and poured an entire litre of CREAM into the carbonara. Three Italians at the dinner fainted on the spot, a fourth called his nonna in tears. The culprit left only an empty carton and a cloud of expensive perfume.</p><p class="it">Alle 21:00, mentre gli ospiti prendevano posto, qualcuno si è intrufolato in cucina e ha versato un litro intero di PANNA nella carbonara. Tre italiani presenti alla cena sono svenuti sul colpo, un quarto ha chiamato la nonna in lacrime. Il colpevole ha lasciato solo un cartone vuoto e una nuvola di profumo costoso.</p></div>
+  <table class="clues"><tr><th>Clue</th><th>Code word</th><th>Clears</th><th>Alibi</th></tr>
+  <tr><td class="l">A</td><td class="code">MENU</td><td class="who">Elia + Leo</td>
+    <td><p>At 21:00, Elia and Leo were at the entrance: Elia was trying to get the Wi-Fi working for forty hungry guests, while Leo freestyled the entire menu to every table. Nobody asked him to. Everybody heard it.</p><p class="it">Alle 21:00 Elia e Leo erano all&#39;ingresso: Elia cercava di far funzionare il Wi-Fi per quaranta ospiti affamati, mentre Leo rappava in freestyle l&#39;intero menù a ogni tavolo. Nessuno gliel&#39;aveva chiesto. Tutti l&#39;hanno sentito.</p></td></tr><tr><td class="l">B</td><td class="code">AUTOGRAPH</td><td class="who">Davide</td>
+    <td><p>At 21:00, Davide was signing autographs for three Croatian students who swore he was Luka Modrić. He didn&#39;t deny it. The photos were on Instagram at 21:02.</p><p class="it">Alle 21:00 Davide stava firmando autografi a tre studenti croati convinti che fosse Luka Modrić. Lui non ha smentito. Le foto erano su Instagram alle 21:02.</p></td></tr><tr><td class="l">C</td><td class="code">STORYTIME</td><td class="who">Sisto</td>
+    <td><p>At 21:00, Sisto was telling a table of freshers about &quot;the good old days of Erasmus, before smartphones&quot;. Twelve witnesses confirm it: they tried to leave, but he was only getting started.</p><p class="it">Alle 21:00 Sisto stava raccontando a un tavolo di matricole &quot;i bei tempi dell&#39;Erasmus, prima degli smartphone&quot;. Dodici testimoni lo confermano: hanno provato ad andarsene, ma lui era appena all&#39;inizio.</p></td></tr><tr><td class="l">D</td><td class="code">QUEUE</td><td class="who">Riccardo</td>
+    <td><p>At 21:00, Riccardo was in the bathroom queue, the longest queue in the history of the restaurant. Everyone in it remembers him: he kept letting people go first.</p><p class="it">Alle 21:00 Riccardo era in fila per il bagno, la fila più lunga nella storia del ristorante. Tutti quelli in coda se lo ricordano: continuava a far passare gli altri.</p></td></tr></table>
+  <div class="bottom"><table class="grid"><tr><th></th><th>Elia</th><th>Leo</th><th>Davide</th><th>Dario</th><th>Sisto</th><th>Riccardo</th></tr>
+  <tr><th>A</th><td>✓</td><td>✓</td><td></td><td></td><td></td><td></td></tr><tr><th>B</th><td></td><td></td><td>✓</td><td></td><td></td><td></td></tr><tr><th>C</th><td></td><td></td><td></td><td></td><td>✓</td><td></td></tr><tr><th>D</th><td></td><td></td><td></td><td></td><td></td><td>✓</td></tr>
+  <tr class="sol"><th>?</th><td></td><td></td><td></td><td>☠</td><td></td><td></td></tr></table><div class="solution"><b>Solution (for volunteers only)</b><span>Dario</span></div></div>
+</section><section class="case">
+  <h2><span>CASE 02</span> The Tiramisù Vanishing <small>La Scomparsa del Tiramisù</small></h2>
+  <p class="meta">1 culprit · 4 clues</p>
+  <div class="crime"><b>The crime</b><p>At 22:30, just before dessert, the giant tray of tiramisù vanished from the kitchen. Fifty spoons were ready. Fifty people were waiting. All that was left was one coffee-stained spoon and a newspaper folded very, very neatly. Whoever did this knew exactly when the kitchen would be empty.</p><p class="it">Alle 22:30, poco prima del dolce, la teglia gigante di tiramisù è sparita dalla cucina. Cinquanta cucchiaini erano pronti. Cinquanta persone aspettavano. È rimasto solo un cucchiaino macchiato di caffè e un giornale piegato molto, molto ordinatamente. Chiunque sia stato sapeva esattamente quando la cucina sarebbe rimasta vuota.</p></div>
+  <table class="clues"><tr><th>Clue</th><th>Code word</th><th>Clears</th><th>Alibi</th></tr>
+  <tr><td class="l">A</td><td class="code">PHOTOSHOOT</td><td class="who">Dario + Davide</td>
+    <td><p>At 22:30, Dario and Davide were at the photo corner. Dario was posing for &quot;just one more photo&quot;, Davide was holding the phone. Thirty minutes and 214 photos later, all of them of Dario, they were still there.</p><p class="it">Alle 22:30 Dario e Davide erano all&#39;angolo foto. Dario posava per &quot;solo un&#39;altra foto&quot;, Davide teneva il telefono. Trenta minuti e 214 foto dopo, tutte di Dario, erano ancora lì.</p></td></tr><tr><td class="l">B</td><td class="code">HDMI</td><td class="who">Elia</td>
+    <td><p>At 22:30, Elia was lying under the projector, fixing the HDMI cable for the photo slideshow. The slideshow came back on at 22:31, and Elia only got up at 22:45.</p><p class="it">Alle 22:30 Elia era sdraiato sotto il proiettore a sistemare il cavo HDMI per lo slideshow delle foto. Lo slideshow è ripartito alle 22:31, ed Elia si è rialzato solo alle 22:45.</p></td></tr><tr><td class="l">C</td><td class="code">PAELLA</td><td class="who">Leo</td>
+    <td><p>At 22:30, Leo was at the Spanish table in a very loud debate about whether paella with chorizo is a crime. In a Spain shirt, obviously. There is video evidence, and it is long.</p><p class="it">Alle 22:30 Leo era al tavolo spagnolo in un dibattito molto acceso sul fatto che la paella con il chorizo sia un crimine. Con la maglia della Spagna, ovviamente. Esiste un video, ed è lungo.</p></td></tr><tr><td class="l">D</td><td class="code">DISHES</td><td class="who">Riccardo</td>
+    <td><p>At 22:30, Riccardo was washing dishes in the back because he lost a bet at rock-paper-scissors. The chef confirms he never left the sink, and that he did a suspiciously good job.</p><p class="it">Alle 22:30 Riccardo stava lavando i piatti sul retro perché aveva perso una scommessa a sasso-carta-forbice. Lo chef conferma che non si è mai allontanato dal lavandino, e che ha fatto un lavoro sospettosamente buono.</p></td></tr></table>
+  <div class="bottom"><table class="grid"><tr><th></th><th>Elia</th><th>Leo</th><th>Davide</th><th>Dario</th><th>Sisto</th><th>Riccardo</th></tr>
+  <tr><th>A</th><td></td><td></td><td>✓</td><td>✓</td><td></td><td></td></tr><tr><th>B</th><td>✓</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>C</th><td></td><td>✓</td><td></td><td></td><td></td><td></td></tr><tr><th>D</th><td></td><td></td><td></td><td></td><td></td><td>✓</td></tr>
+  <tr class="sol"><th>?</th><td></td><td></td><td></td><td></td><td>☠</td><td></td></tr></table><div class="solution"><b>Solution (for volunteers only)</b><span>Sisto</span></div></div>
+</section><section class="case">
+  <h2><span>CASE 03</span> The Pineapple Pizza Plot <small>Il Complotto dell&#39;Ananas</small></h2>
+  <p class="meta">2 accomplices · 4 clues</p>
+  <div class="crime"><b>The crime</b><p>At 23:15, every single pizza for the late-night round came out of the oven with PINEAPPLE on it. Nobody ordered pineapple. The pizzaiolo swears he looked away for two minutes, because someone very charming was asking him for a selfie. While one accomplice distracted him, the other swapped the toppings. Italy will never forgive this.</p><p class="it">Alle 23:15 ogni singola pizza del giro di mezzanotte è uscita dal forno con l&#39;ANANAS sopra. Nessuno aveva ordinato ananas. Il pizzaiolo giura di essersi distratto solo due minuti, perché qualcuno di molto affascinante gli stava chiedendo un selfie. Mentre un complice lo distraeva, l&#39;altro ha scambiato i condimenti. L&#39;Italia non lo perdonerà mai.</p></div>
+  <table class="clues"><tr><th>Clue</th><th>Code word</th><th>Clears</th><th>Alibi</th></tr>
+  <tr><td class="l">A</td><td class="code">AIRPLANE</td><td class="who">Elia</td>
+    <td><p>At 23:15, Elia was explaining to a group of guests why the game&#39;s QR code didn&#39;t work. It did work: their phones were in airplane mode. It took twenty minutes, and the guests confirm it.</p><p class="it">Alle 23:15 Elia stava spiegando a un gruppo di ospiti perché il QR del gioco non funzionava. Funzionava eccome: avevano il telefono in modalità aereo. Ci sono voluti venti minuti, e gli ospiti lo confermano.</p></td></tr><tr><td class="l">B</td><td class="code">HAIRSPRAY</td><td class="who">Davide</td>
+    <td><p>At 23:15, Davide was in the bathroom fixing his hair. &quot;Blonde like this doesn&#39;t stay perfect on its own,&quot; he told the queue outside, which waited fifteen minutes and confirms every word.</p><p class="it">Alle 23:15 Davide era in bagno a sistemarsi i capelli. &quot;Un biondo così non resta perfetto da solo&quot;, ha detto alla fila fuori, che ha aspettato quindici minuti e conferma ogni parola.</p></td></tr><tr><td class="l">C</td><td class="code">NAP</td><td class="who">Sisto</td>
+    <td><p>At 23:15, Sisto had fallen asleep in an armchair, &quot;at 23:00 sharp, like every night since 1987&quot;. His snoring appears in three different Instagram stories.</p><p class="it">Alle 23:15 Sisto si era addormentato in poltrona, &quot;alle 23:00 in punto, come ogni sera dal 1987&quot;. Il suo russare compare in tre storie Instagram diverse.</p></td></tr><tr><td class="l">D</td><td class="code">TAXI</td><td class="who">Riccardo</td>
+    <td><p>At 23:15, Riccardo was outside on the phone, calling a taxi for an Erasmus student who had lost their keys. The taxi company has the call recorded: all eleven minutes of it.</p><p class="it">Alle 23:15 Riccardo era fuori al telefono a chiamare un taxi per uno studente Erasmus che aveva perso le chiavi. La compagnia dei taxi ha la chiamata registrata: tutti e undici i minuti.</p></td></tr></table>
+  <div class="bottom"><table class="grid"><tr><th></th><th>Elia</th><th>Leo</th><th>Davide</th><th>Dario</th><th>Sisto</th><th>Riccardo</th></tr>
+  <tr><th>A</th><td>✓</td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>B</th><td></td><td></td><td>✓</td><td></td><td></td><td></td></tr><tr><th>C</th><td></td><td></td><td></td><td></td><td>✓</td><td></td></tr><tr><th>D</th><td></td><td></td><td></td><td></td><td></td><td>✓</td></tr>
+  <tr class="sol"><th>?</th><td></td><td>☠</td><td></td><td>☠</td><td></td><td></td></tr></table><div class="solution"><b>Solution (for volunteers only)</b><span>Leo + Dario</span></div></div>
+</section>
+</main></body></html>
