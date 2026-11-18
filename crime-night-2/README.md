@@ -51,7 +51,8 @@ no build command. `tests/`, `docs/`, `tools/`, `print/` and this README are kept
 
 ## Still needed
 
-- [ ] The full list of suspects and their quirks (from the HR manager), then final cases and alibis
-- [ ] Photos of Dario, Sisto, Riccardo and the new suspects
-- [ ] Date and venue of the dinner, for the poster
-- [ ] Poster with the QR code (after the suspects are final)
+- [ ] Organisers' OK on the cases and alibis ([docs/cases-and-alibis.html](docs/cases-and-alibis.html)), and any more suspects
+- [ ] Date and venue of the dinner, if they should go on the poster
+- [x] Photos of Dario, Sisto and Riccardo (Tomao)
+- [x] Posters in `print/` (colour + B&W, QR to https://esn-crime-night-2.vercel.app). The tagline counts crimes and
+      suspects: if suspects change, regenerate them.

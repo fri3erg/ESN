@@ -1,6 +1,6 @@
 // The suspects, same for every case. To add a photo: put the file in img/suspects/
 // (e.g. img/suspects/dario.jpg, portrait 3:4, see tools/prepare_photo.py) and set `photo` to that path.
-// Missing photos show the silhouette. DRAFT 2026-11-17: captions of Dario, Sisto and Riccardo to be confirmed.
+// Missing photos show the silhouette. Quirks of Dario, Sisto and Riccardo (Tomao) from Sara, 2026-11-17.
 export const SUSPECTS = [
   { name: 'Elia', photo: 'img/suspects/elia.jpg', caption: {
     en: 'Built this website. Restarts routers for fun.',
@@ -15,15 +15,15 @@ export const SUSPECTS = [
     it: 'Sì, è il fratello di Luka Modrić. Biondo dentro e fuori.',
     es: 'Sí, es el hermano de Luka Modrić. Igual de rubio, por dentro y por fuera.' } },
   { name: 'Dario', photo: 'img/suspects/dario.jpg', caption: {
-    en: 'Looks like a model. Knows it. Has never walked past a mirror.',
-    it: 'Sembra un modello. Lo sa. Non è mai passato davanti a uno specchio senza fermarsi.',
-    es: 'Parece un modelo. Lo sabe. Nunca ha pasado por delante de un espejo sin pararse.' } },
+    en: 'Looks like a model, acts like a gentleman. Will hold the door for you, in Spanish.',
+    it: 'Sembra un modello, si comporta da gentiluomo. Ti tiene aperta la porta, in spagnolo.',
+    es: 'Parece un modelo y se comporta como un caballero. Te abre la puerta, en español.' } },
   { name: 'Sisto', photo: 'img/suspects/sisto.jpg', caption: {
-    en: 'Old and wise. Was doing Erasmus before Erasmus existed.',
-    it: "Vecchio e saggio. Faceva l'Erasmus prima che esistesse l'Erasmus.",
-    es: 'Viejo y sabio. Hacía el Erasmus antes de que existiera el Erasmus.' } },
+    en: 'Old and wise. Speaks once an hour, and it’s always a pearl.',
+    it: 'Vecchio e saggio. Parla una volta all’ora, ed è sempre una perla.',
+    es: 'Viejo y sabio. Habla una vez por hora, y siempre es una perla.' } },
   { name: 'Riccardo', photo: 'img/suspects/riccardo.jpg', caption: {
-    en: 'Nobody knows what he is famous for. Suspicious.',
-    it: 'Nessuno sa per cosa sia famoso. Sospetto.',
-    es: 'Nadie sabe por qué es famoso. Sospechoso.' } },
+    en: 'A.k.a. Tomao. Sings like an opera tenor. Never ask him for “just one note”.',
+    it: 'Detto Tomao. Canta come un tenore lirico. Non chiedergli mai “solo una nota”.',
+    es: 'Alias Tomao. Canta como un tenor de ópera. Nunca le pidas “solo una nota”.' } },
 ];

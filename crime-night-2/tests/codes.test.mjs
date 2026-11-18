@@ -20,7 +20,8 @@ test('sloppy input still matches', () => {
   assert.deepEqual(lookupCode('photo shoot'), { caseId: 2, letter: 'A' });
   assert.deepEqual(lookupCode('PHOTOSHOOT'), { caseId: 2, letter: 'A' });
   assert.deepEqual(lookupCode('Menus'), { caseId: 1, letter: 'A' });
-  assert.deepEqual(lookupCode('dishe'), { caseId: 2, letter: 'D' });
+  assert.deepEqual(lookupCode('serenades'), { caseId: 2, letter: 'D' });
+  assert.deepEqual(lookupCode('nessun-dorma'), { caseId: 1, letter: 'D' });
   assert.deepEqual(lookupCode(' taxi '), { caseId: 3, letter: 'D' });
   assert.deepEqual(lookupCode('PÁELLA'), { caseId: 2, letter: 'C' });
 });
