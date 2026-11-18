@@ -1,12 +1,12 @@
-// The cases of Mystery Night · Second Edition (International Dinner). Draft 2026-11-18, quirks from Sara: alibis
-// still to be confirmed with the organisers.
+// The cases of Mystery Night · Second Edition (International Dinner, Zadaura, 18.11.2026).
+// Culprits: case 1 Dario, case 2 Davide, case 3 Sisto + Leo (nobody is guilty twice).
 // `clears` = suspects this clue gives an alibi to. `code` = word players read to each other.
 // Every case must leave exactly `culprits` suspects not cleared, and no clue may be redundant (tests/data.test.mjs).
 export const CASES = [
   {
     id: 1, culprits: 1,
-    title: { en: 'The Carbonara Crime', it: 'Il Delitto della Carbonara', es: 'El Crimen de la Carbonara' },
-    short: { en: 'Carbonara Crime', it: 'Delitto Carbonara', es: 'Crimen Carbonara' },
+    title: { en: 'The Carbonara Crime', it: 'Il Crimine della Carbonara', es: 'El Crimen de la Carbonara' },
+    short: { en: 'Carbonara Crime', it: 'Crimine Carbonara', es: 'Crimen Carbonara' },
     crime: {
       en: 'At 21:00, while the guests were finding their seats, someone sneaked into the kitchen and poured an entire litre of CREAM into the carbonara. Three Italians at the dinner fainted on the spot, a fourth called his nonna in tears. The culprit left only an empty carton, a cloud of expensive perfume and the kitchen door politely held open for the next person.',
       it: "Alle 21:00, mentre gli ospiti prendevano posto, qualcuno si è intrufolato in cucina e ha versato un litro intero di PANNA nella carbonara. Tre italiani presenti alla cena sono svenuti sul colpo, un quarto ha chiamato la nonna in lacrime. Il colpevole ha lasciato solo un cartone vuoto, una nuvola di profumo costoso e la porta della cucina gentilmente tenuta aperta per chi veniva dopo.",
@@ -18,9 +18,9 @@ export const CASES = [
         it: "Alle 21:00 Elia e Leo erano all'ingresso: Elia cercava di far funzionare il Wi-Fi per quaranta ospiti affamati, mentre Leo rappava in freestyle l'intero menù a ogni tavolo. Nessuno gliel'aveva chiesto. Tutti l'hanno sentito.",
         es: 'A las 21:00, Elia y Leo estaban en la entrada: Elia intentaba que el Wi-Fi funcionara para cuarenta invitados hambrientos, mientras Leo rapeaba en freestyle todo el menú en cada mesa. Nadie se lo pidió. Todo el mundo lo oyó.' } },
       { letter: 'B', clears: ['Davide'], code: 'AUTOGRAPH', text: {
-        en: "At 21:00, Davide was signing autographs for three Croatian students who swore he was Luka Modrić. He didn't deny it. The photos were on Instagram at 21:02.",
-        it: 'Alle 21:00 Davide stava firmando autografi a tre studenti croati convinti che fosse Luka Modrić. Lui non ha smentito. Le foto erano su Instagram alle 21:02.',
-        es: 'A las 21:00, Davide estaba firmando autógrafos a tres estudiantes croatas que juraban que era Luka Modrić. Él no lo negó. Las fotos estaban en Instagram a las 21:02.' } },
+        en: "At 21:00, Davide was signing autographs for three Croatian students who swore he was Luka Modrić. He didn't deny it.",
+        it: 'Alle 21:00 Davide stava firmando autografi a tre studenti croati convinti che fosse Luka Modrić. Lui non ha smentito.',
+        es: 'A las 21:00, Davide estaba firmando autógrafos a tres estudiantes croatas que juraban que era Luka Modrić. Él no lo negó.' } },
       { letter: 'C', clears: ['Sisto'], code: 'PEARL', text: {
         en: 'At 21:00, Sisto was sitting at the freshers\' table in complete silence. After forty minutes he said one single sentence, and the whole table applauded. Twelve witnesses are still thinking about it.',
         it: 'Alle 21:00 Sisto era seduto al tavolo delle matricole in silenzio assoluto. Dopo quaranta minuti ha detto una sola frase, e tutto il tavolo ha applaudito. Dodici testimoni ci stanno ancora pensando.',
@@ -33,18 +33,18 @@ export const CASES = [
   },
   {
     id: 2, culprits: 1,
-    title: { en: 'The Tiramisù Vanishing', it: 'La Scomparsa del Tiramisù', es: 'La Desaparición del Tiramisú' },
-    short: { en: 'Tiramisù Vanishing', it: 'Tiramisù Scomparso', es: 'Tiramisú Desaparecido' },
+    title: { en: 'The Tiramisù Theft', it: 'Il Tiramisù Trafugato', es: 'El Timo del Tiramisú' },
+    short: { en: 'Tiramisù Theft', it: 'Tiramisù Trafugato', es: 'Timo del Tiramisú' },
     crime: {
-      en: 'At 22:30, just before dessert, the giant tray of tiramisù vanished from the kitchen. Fifty spoons were ready. Fifty people were waiting. All that was left was one coffee-stained spoon and a newspaper folded very, very neatly. Nobody heard a single sound. Whoever did this knew exactly when the kitchen would be empty.',
-      it: "Alle 22:30, poco prima del dolce, la teglia gigante di tiramisù è sparita dalla cucina. Cinquanta cucchiaini erano pronti. Cinquanta persone aspettavano. È rimasto solo un cucchiaino macchiato di caffè e un giornale piegato molto, molto ordinatamente. Nessuno ha sentito il minimo rumore. Chiunque sia stato sapeva esattamente quando la cucina sarebbe rimasta vuota.",
-      es: 'A las 22:30, justo antes del postre, la bandeja gigante de tiramisú desapareció de la cocina. Había cincuenta cucharillas listas. Cincuenta personas esperando. Solo quedó una cucharilla manchada de café y un periódico doblado muy, muy cuidadosamente. Nadie oyó ni un ruido. Quien lo hizo sabía exactamente cuándo se quedaría vacía la cocina.',
+      en: 'At 22:30, just before dessert, the giant tray of tiramisù vanished from the kitchen. Fifty spoons were ready. Fifty people were waiting. All that was left was one coffee-stained spoon with a single, perfect, very BLOND hair on it. A waiter swears he heard someone in the dark whisper "Modrić would never share".',
+      it: 'Alle 22:30, poco prima del dolce, la teglia gigante di tiramisù è sparita dalla cucina. Cinquanta cucchiaini erano pronti. Cinquanta persone aspettavano. È rimasto solo un cucchiaino macchiato di caffè con sopra un unico capello perfetto, e molto BIONDO. Un cameriere giura di aver sentito qualcuno al buio sussurrare "Modrić non la dividerebbe mai".',
+      es: 'A las 22:30, justo antes del postre, la bandeja gigante de tiramisú desapareció de la cocina. Había cincuenta cucharillas listas. Cincuenta personas esperando. Solo quedó una cucharilla manchada de café con un único pelo perfecto y muy RUBIO. Un camarero jura que oyó a alguien susurrar en la oscuridad "Modrić nunca lo compartiría".',
     },
     clues: [
-      { letter: 'A', clears: ['Dario', 'Davide'], code: 'PHOTOSHOOT', text: {
-        en: 'At 22:30, Dario and Davide were at the photo corner. Dario was posing for "just one more photo", Davide was holding the phone. Thirty minutes and 214 photos later, all of them of Dario, they were still there.',
-        it: 'Alle 22:30 Dario e Davide erano all\'angolo foto. Dario posava per "solo un\'altra foto", Davide teneva il telefono. Trenta minuti e 214 foto dopo, tutte di Dario, erano ancora lì.',
-        es: 'A las 22:30, Dario y Davide estaban en el rincón de fotos. Dario posaba para "solo una foto más" y Davide sujetaba el móvil. Treinta minutos y 214 fotos después, todas de Dario, seguían allí.' } },
+      { letter: 'A', clears: ['Dario', 'Sisto'], code: 'STAIRS', text: {
+        en: 'At 22:30, Dario was helping Sisto down the restaurant stairs, one step at a time, like a true gentleman. It took fifteen minutes. Sisto did not say a word the whole way down, then at the bottom: "Thank you, young man." Dario is still moved.',
+        it: 'Alle 22:30 Dario stava aiutando Sisto a scendere le scale del ristorante, un gradino alla volta, da vero gentiluomo. Ci sono voluti quindici minuti. Sisto non ha detto una parola per tutta la discesa, poi in fondo: "Grazie, giovanotto." Dario è ancora commosso.',
+        es: 'A las 22:30, Dario estaba ayudando a Sisto a bajar las escaleras del restaurante, escalón a escalón, como un auténtico caballero. Tardaron quince minutos. Sisto no dijo ni una palabra en toda la bajada, y abajo: "Gracias, joven." Dario sigue emocionado.' } },
       { letter: 'B', clears: ['Elia'], code: 'HDMI', text: {
         en: 'At 22:30, Elia was lying under the projector, fixing the HDMI cable for the photo slideshow. The slideshow came back on at 22:31, and Elia only got up at 22:45.',
         it: 'Alle 22:30 Elia era sdraiato sotto il proiettore a sistemare il cavo HDMI per lo slideshow delle foto. Lo slideshow è ripartito alle 22:31, ed Elia si è rialzato solo alle 22:45.',
@@ -64,9 +64,9 @@ export const CASES = [
     title: { en: 'The Pineapple Pizza Plot', it: "Il Complotto dell'Ananas", es: 'La Conspiración de la Piña' },
     short: { en: 'Pineapple Plot', it: 'Complotto Ananas', es: 'Conspiración Piña' },
     crime: {
-      en: "At 23:15, every single pizza for the late-night round came out of the oven with PINEAPPLE on it. Nobody ordered pineapple. The pizzaiolo swears he looked away for only two minutes, because a very charming gentleman was complimenting his dough in perfect Spanish. While one accomplice distracted him, the other swapped the toppings, humming a Spanish song. Italy will never forgive this.",
-      it: "Alle 23:15 ogni singola pizza del giro di mezzanotte è uscita dal forno con l'ANANAS sopra. Nessuno aveva ordinato ananas. Il pizzaiolo giura di essersi distratto solo due minuti, perché un gentiluomo molto affascinante gli faceva i complimenti per l'impasto in perfetto spagnolo. Mentre un complice lo distraeva, l'altro ha scambiato i condimenti canticchiando una canzone spagnola. L'Italia non lo perdonerà mai.",
-      es: 'A las 23:15, todas las pizzas de la ronda de medianoche salieron del horno con PIÑA. Nadie había pedido piña. El pizzero jura que solo apartó la vista dos minutos, porque un caballero muy encantador le estaba felicitando por la masa en perfecto español. Mientras un cómplice lo distraía, el otro cambió los ingredientes tarareando una canción española. Italia nunca lo perdonará.',
+      en: "At 23:15, every single pizza for the late-night round came out of the oven with PINEAPPLE on it. Nobody ordered pineapple. The pizzaiolo swears he looked away for only two minutes: a quiet old man had told him one sentence so wise that he had to sit down and think about his life. While one accomplice distracted him, the other swapped the toppings, humming a Spanish song. Italy will never forgive this.",
+      it: "Alle 23:15 ogni singola pizza del giro di mezzanotte è uscita dal forno con l'ANANAS sopra. Nessuno aveva ordinato ananas. Il pizzaiolo giura di essersi distratto solo due minuti: un signore silenzioso gli aveva detto una frase così saggia che si è dovuto sedere a riflettere sulla sua vita. Mentre un complice lo distraeva, l'altro ha scambiato i condimenti canticchiando una canzone spagnola. L'Italia non lo perdonerà mai.",
+      es: 'A las 23:15, todas las pizzas de la ronda de medianoche salieron del horno con PIÑA. Nadie había pedido piña. El pizzero jura que solo apartó la vista dos minutos: un señor callado le había dicho una frase tan sabia que tuvo que sentarse a pensar en su vida. Mientras un cómplice lo distraía, el otro cambió los ingredientes tarareando una canción española. Italia nunca lo perdonará.',
     },
     clues: [
       { letter: 'A', clears: ['Elia'], code: 'AIRPLANE', text: {
@@ -77,14 +77,14 @@ export const CASES = [
         en: 'At 23:15, Davide was in the bathroom fixing his hair. "Blonde like this doesn\'t stay perfect on its own," he told the queue outside, which waited fifteen minutes and confirms every word.',
         it: 'Alle 23:15 Davide era in bagno a sistemarsi i capelli. "Un biondo così non resta perfetto da solo", ha detto alla fila fuori, che ha aspettato quindici minuti e conferma ogni parola.',
         es: 'A las 23:15, Davide estaba en el baño arreglándose el pelo. "Un rubio así no se queda perfecto solo", le dijo a la cola de fuera, que esperó quince minutos y confirma cada palabra.' } },
-      { letter: 'C', clears: ['Sisto'], code: 'NAP', text: {
-        en: 'At 23:15, Sisto had fallen asleep in an armchair, "at 23:00 sharp, like every night since 1987". His snoring appears in three different Instagram stories.',
-        it: 'Alle 23:15 Sisto si era addormentato in poltrona, "alle 23:00 in punto, come ogni sera dal 1987". Il suo russare compare in tre storie Instagram diverse.',
-        es: 'A las 23:15, Sisto se había quedado dormido en un sillón, "a las 23:00 en punto, como todas las noches desde 1987". Sus ronquidos aparecen en tres historias de Instagram distintas.' } },
-      { letter: 'D', clears: ['Riccardo'], code: 'TAXI', text: {
-        en: 'At 23:15, Riccardo was outside on the phone, calling a taxi for an Erasmus student who had lost their keys. The taxi company has the call recorded: all eleven minutes of it, with Puccini hummed in the background.',
-        it: 'Alle 23:15 Riccardo era fuori al telefono a chiamare un taxi per uno studente Erasmus che aveva perso le chiavi. La compagnia dei taxi ha la chiamata registrata: tutti e undici i minuti, con Puccini canticchiato in sottofondo.',
-        es: 'A las 23:15, Riccardo estaba fuera al teléfono pidiendo un taxi para un estudiante Erasmus que había perdido las llaves. La compañía de taxis tiene la llamada grabada: los once minutos, con Puccini tarareado de fondo.' } },
+      { letter: 'C', clears: ['Dario'], code: 'JACKET', text: {
+        en: 'At 23:15, Dario was outside giving his jacket to an Erasmus student who was cold, then walking her to the bus stop. A passer-by stopped him to ask which magazine he models for. Three witnesses, one very grateful student.',
+        it: 'Alle 23:15 Dario era fuori a prestare la giacca a una studentessa Erasmus che aveva freddo, e poi ad accompagnarla alla fermata del bus. Un passante l\'ha fermato per chiedergli per quale rivista fa il modello. Tre testimoni, una studentessa molto grata.',
+        es: 'A las 23:15, Dario estaba fuera dejándole su chaqueta a una estudiante Erasmus que tenía frío, y luego acompañándola a la parada del bus. Un transeúnte lo paró para preguntarle para qué revista hace de modelo. Tres testigos y una estudiante muy agradecida.' } },
+      { letter: 'D', clears: ['Riccardo'], code: 'PIKACHU', text: {
+        en: 'At 23:15, Riccardo was in the park across the street, chasing a shiny Pikachu on Pokémon GO. The app logged his position 300 metres away, and the waiter who went to fetch him got the whole Pokédex explained.',
+        it: 'Alle 23:15 Riccardo era nel parco di fronte a inseguire un Pikachu shiny su Pokémon GO. L\'app ha registrato la sua posizione a 300 metri, e il cameriere andato a chiamarlo si è sentito spiegare tutto il Pokédex.',
+        es: 'A las 23:15, Riccardo estaba en el parque de enfrente persiguiendo un Pikachu shiny en Pokémon GO. La app registró su posición a 300 metros, y al camarero que fue a buscarlo le explicó toda la Pokédex.' } },
     ],
   },
 ];

@@ -17,17 +17,17 @@ test('every code resolves to its own case and letter', () => {
 
 test('sloppy input still matches', () => {
   assert.equal(normaliseCode(' Hello-Kitty! '), 'hellokitty');
-  assert.deepEqual(lookupCode('photo shoot'), { caseId: 2, letter: 'A' });
-  assert.deepEqual(lookupCode('PHOTOSHOOT'), { caseId: 2, letter: 'A' });
+  assert.deepEqual(lookupCode('stair'), { caseId: 2, letter: 'A' });
+  assert.deepEqual(lookupCode('PIKA CHU'), { caseId: 3, letter: 'D' });
   assert.deepEqual(lookupCode('Menus'), { caseId: 1, letter: 'A' });
   assert.deepEqual(lookupCode('serenades'), { caseId: 2, letter: 'D' });
   assert.deepEqual(lookupCode('nessun-dorma'), { caseId: 1, letter: 'D' });
-  assert.deepEqual(lookupCode(' taxi '), { caseId: 3, letter: 'D' });
+  assert.deepEqual(lookupCode(' jacket '), { caseId: 3, letter: 'C' });
   assert.deepEqual(lookupCode('PÁELLA'), { caseId: 2, letter: 'C' });
 });
 
 test('garbage does not match', () => {
-  for (const s of ['', '   ', 's', 'S', 'taxii', 'paela', 'case 1', null, undefined]) {
+  for (const s of ['', '   ', 's', 'S', 'pikachuu', 'paela', 'case 1', null, undefined]) {
     assert.equal(lookupCode(s), null, String(s));
   }
 });

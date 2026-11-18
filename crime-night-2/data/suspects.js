@@ -23,7 +23,7 @@ export const SUSPECTS = [
     it: 'Vecchio e saggio. Parla una volta all’ora, ed è sempre una perla.',
     es: 'Viejo y sabio. Habla una vez por hora, y siempre es una perla.' } },
   { name: 'Riccardo', photo: 'img/suspects/riccardo.jpg', caption: {
-    en: 'Sings like an opera tenor. Never ask him for “just one note”.',
-    it: 'Canta come un tenore lirico. Non chiedergli mai “solo una nota”.',
-    es: 'Canta como un tenor de ópera. Nunca le pidas “solo una nota”.' } },
+    en: 'Sings like an opera tenor, plays the drums, still catches Pokémon. Never ask him for “just one note”.',
+    it: 'Canta come un tenore lirico, suona la batteria e caccia ancora Pokémon. Non chiedergli mai “solo una nota”.',
+    es: 'Canta como un tenor de ópera, toca la batería y sigue cazando Pokémon. Nunca le pidas “solo una nota”.' } },
 ];
