@@ -1,6 +1,6 @@
 # ESN Mystery Night · Second Edition 🔍
 
-Web app for the second **ESN Mystery Night**, played during the ESN Bologna **International Dinner**.
+Web app for the second **ESN Mystery Night**, played during the ESN Bologna **International Dinner** at the Zadaura restaurant on 18.11.2026 (~20:00).
 Same game and same look as the first edition ([`../crime-night/`](../crime-night/), archived), new suspects and cases.
 
 The crime is just an excuse. The real mission is meeting new people.
@@ -46,13 +46,14 @@ makes `img/suspects/dario.jpg` (black and white, 3:4, ~40 KB). Without a photo a
 
 ## Deploy
 
-Vercel project **esn-crime-night-2** (type the Project Name by hand), Root Directory `crime-night-2`, preset Other,
+Vercel project **zdaura-detective-night** (Zadaura is the restaurant), Root Directory `crime-night-2`, preset Other,
 no build command. `tests/`, `docs/`, `tools/`, `print/` and this README are kept off the site by [`.vercelignore`](.vercelignore).
 
 ## Still needed
 
 - [ ] Organisers' OK on the cases and alibis ([docs/cases-and-alibis.html](docs/cases-and-alibis.html)), and any more suspects
-- [ ] Date and venue of the dinner, if they should go on the poster
+- [x] Date and venue on the poster (Zadaura, 18.11.2026)
+- [ ] Exact time, if it should go on the poster
 - [x] Photos of Dario, Sisto and Riccardo (Tomao)
-- [x] Posters in `print/` (colour + B&W, QR to https://esn-crime-night-2.vercel.app). The tagline counts crimes and
+- [x] Posters in `print/` (colour + B&W, QR to https://zdaura-detective-night.vercel.app). The tagline counts crimes and
       suspects: if suspects change, regenerate them.

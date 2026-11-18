@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mystery Night II: cases and alibis</title>
+<title>Detective Night: cases and alibis</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #ece6d2; color: #141414; font: 15px/1.5 "Courier New", ui-monospace, monospace; }
@@ -31,16 +31,40 @@
   .solution { flex: 1; min-width: 200px; border: 3px solid #b3261e; padding: 8px 12px; background: #fff; }
   .solution b { display: block; color: #b3261e; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
   .solution span { font-size: 22px; font-weight: 700; }
+  h2.sec { margin: 30px 0 10px; font-size: 20px; border-bottom: 2px solid #141414; padding-bottom: 4px; }
+  .overview td { vertical-align: middle; }
+  .people { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+  .person { background: #fffdf6; border: 2px solid #141414; padding: 10px 12px; break-inside: avoid; }
+  .person h3 { margin: 0 0 6px; font-size: 19px; }
+  .person p { margin: 0 0 8px; font-size: 13.5px; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: .06em; border: 1px solid #141414; padding: 0 5px; margin-left: 4px; }
+  .guilty { color: #b3261e; } .guilty .tag { border-color: #b3261e; font-weight: 700; }
   @media (max-width: 640px) { .clues td, .clues th { display: block; border-width: 0 0 1px; } .clues tr { display: block; border-bottom: 2px solid #141414; } .clues tr:first-child { display: none; } .code, .who { white-space: normal; } .grid { overflow-x: auto; display: block; } }
   @media print { body { background: #fff; } .case { break-inside: avoid; } }
 </style></head><body><main>
 <h1>ESN MYSTERY NIGHT · SECOND EDITION</h1>
+<p class="intro"><b>International Dinner · Zadaura · 18.11.2026</b></p>
 <div class="draft">DRAFT · 2026-11-18</div>
 <p class="intro">International dinner edition: 3 cases, 6 suspects, 4 clues per case.
 Every player gets one clue per case; to solve a case they need to find people with the other clues.
 Each clue gives an alibi to one or two suspects; whoever is left at the end is guilty. English is what players read; the Italian is underneath.</p>
-<h3>The suspects</h3>
+<h2 class="sec">The cases</h2>
+<table class="clues overview"><tr><th>Case</th><th>The crime</th><th>Culprit(s)</th></tr>
+  <tr><td class="l">01</td><td><b>The Carbonara Crime</b> <span class="it">Il Delitto della Carbonara</span></td>
+    <td class="who">Dario</td></tr><tr><td class="l">02</td><td><b>The Tiramisù Vanishing</b> <span class="it">La Scomparsa del Tiramisù</span></td>
+    <td class="who">Sisto</td></tr><tr><td class="l">03</td><td><b>The Pineapple Pizza Plot</b> <span class="it">Il Complotto dell&#39;Ananas</span></td>
+    <td class="who">Leo + Dario</td></tr></table>
+<h2 class="sec">The suspects</h2>
 <div class="suspects"><div><b>Elia</b>Built this website. Restarts routers for fun.</div><div><b>Leo</b>Will freestyle at you if you stand still. Owns only Spain shirts.</div><div><b>Davide</b>Yes, he’s Luka Modrić’s brother. Equally blonde, inside and out.</div><div><b>Dario</b>Looks like a model, acts like a gentleman. Will hold the door for you, in Spanish.</div><div><b>Sisto</b>Old and wise. Speaks once an hour, and it’s always a pearl.</div><div><b>Riccardo</b>A.k.a. Tomao. Sings like an opera tenor. Never ask him for “just one note”.</div></div>
+<h2 class="sec">Alibis by suspect</h2>
+<div class="people"><div class="person"><h3>Elia</h3>
+  <p><b>Case 01 · Carbonara Crime</b> <span class="tag">clue A · MENU</span><br>At 21:00, Elia and Leo were at the entrance: Elia was trying to get the Wi-Fi working for forty hungry guests, while Leo freestyled the entire menu to every table. Nobody asked him to. Everybody heard it.</p><p><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">clue B · HDMI</span><br>At 22:30, Elia was lying under the projector, fixing the HDMI cable for the photo slideshow. The slideshow came back on at 22:31, and Elia only got up at 22:45.</p><p><b>Case 03 · Pineapple Plot</b> <span class="tag">clue A · AIRPLANE</span><br>At 23:15, Elia was explaining to a group of guests why the game&#39;s QR code didn&#39;t work. It did work: their phones were in airplane mode. It took twenty minutes, and the guests confirm it.</p></div><div class="person"><h3>Leo</h3>
+  <p><b>Case 01 · Carbonara Crime</b> <span class="tag">clue A · MENU</span><br>At 21:00, Elia and Leo were at the entrance: Elia was trying to get the Wi-Fi working for forty hungry guests, while Leo freestyled the entire menu to every table. Nobody asked him to. Everybody heard it.</p><p><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">clue C · PAELLA</span><br>At 22:30, Leo was at the Spanish table in a very loud debate about whether paella with chorizo is a crime. In a Spain shirt, obviously. There is video evidence, and it is long.</p><p class="guilty"><b>Case 03 · Pineapple Plot</b> <span class="tag">NO ALIBI · GUILTY</span></p></div><div class="person"><h3>Davide</h3>
+  <p><b>Case 01 · Carbonara Crime</b> <span class="tag">clue B · AUTOGRAPH</span><br>At 21:00, Davide was signing autographs for three Croatian students who swore he was Luka Modrić. He didn&#39;t deny it. The photos were on Instagram at 21:02.</p><p><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">clue A · PHOTOSHOOT</span><br>At 22:30, Dario and Davide were at the photo corner. Dario was posing for &quot;just one more photo&quot;, Davide was holding the phone. Thirty minutes and 214 photos later, all of them of Dario, they were still there.</p><p><b>Case 03 · Pineapple Plot</b> <span class="tag">clue B · HAIRSPRAY</span><br>At 23:15, Davide was in the bathroom fixing his hair. &quot;Blonde like this doesn&#39;t stay perfect on its own,&quot; he told the queue outside, which waited fifteen minutes and confirms every word.</p></div><div class="person"><h3>Dario</h3>
+  <p class="guilty"><b>Case 01 · Carbonara Crime</b> <span class="tag">NO ALIBI · GUILTY</span></p><p><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">clue A · PHOTOSHOOT</span><br>At 22:30, Dario and Davide were at the photo corner. Dario was posing for &quot;just one more photo&quot;, Davide was holding the phone. Thirty minutes and 214 photos later, all of them of Dario, they were still there.</p><p class="guilty"><b>Case 03 · Pineapple Plot</b> <span class="tag">NO ALIBI · GUILTY</span></p></div><div class="person"><h3>Sisto</h3>
+  <p><b>Case 01 · Carbonara Crime</b> <span class="tag">clue C · PEARL</span><br>At 21:00, Sisto was sitting at the freshers&#39; table in complete silence. After forty minutes he said one single sentence, and the whole table applauded. Twelve witnesses are still thinking about it.</p><p class="guilty"><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">NO ALIBI · GUILTY</span></p><p><b>Case 03 · Pineapple Plot</b> <span class="tag">clue C · NAP</span><br>At 23:15, Sisto had fallen asleep in an armchair, &quot;at 23:00 sharp, like every night since 1987&quot;. His snoring appears in three different Instagram stories.</p></div><div class="person"><h3>Riccardo</h3>
+  <p><b>Case 01 · Carbonara Crime</b> <span class="tag">clue D · NESSUN DORMA</span><br>At 21:00, Riccardo was asked to sing &quot;just one note&quot; to test the microphone. He sang the whole of Nessun Dorma. Forty guests filmed it, two of them cried.</p><p><b>Case 02 · Tiramisù Vanishing</b> <span class="tag">clue D · SERENADE</span><br>At 22:30, Riccardo was outside on the terrace singing an opera serenade to a table of Erasmus students who had dared him to. The neighbours called to complain at 22:34. Then they asked for an encore.</p><p><b>Case 03 · Pineapple Plot</b> <span class="tag">clue D · TAXI</span><br>At 23:15, Riccardo was outside on the phone, calling a taxi for an Erasmus student who had lost their keys. The taxi company has the call recorded: all eleven minutes of it, with Puccini hummed in the background.</p></div></div>
+<h2 class="sec">Every case in detail</h2>
 <section class="case">
   <h2><span>CASE 01</span> The Carbonara Crime <small>Il Delitto della Carbonara</small></h2>
   <p class="meta">1 culprit · 4 clues</p>
