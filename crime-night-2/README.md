@@ -46,7 +46,7 @@ makes `img/suspects/dario.jpg` (black and white, 3:4, ~40 KB). Without a photo a
 
 ## Deploy
 
-Vercel project **zdaura-detective-night** (Zadaura is the restaurant), Root Directory `crime-night-2`, preset Other,
+Vercel project **esn-zdaura-detective-night** (Zadaura is the restaurant), Root Directory `crime-night-2`, preset Other,
 no build command. `tests/`, `docs/`, `tools/`, `print/` and this README are kept off the site by [`.vercelignore`](.vercelignore).
 
 ## Still needed
@@ -55,5 +55,5 @@ no build command. `tests/`, `docs/`, `tools/`, `print/` and this README are kept
 - [x] Date and venue on the poster (Zadaura, 18.11.2026)
 - [ ] Exact time, if it should go on the poster
 - [x] Photos of Dario, Sisto and Riccardo
-- [x] Posters in `print/` (colour + B&W, QR to https://zdaura-detective-night.vercel.app). The tagline counts crimes and
+- [x] Posters in `print/` (colour + B&W, QR to https://esn-zdaura-detective-night.vercel.app). The tagline counts crimes and
       suspects: if suspects change, regenerate them.

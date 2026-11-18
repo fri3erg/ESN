@@ -9,7 +9,7 @@ Each project lives in its own folder and is deployed separately on Vercel.
 | Folder | What it is | Status |
 | --- | --- | --- |
 | [`crime-night/`](crime-night/) | ESN Mystery Night: detective game web app for the Tandem Night at the Cluricaune Irish Pub | Archived: the event ran on 2026-10-13. Kept as is for reference. |
-| [`crime-night-2/`](crime-night-2/) | ESN Mystery Night · Second Edition: same detective game for the International Dinner, new suspects and cases | In progress: https://zdaura-detective-night.vercel.app |
+| [`crime-night-2/`](crime-night-2/) | ESN Mystery Night · Second Edition: same detective game for the International Dinner, new suspects and cases | Live: https://esn-zdaura-detective-night.vercel.app |
 | [`side-quest/`](side-quest/) | Side Quest: one random social challenge per person, proof shown to a volunteer for a prize | Live: https://esn-side-quest.vercel.app |
 | [`taboo/`](taboo/) | Taboo Night: describe the word without the forbidden ones, guess 5 in 2 minutes for a prize | Live: https://esn-taboo.vercel.app |
 | [`tandem-passport/`](tandem-passport/) | Tandem Passport: 6 missions to fill a passport with stickers, finishers sent to Telegram for the draw | Live: https://esn-tandem-passport.vercel.app |
