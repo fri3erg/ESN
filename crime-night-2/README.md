@@ -54,6 +54,6 @@ no build command. `tests/`, `docs/`, `tools/`, `print/` and this README are kept
 - [ ] Organisers' OK on the cases and alibis ([docs/cases-and-alibis.html](docs/cases-and-alibis.html)), and any more suspects
 - [x] Date and venue on the poster (Zadaura, 18.11.2026)
 - [ ] Exact time, if it should go on the poster
-- [x] Photos of Dario, Sisto and Riccardo (Tomao)
+- [x] Photos of Dario, Sisto and Riccardo
 - [x] Posters in `print/` (colour + B&W, QR to https://zdaura-detective-night.vercel.app). The tagline counts crimes and
       suspects: if suspects change, regenerate them.

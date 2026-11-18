@@ -1,6 +1,6 @@
 // The suspects, same for every case. To add a photo: put the file in img/suspects/
 // (e.g. img/suspects/dario.jpg, portrait 3:4, see tools/prepare_photo.py) and set `photo` to that path.
-// Missing photos show the silhouette. Quirks of Dario, Sisto and Riccardo (Tomao) from Sara, 2026-11-17.
+// Missing photos show the silhouette. Quirks of Dario, Sisto and Riccardo from Sara, 2026-11-17.
 export const SUSPECTS = [
   { name: 'Elia', photo: 'img/suspects/elia.jpg', caption: {
     en: 'Built this website. Restarts routers for fun.',
@@ -23,7 +23,7 @@ export const SUSPECTS = [
     it: 'Vecchio e saggio. Parla una volta all’ora, ed è sempre una perla.',
     es: 'Viejo y sabio. Habla una vez por hora, y siempre es una perla.' } },
   { name: 'Riccardo', photo: 'img/suspects/riccardo.jpg', caption: {
-    en: 'A.k.a. Tomao. Sings like an opera tenor. Never ask him for “just one note”.',
-    it: 'Detto Tomao. Canta come un tenore lirico. Non chiedergli mai “solo una nota”.',
-    es: 'Alias Tomao. Canta como un tenor de ópera. Nunca le pidas “solo una nota”.' } },
+    en: 'Sings like an opera tenor. Never ask him for “just one note”.',
+    it: 'Canta come un tenore lirico. Non chiedergli mai “solo una nota”.',
+    es: 'Canta como un tenor de ópera. Nunca le pidas “solo una nota”.' } },
 ];
