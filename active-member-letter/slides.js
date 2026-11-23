@@ -30,7 +30,7 @@ export const SLIDES = [
     body: ["Le vostre personalità\ncosì diverse e interessanti,\nil limoncello, le party bag, le benedizioni… e vabbè, anche il file eventi."] },
   { art: "art/07-faro/", color: "#fff0b3", behind: true, down: 20, zoom: 1.08,
     lead: "Pensavo stessi facendo tutto questo nella mia tossica ricerca di essere il più utile, gentile e perfetto faro a chiunque mi rivolga la parola.",
-    body: ["Ma col tempo ho capito che ESN mi rispecchia davvero: nell'organizzazione, nell'accoglienza e nella balotta."] },
+    body: ["Ma col tempo ho capito che ESN mi rispecchia davvero: nell'organizzazione, nell'accoglienza e nelle balotte."] },
   { art: "art/08-crime-night/", color: "#ffd23f", behind: true, textAt: "swap light",
     lead: "Tengo compagnia e poco più al karaoke, speak, e ufficio.",
     body: ["Ma il mio posto sono i tandem. Sono felicissimo di quello che i siti hanno portato alla serata, meno lavoro, giochi più chiari, e un segnale per gli Erasmus che ci teniamo davvero."] },
