@@ -8,6 +8,7 @@ Each project lives in its own folder and is deployed separately on Vercel.
 
 | Folder | What it is | Status |
 | --- | --- | --- |
+| [`active-member-letter/`](active-member-letter/) | My letter asking to become an active member: a slideshow with ASCII art beside each paragraph | Work in progress: art still to come |
 | [`crime-night/`](crime-night/) | ESN Mystery Night: detective game web app for the Tandem Night at the Cluricaune Irish Pub | Archived: the event ran on 2026-10-13. Kept as is for reference. |
 | [`crime-night-2/`](crime-night-2/) | ESN Mystery Night · Second Edition: same detective game for the International Dinner, new suspects and cases | Live: https://esn-zdaura-detective-night.vercel.app |
 | [`filo-invisibile/`](filo-invisibile/) | Il filo invisibile: meet three people, find one specific thing in common with each, three knots for a prize (IT/EN) | https://esn-filo-invisibile.vercel.app |

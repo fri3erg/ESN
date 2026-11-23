@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESN</title>
+<meta name="description" content="the ESN star, made of letters">
+<meta property="og:title" content="ESN">
+<meta property="og:description" content="the ESN star, made of letters">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="The ESN star drawn with letters, turning and glowing"></canvas>
+
+<script>
+"use strict";
+// ================================================================ settings: edit these
+// The star: eight rounded bars around an octagonal hole, opposite bars in matching colours.
+// Angles are clockwise from "right" (y points down), colours are ESN's own.
+const GREEN = [0.48, 0.76, 0.26], MAGENTA = [0.93, 0, 0.55], ORANGE = [0.96, 0.48, 0.13], CYAN = [0, 0.68, 0.94];
+const BARS = [
+  { ang: -90, col: GREEN }, { ang: -45, col: MAGENTA }, { ang: 0, col: ORANGE }, { ang: 45, col: GREEN },
+  { ang: 90, col: CYAN }, { ang: 135, col: ORANGE }, { ang: 180, col: MAGENTA }, { ang: -135, col: CYAN },
+];
+const INNER = 0.25, OUTER = 1, HALF_W = 0.15, ROUND = 0.07;  // in star radii
+const SPIN_EVERY = 10, SPIN_TIME = 4.5;  // a full turn every 10 s, taking 4.5 s
+const DEPTH = 0.22;                     // thickness of the star, in star radii
+const FONTS_TO_WAIT_FOR = [];
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+// ================================================================ text -> cells
+// Rasterises lines of text into the grid. Returns per-cell coverage, colour and letter index, so a
+// scene can reveal, flicker or dissolve letters individually.
+function buildText(lines, { y, maxW = SCENE_W * 0.9, maxH = 20, gap = 1.15 }) {
+  const S = 4, RS = Math.max(1, Math.round(S / UNIT)), RW = COLS * S, RH = ROWS * RS, PXU = S / UNIT;
+  const g = document.createElement("canvas"); g.width = RW; g.height = RH;
+  const gx = g.getContext("2d", { willReadFrequently: true });
+  gx.textBaseline = "middle";
+  const EMOJI = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+  const parts = (s) => s.split(/(\p{Extended_Pictographic}+)/u).filter(Boolean)
+    .map((p) => ({ p, emoji: /\p{Extended_Pictographic}/u.test(p) }));
+  const fontOf = (q, l, fs) => `${q.emoji ? fs * 0.92 : fs}px ${q.emoji ? EMOJI : l.font}`;
+  const width = (l, fs) => parts(l.text).reduce((w, q) => { gx.font = fontOf(q, l, fs); return w + gx.measureText(q.p).width; }, 0);
+  const w100 = Math.max(...lines.map((l) => width(l, 100)));
+  const fs = Math.min(100 * Math.min(maxW, COLS * UNIT * 0.92) * PXU / w100, maxH * PXU);
+  const lineH = fs * gap, centres = [];
+  lines.forEach((l, li) => {
+    let x = (RW - width(l, fs)) / 2;
+    const yPx = rowOf(y) * RS + (li - (lines.length - 1) / 2) * lineH;
+    for (const q of parts(l.text)) for (const ch of q.emoji ? [q.p] : [...q.p]) {
+      gx.font = fontOf(q, l, fs);
+      const w = gx.measureText(ch).width;
+      gx.fillStyle = q.emoji ? "#ffd36b" : `rgb(${(l.color || [1, 1, 1]).map((v) => v * 255).join(",")})`;
+      gx.fillText(ch, x, yPx);
+      if (ch.trim()) centres.push({ c: (x + w / 2) / S, r: yPx / RS });
+      x += w;
+    }
+  });
+  const d = gx.getImageData(0, 0, RW, RH).data, cell = S * RS;
+  const T = { cov: new Float32Array(N), col: new Float32Array(N * 3), letter: new Int16Array(N).fill(-1), count: centres.length };
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    let a = 0, R = 0, G = 0, B = 0;
+    for (let yy = r * RS; yy < (r + 1) * RS; yy++) for (let xx = c * S; xx < (c + 1) * S; xx++) {
+      const o = (yy * RW + xx) * 4, al = d[o + 3] / 255;
+      a += al; R += d[o] * al; G += d[o + 1] * al; B += d[o + 2] * al;
+    }
+    if (a < 1e-3) continue;
+    const i = r * COLS + c, k = tame([R / a / 255, G / a / 255, B / a / 255]);
+    T.cov[i] = a / cell; T.col.set(k, i * 3);
+    let best = -1, bd = 1e9;                                             // nearest letter
+    centres.forEach((m, n) => { const dd = (c - m.c) ** 2 + (2 * (r - m.r)) ** 2; if (dd < bd) { bd = dd; best = n; } });
+    T.letter[i] = best;
+  }
+  return T;
+}
+
+// Draws a text layer: letters write themselves in order from `start`, shimmer, and (optionally)
+// dissolve into golden sparks from `leaveAt`.
+function drawText(T, t, { start = 0.3, perLetter = 0.12, leaveAt = Infinity, leaveSpread = 1.8 } = {}) {
+  for (let i = 0; i < N; i++) {
+    const cov = T.cov[i];
+    if (cov < 0.04) continue;
+    const k = T.letter[i], h = rnd(i, 4242);
+    const appear = smoothstep(start + k * perLetter, start + k * perLetter + 0.25, t);
+    if (appear <= 0) continue;
+    const tOut = leaveAt + h * leaveSpread, leave = smoothstep(tOut, tOut + 0.45, t);
+    if (leave >= 1) continue;
+    const r = (i / COLS) | 0, c = i - r * COLS;
+    let l = clamp(Math.pow(cov, 0.7) * 1.05) * (0.88 + 0.12 * Math.sin(t * 3 + c * 0.18 - r * 0.25)) * appear;
+    const j = i * 3;
+    let col = [T.col[j], T.col[j + 1], T.col[j + 2]];
+    if (leave > 0) { col = mix3(col, [1, 0.8, 0.4], leave * 2); l = l * (1 - leave) + 0.25 * Math.sin(Math.PI * leave); }
+    if (l > lum[i]) set(i, clamp(l), col[0], col[1], col[2]);
+  }
+}
+
+// ================================================================ photo -> cells
+// Loads an image and samples it into the cells of a box (scene units, image kept in proportion).
+// Needs to be served over http (Vercel, or `npx serve` locally): browsers block reading pixels of
+// images opened straight from disk.
+function loadPhoto(src, box) {
+  return new Promise((ok, fail) => {
+    const im = new Image();
+    im.onload = () => {
+      const c0 = Math.max(0, Math.floor(colOf(box.x - box.w / 2))), c1 = Math.min(COLS, Math.ceil(colOf(box.x + box.w / 2)));
+      const r0 = Math.max(0, Math.floor(rowOf(box.y))), r1 = Math.min(ROWS, Math.ceil(rowOf(box.y + box.h)));
+      const S = 4, RS = Math.max(1, Math.round(S / UNIT)), PW = (c1 - c0) * S, PH = (r1 - r0) * RS;
+      const g = document.createElement("canvas"); g.width = PW; g.height = PH;
+      const gx = g.getContext("2d", { willReadFrequently: true });
+      const sc = Math.min(PW / im.width, PH / im.height), dw = im.width * sc, dh = im.height * sc;
+      gx.drawImage(im, (PW - dw) / 2, (PH - dh) / 2, dw, dh);
+      const d = gx.getImageData(0, 0, PW, PH).data;
+      const P = { lum: new Float32Array(N), col: new Float32Array(N * 3), cells: [] };
+      const raw = [];
+      for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+        let a = 0, R = 0, G = 0, B = 0;
+        for (let yy = (r - r0) * RS; yy < (r - r0 + 1) * RS; yy++) for (let xx = (c - c0) * S; xx < (c - c0 + 1) * S; xx++) {
+          const o = (yy * PW + xx) * 4, al = d[o + 3] / 255;
+          a += al; R += d[o] * al; G += d[o + 1] * al; B += d[o + 2] * al;
+        }
+        if (a < S * RS * 0.5) continue;                                  // outside the image
+        R /= a * 255; G /= a * 255; B /= a * 255;
+        const i = r * COLS + c;
+        raw.push([i, 0.3 * R + 0.59 * G + 0.11 * B]);
+        P.col.set(tame([R + 0.02, G + 0.02, B + 0.02]), i * 3);
+      }
+      // stretch contrast between the 2nd and 98th percentile so the letters use the full range
+      const sorted = raw.map((q) => q[1]).sort((a, b) => a - b);
+      const lo = sorted[Math.floor(sorted.length * 0.02)] || 0, hi = sorted[Math.floor(sorted.length * 0.98)] || 1;
+      for (const [i, v] of raw) { P.lum[i] = Math.pow(clamp((v - lo) / Math.max(1e-3, hi - lo)), 0.9); P.cells.push(i); }
+      P.centre = { r: rowOf(box.y + box.h / 2), c: colOf(box.x) };
+      // where the image itself landed, in cells; place effects at photo fractions (fx, fy) with
+      // x = X[0] + (rect.c0 + fx * (rect.c1 - rect.c0)) * UNIT, y = Y[0] + rect.r0 + fy * (rect.r1 - rect.r0)
+      P.rect = { c0: c0 + (PW - dw) / 2 / S, c1: c0 + (PW + dw) / 2 / S, r0: r0 + (PH - dh) / 2 / RS, r1: r0 + (PH + dh) / 2 / RS };
+      ok(P);
+    };
+    im.onerror = () => fail(new Error("could not load " + src));
+    im.src = src;
+  });
+}
+
+// Draws the photo, revealed as a ripple from its centre starting at `start`, then gently breathing.
+function drawPhoto(P, t, { start = 0.5, speed = 45 } = {}) {
+  for (const i of P.cells) {
+    const r = (i / COLS) | 0, c = i - r * COLS;
+    const dist = Math.hypot((c - P.centre.c) * UNIT, r - P.centre.r);
+    const appear = smoothstep(start + dist / speed, start + dist / speed + 0.4, t);
+    if (appear <= 0) continue;
+    const l = P.lum[i] * appear * (0.92 + 0.08 * Math.sin(t * 1.5 - dist * 0.15));
+    const j = i * 3;
+    if (l > lum[i]) set(i, l, P.col[j], P.col[j + 1], P.col[j + 2]);
+  }
+}
+
+// ================================================================ the scene: write your animation here
+const CY = SCENE_H / 2, RAD = Math.min(SCENE_W * 0.42, SCENE_H * 0.36);   // centre and size of the star
+const haze = new Float32Array(N);                                     // faint dots behind everything
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const d2 = (X[c] / 45) ** 2 + ((Y[r] - CY) / 45) ** 2;
+  if (hash3(r, c, 1) % 100 < 30) haze[r * COLS + c] = 0.1 * Math.exp(-d2 * 1.6);
+}
+const COLS_T = BARS.map((b) => tame(b.col));
+async function setup() {}
+
+// distance from a point (star units, star centre at 0,0) to a rounded bar: < 0 inside
+function barDist(b, px, py) {
+  const a = b.ang * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+  const u = px * ca + py * sa, v = -px * sa + py * ca;                // along and across the bar
+  const hu = (OUTER - INNER) / 2 - ROUND, hv = HALF_W - ROUND, mu = (OUTER + INNER) / 2;
+  const qx = Math.abs(u - mu) - hu, qy = Math.abs(v) - hv;
+  return { d: Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - ROUND, u, v };
+}
+
+// where each bar is during the intro: it flies in from far out along its own direction, spinning
+function introOf(k, t) {
+  const start = 0.3 + k * 0.18, p = smoothstep(start, start + 0.9, t);
+  return { p, out: (1 - p) * (1 - p) * 2.4, twist: (1 - p) * 1.8 * (k % 2 ? 1 : -1) };
+}
+
+function scene(t) {
+  for (let i = 0; i < N; i++) { lum[i] = haze[i]; const j = i * 3; rgb[j] = 0.3; rgb[j + 1] = 0.3; rgb[j + 2] = 0.55; }
+
+  // a full turn around the vertical axis now and then, after a calm first few seconds
+  const ph = (t - 3) / SPIN_EVERY, cyc = Math.floor(ph), u = (ph - cyc) * SPIN_EVERY;
+  const turn = t < 3 ? 0 : smoothstep(0, SPIN_TIME, u) * TAU;
+  const cosT = Math.cos(turn), sinT = Math.sin(turn);
+  const breathe = 1 + 0.025 * Math.sin(t * 1.3);
+  const glint = ((t * 0.35) % 1.6) - 0.3;                             // a bright line sweeping across
+
+  const r0 = Math.max(0, Math.floor(rowOf(CY - RAD * 1.15))), r1 = Math.min(ROWS, Math.ceil(rowOf(CY + RAD * 1.15)));
+  const c0 = Math.max(0, Math.floor(colOf(-RAD * 1.15))), c1 = Math.min(COLS, Math.ceil(colOf(RAD * 1.15)));
+  const intro = BARS.map((_, k) => introOf(k, t));
+  const flat = Math.abs(cosT);
+  // which bar (if any) covers a point of the star's own plane
+  const hit = (px, py) => {
+    let best = 1e9, bk = -1, bu = 0, bv = 0;
+    for (let k = 0; k < BARS.length; k++) {
+      const I = intro[k];
+      if (I.p <= 0) continue;
+      const a = BARS[k].ang * Math.PI / 180;
+      let qx = px - Math.cos(a) * I.out, qy = py - Math.sin(a) * I.out;
+      if (I.twist) { const ct = Math.cos(I.twist), st = Math.sin(I.twist); [qx, qy] = [qx * ct + qy * st, -qx * st + qy * ct]; }
+      const B = barDist(BARS[k], qx, qy);
+      if (B.d < best) { best = B.d; bk = k; bu = B.u; bv = B.v; }
+    }
+    return best <= 0.02 ? { d: best, k: bk, u: bu, v: bv } : null;
+  };
+  // The star is a slab DEPTH thick, turned by `turn` around the vertical axis. Looking straight at a cell,
+  // the line of sight crosses the slab between two points of its plane: the front face (nearest to us)
+  // and the back face. If the front face is solid we see the face; otherwise, if anything in between is
+  // solid, we are looking at a side wall.
+  const H = DEPTH / 2, cs = cosT, sn = sinT;
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const x = X[c] / (RAD * breathe), py = (Y[r] - CY) / (RAD * breathe);
+    const front = cs >= 0 ? H : -H;                                    // the face turned towards us
+    const ac = Math.max(Math.abs(cs), 1e-4) * Math.sign(cs || 1);
+    let xa = (x + sn * front) / ac, xb = (x - sn * front) / ac;         // plane x at the front and back faces
+    let f = Math.abs(xa) < 1.2 ? hit(xa, py) : null, wall = null, l, col;
+    if (!f) {
+      const lo = Math.max(-1.2, Math.min(xa, xb)), hi = Math.min(1.2, Math.max(xa, xb));
+      const steps = Math.min(24, Math.ceil((hi - lo) / 0.03));
+      for (let n = 0; n <= steps && hi > lo; n++) {                    // walk from the front face backwards
+        const q = xa < xb ? lo + (hi - lo) * n / steps : hi - (hi - lo) * n / steps;
+        const w = hit(q, py);
+        if (w) { wall = w; break; }
+      }
+      if (!wall) continue;
+    }
+    if (f) {
+      const edge = f.d > -0.035;                                      // a bright rim
+      const bevel = 1 - Math.abs(f.v) / HALF_W;                       // rounded like a tube: lighter along the middle
+      const side = 0.5 + 0.5 * flat;                                  // darker when turned away
+      const sweep = Math.exp(-(((xa * 0.7 + py * 0.7) / 2 + 0.5 - glint) ** 2) * 120);
+      l = ((edge ? 0.95 : 0.5 + 0.3 * bevel) * side * intro[f.k].p + 0.4 * sweep) * (0.94 + 0.06 * Math.sin(t * 3 + f.u * 6));
+      col = mix3(COLS_T[f.k], [0.62, 0.62, 0.62], sweep * 0.7 + (edge ? 0.15 : 0));
+    } else {                                                          // side wall: same colour, in shade
+      l = (0.4 + 0.35 * Math.abs(sn)) * intro[wall.k].p;
+      col = mix3(COLS_T[wall.k], [0.2, 0.2, 0.25], 0.25);
+    }
+    set(r * COLS + c, clamp(l), col[0], col[1], col[2]);
+  }
+
+  // sparks shooting out from the tips, each in its bar's colour
+  const on = smoothstep(2, 3, t);
+  if (on > 0) for (let k = 0; k < 48; k++) {
+    const b = k % BARS.length, life = 1.2 + rnd(k, 1) * 0.9, q = t / life + rnd(k, 2), n = Math.floor(q), f = q - n;
+    const a = (BARS[b].ang + (rnd(k, n, 3) - 0.5) * 16) * Math.PI / 180, d = RAD * (1.05 + f * (0.5 + 0.4 * rnd(k, n, 4)));
+    const x = Math.cos(a) * d * flat, y = CY + Math.sin(a) * d, col = COLS_T[b];
+    put(x, y, (0.85 * (1 - f)) * on, col[0], col[1], col[2]);
+    if (f < 0.4) put(x - Math.cos(a) * UNIT * flat, y - Math.sin(a) * 0.7, 0.5 * (1 - f) * on, col[0], col[1], col[2]);
+  }
+
+  const off = Math.floor(t * 4);                                      // a few twinkles
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c;
+    if (lum[i] < 0.1 && hash3(c, r + off, 77) % 1000 < 2) set(i, 0.35, 0.8, 0.8, 1);
+  }
+  const fade = smoothstep(0, 0.3, t);
+  if (fade < 1) for (let i = 0; i < N; i++) lum[i] *= fade;
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>
