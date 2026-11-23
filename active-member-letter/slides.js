@@ -29,7 +29,7 @@ export const SLIDES = [
     lead: "Non mi aspettavo voi.",
     body: ["Le vostre personalità\ncosì diverse e interessanti,\nil limoncello, le party bag, le benedizioni… e vabbè, anche il file eventi."] },
   { art: "art/07-faro/", color: "#fff0b3", behind: true, down: 20, zoom: 1.08,
-    lead: "Qui posso inebriarmi nella mia tossica ricerca di essere il più utile, gentile e perfetto faro per chiunque mi rivolga la parola.",
+    lead: "Qui posso inebriarmi nella mia tossica ricerca di essere il più utile, gentile e perfetto faro a chiunque mi rivolga la parola.",
     body: ["Ma col tempo ho capito che ESN mi rispecchia davvero: nell'organizzazione, nell'accoglienza e nella balotta."] },
   { art: "art/08-crime-night/", color: "#ffd23f", behind: true, textAt: "swap light",
     lead: "Tengo compagnia e poco più al karaoke, speak, e ufficio.",
