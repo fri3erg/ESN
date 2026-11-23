@@ -31,8 +31,13 @@
     width: 100%; max-width: 980px; margin: 0 auto; text-align: center;
     padding: calc(34px + env(safe-area-inset-top)) var(--pad) 10px; }
   .art { position: relative; flex: 1; min-height: 46%; }
-  .art iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none;
-    background: #000;
+  /* --zoom enlarges the art (cropping its sides), --down pushes it lower (cropping its bottom) */
+  /* on wide screens the art grows with the frame's height, so --down counts for a quarter there */
+  .art { --zoom: 1; --down: 0%; --down-k: 1; overflow: hidden; }
+  @media (min-aspect-ratio: 1/1) { .art { --down-k: .25; } .art[style*="--zoom-wide"] { --zoom: var(--zoom-wide); } }
+  .art iframe { position: absolute; border: 0; pointer-events: none; background: #000;
+    width: calc(var(--zoom) * 100%); left: calc((1 - var(--zoom)) * 50%);
+    height: calc(var(--zoom) * 100% + var(--down) * var(--down-k)); top: calc((1 - var(--zoom)) * 50%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%);
             mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%); }
 
@@ -41,6 +46,14 @@
   .slide.behind .art iframe { -webkit-mask-image: none; mask-image: none; }
   .slide.behind .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(to bottom, rgba(0,0,0,.72) 0, rgba(0,0,0,.45) 34%, transparent 55%); }
+  /* text in the middle of the screen (rain), or a bit lower than the top (cobwebs) */
+  .slide.middle .text { margin: auto; max-height: 80%; }
+  .slide.middle .art::after { background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,.2) 70%); }
+  .slide.lower .text { margin-top: 16vh; }
+  /* a lighter shade under the words, for art whose sky should show (sunrise) */
+  .slide.light .art::after { background: linear-gradient(to bottom, rgba(0,0,0,.4) 0, rgba(0,0,0,.2) 30%, transparent 50%); }
+  /* art that rises a little under the text */
+  .slide.overlap .art { margin-top: -14vh; }
 
   /* the words: handwriting, glowing softly in the slide's colour */
   .lead, .body p { color: var(--c); text-wrap: balance;
@@ -121,7 +134,8 @@ const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">":
 // build every slide once; the art iframe is only loaded while its slide is showing
 const els = SLIDES.map((s, i) => {
   const el = document.createElement("section");
-  el.className = "slide" + (s.cover ? " cover" : "") + (s.behind ? " behind" : "");
+  el.className = "slide" + (s.cover ? " cover" : "") + (s.behind ? " behind" : "") + (s.overlap ? " overlap" : "")
+    + (s.textAt ? " " + s.textAt : "");
   el.style.setProperty("--c", s.color);
   el.setAttribute("aria-hidden", "true");
   let d = 0.5;
@@ -139,7 +153,7 @@ const els = SLIDES.map((s, i) => {
   return el;
 });
 
-const artUrl = (i) => SLIDES[i].art || `art/placeholder/index.html?seed=${i + 1}`;
+const artUrl = (i) => SLIDES[i].art || `art/placeholder/?seed=${i + 1}`;
 
 let cur = -1;
 function show(i) {
@@ -151,7 +165,11 @@ function show(i) {
     el.setAttribute("aria-hidden", k === i ? "false" : "true");
   });
   // a fresh iframe so the art plays its intro each time; the old one goes once it has faded out
-  els[i].querySelector(".art").innerHTML = `<iframe src="${artUrl(i)}" title="" tabindex="-1"></iframe>`;
+  const box = els[i].querySelector(".art");
+  if (SLIDES[i].zoom) box.style.setProperty("--zoom", SLIDES[i].zoom);
+  if (SLIDES[i].down) box.style.setProperty("--down", SLIDES[i].down + "%");
+  if (SLIDES[i].zoomWide) box.style.setProperty("--zoom-wide", SLIDES[i].zoomWide);
+  box.innerHTML = `<iframe src="${artUrl(i)}" title="" tabindex="-1"></iframe>`;
   if (prev >= 0) setTimeout(() => { if (cur !== prev) els[prev].querySelector(".art").innerHTML = ""; }, 900);
   [...progress.children].forEach((b, k) => { b.className = k < i ? "done" : k === i ? "now" : ""; });
   progress.style.setProperty("--c", SLIDES[i].color);
