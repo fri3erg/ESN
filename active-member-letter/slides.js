@@ -22,7 +22,7 @@ export const SLIDES = [
   { art: "art/04-sezione/?top=0.36&wide=0.24", color: "#ff9fcf", behind: true, textAt: "light",
     lead: "Ho iniziato in una sezione piccola, un po' disorganizzata e molto umana.",
     body: ["Lì, sia da newbie che Erasmus io stesso, mi sentivo davvero accolto come persona, e non come un ruolo."] },
-  { art: "art/05-bologna/", color: "#f2a65e",
+  { art: "art/05-bologna/", color: "#f2704e",
     lead: "Di Bologna, lo ammetto, avevo un po' paura.",
     body: ["Me la immaginavo organizzata, burocratica, piena di aspettative."] },
   { art: "art/06-limoncello/", color: "#f3e45e", behind: true, down: 22,
