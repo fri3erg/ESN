@@ -20,7 +20,7 @@ rain and cobweb slides).
   `04-sezione` takes `?top=` / `?wide=` to start the photo lower (phones / wide screens), and
   `10-ragnatele` has bigger webs that fan a full quarter turn, edge to edge. Also tweaked here: the
   sunrise's longer rays, the flag's lower and stronger cross, confetti across the whole width, more stars
-  over the lighthouse, stronger police tape.
+  over the lighthouse, stronger police tape, whiter webs and spider.
 - `art/placeholder`: a cloud of letters in ESN colours, for a slide whose `art` is left empty.
 
 ## Photos

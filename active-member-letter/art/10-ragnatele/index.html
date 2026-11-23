@@ -24,9 +24,9 @@
 // An old dusty corner: cobwebs in the top corners (and a smaller one at the bottom right) that sway in
 // a draught, dust drifting through the air, and a little spider letting itself down on a thread in the
 // middle, hanging there a while, and climbing back up.
-const SILK = [0.74, 0.72, 0.66];        // threads: silver with a faint warm tint
+const SILK = [0.95, 0.95, 0.93];        // threads: nearly white silk
 const DUST = [0.66, 0.60, 0.50];        // dust caught in the web and floating in the air
-const BODY = [0.50, 0.46, 0.42];        // the spider
+const BODY = [0.80, 0.79, 0.77];        // the spider
 const EYE = [0.90, 0.90, 0.84];
 const GLOW = 0.6;
 const FONTS_TO_WAIT_FOR = [];
@@ -265,7 +265,7 @@ function drawSpider(t) {
   }
   // abdomen up top (where the silk comes out), head below it, then two big round eyes
   blob(x, y - 2.0 * SP, 3.0 * SP, 3.3 * SP, 0.72, BODY);
-  blob(x - 1.0 * SP, y - 3.2 * SP, 1.0 * SP, 1.0 * SP, 0.85, [0.62, 0.58, 0.53]);   // a sheen on the abdomen
+  blob(x - 1.0 * SP, y - 3.2 * SP, 1.0 * SP, 1.0 * SP, 0.85, [0.96, 0.95, 0.93]);   // a sheen on the abdomen
   blob(x, y + 1.9 * SP, 2.2 * SP, 1.9 * SP, 0.68, BODY);
   const blink = (t % 5.3) < 0.15 ? 0.2 : 1;
   for (let e = -1; e <= 1; e += 2) {
