@@ -33,7 +33,7 @@ export const SLIDES = [
     body: ["Ma col tempo ho capito che ESN mi rispecchia davvero: nell'organizzazione, nell'accoglienza e nella balotta."] },
   { art: "art/08-crime-night/", color: "#ffd23f", behind: true, textAt: "swap light",
     lead: "Tengo compagnia e poco più al karaoke, speak, e ufficio.",
-    body: ["Ma il mio posto sono i tandem. Sono felicissimo di quello che i siti hanno portato alla serata: meno lavoro, giochi più chiari, e un segnale per gli Erasmus che ci teniamo davvero."] },
+    body: ["Ma il mio posto sono i tandem. Sono felicissimo di quello che i siti hanno portato alla serata, meno lavoro, giochi più chiari, e un segnale per gli Erasmus che ci teniamo davvero."] },
   { art: "art/09-cannone/", color: "#ff6b5e", behind: true, zoom: 1.15, textAt: "light",
     lead: "Per questo infilo la testa nel cannone umano",
     body: ["e mi punto verso la posizione di responsabile tandem e di webmaster, per portare quello che so fare, e il mio sorriso, lì dove volontari ed Erasmus si incontrano."] },
