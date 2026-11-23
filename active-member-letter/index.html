@@ -142,7 +142,7 @@ const els = SLIDES.map((s, i) => {
   const next = () => (d += 0.5, `style="--d:${d.toFixed(2)}s"`);
   el.innerHTML = `
     <div class="text">
-      <h1 class="lead reveal${s.lead.length > 70 ? " long" : ""}" style="--d:${d}s">${esc(s.lead)}</h1>
+      <h1 class="lead reveal${s.lead.length > 70 ? " long" : ""}" style="--d:${d}s">${esc(s.lead).replace(/\n/g, "<br>")}</h1>
       <div class="body">${s.body.map((p) => `<p class="reveal" ${next()}>${esc(p)}</p>`).join("")}</div>
     </div>
     <div class="art"></div>

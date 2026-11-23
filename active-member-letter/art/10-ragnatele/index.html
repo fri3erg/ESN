@@ -106,14 +106,15 @@ const XL = X[0], XR = X[COLS - 1], YT = Y[0], YB = Y[ROWS - 1];
 const WIN_W = XR - XL, WIN_H = YB - YT;
 
 // ---------------------------------------------------------------- webs, built once
-// A corner web: spokes fanning out from the corner over a quarter turn, sagging rings strung between
+// A corner web: spokes fanning out from the corner over a full quarter turn, the outer two along the edges, sagging rings strung between
 // neighbouring spokes, a few broken rings with loose ends hanging down, and lumps of dust on the silk.
 const WEBS = [];
 function buildWeb(seed, cx, cy, sx, sy, R) {
   const NS = 7 + (hash3(seed, 1, 1) % 2), NR = 7;
   const spokes = [];
   for (let j = 0; j < NS; j++) {
-    const a = (0.1 + 0.8 * (j + (rnd(seed, j, 2) - 0.5) * 0.4) / (NS - 1)) * Math.PI / 2;
+    const jit = j === 0 || j === NS - 1 ? 0 : (rnd(seed, j, 2) - 0.5) * 0.4;
+    const a = (0.015 + 0.97 * (j + jit) / (NS - 1)) * Math.PI / 2;   // edge to edge, a full quarter turn
     const L = R * (0.8 + rnd(seed, j, 3) * 0.3);
     const pts = [];
     for (let k = 1; k <= NR; k++) pts.push(L * Math.pow(k / NR, 1.15) * (0.92 + rnd(seed, j * 31 + k, 4) * 0.12));
@@ -132,7 +133,7 @@ function buildWeb(seed, cx, cy, sx, sy, R) {
   }
   WEBS.push({ seed, cx, cy, sx, sy, R, spokes, segs, dangles, lumps, NR });
 }
-const WEB_R = Math.min(0.42 * WIN_W, 0.5 * WIN_H, 90);
+const WEB_R = Math.min(0.62 * WIN_W, 0.55 * WIN_H, 110);                // the two top webs meet in the middle
 buildWeb(1, XL, YT, 1, 1, WEB_R);
 buildWeb(2, XR, YT, -1, 1, WEB_R * 0.92);
 buildWeb(3, XR, YB, -1, -1, WEB_R * 0.55);

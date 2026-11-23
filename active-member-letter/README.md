@@ -15,7 +15,10 @@ rain and cobweb slides).
 - `art/<name>/index.html`: one art page per folder, shown in a frame under the text. Each restarts
   its animation when its slide opens. All of them are copied from the `fri3erg/ascii_art` repo:
   `art/esn` from `projects/esn`, `art/02-pioggia` … `art/11-bacio` from `projects/lettera`. To change a
-  piece, change it there and copy it over again.
+  piece, change it there and copy it over again. Two copies were changed here afterwards, so copy these
+  changes back to ascii_art too, or they'll be lost on the next copy:
+  `04-sezione` takes `?top=` / `?wide=` to start the photo lower (phones / wide screens), and
+  `10-ragnatele` has bigger webs that fan a full quarter turn, edge to edge.
 - `art/placeholder`: a cloud of letters in ESN colours, for a slide whose `art` is left empty.
 
 ## Photos

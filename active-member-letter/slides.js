@@ -1,5 +1,6 @@
 // The letter, one entry per slide. `lead` is the first line, shown bigger; `body` the paragraphs after it.
 // `art`: the page drawn under the text (a folder in art/, copied from the ascii_art repo's projects/lettera).
+// A \n in `lead` starts a new line there.
 // `color`: the text colour, picked to match the art.
 // `behind: true` lets the art fill the whole screen behind the text instead of sitting below it.
 // `down: 20` pushes the art 20% lower; `zoom: 1.3` makes it 30% bigger (both crop it at the edges);
@@ -8,16 +9,16 @@
 // `textAt`: "middle" centres the text on the screen, "lower" moves it down from the top,
 // "light" keeps the shade under the text lighter so the art's sky shows.
 export const SLIDES = [
-  { art: "art/esn/", color: "#8fdcff", cover: true,
+  { art: "art/esn/", color: "#8fdcff", cover: true, behind: true, down: 30, textAt: "light",
     lead: "Ciao amori miei.", body: ["Sì lo so, grande sorpresa"] },
   { art: "art/02-pioggia/", color: "#8db8ff", behind: true, textAt: "middle",
-    lead: "Devo dirlo, non sono entrato in ESN per un nobile motivo.",
+    lead: "Devo dirlo,\nnon sono entrato in ESN per un nobile motivo.",
     body: ["Volevo amici. Una scusa per uscire di casa. Gente con cui organizzare cose, come facevo già prima, ma con chi ha davvero voglia di farlo."] },
   { art: "art/03-alba/", color: "#ffc76e", behind: true, down: 18, textAt: "light",
     lead: "Poi però",
     body: ["Mi sono innamorato del sorridere alla gente. Del farla sentire in uno spazio fatto tutto per loro.",
            "Dell'essere una faccia gentile in un posto sconosciuto."] },
-  { art: "art/04-sezione/", color: "#ff9fcf", behind: true, down: 30, zoomWide: 0.72,
+  { art: "art/04-sezione/?top=0.36&wide=0.24", color: "#ff9fcf", behind: true, textAt: "light",
     lead: "Ho iniziato in una sezione piccola, un po' disorganizzata e molto umana.",
     body: ["Lì, da newbie ed Erasmus io stesso, mi sentivo davvero accolto come persona, e non come un ruolo."] },
   { art: "art/05-bologna/", color: "#f2a65e",
@@ -32,7 +33,7 @@ export const SLIDES = [
   { art: "art/08-crime-night/", color: "#ffd23f", behind: true, down: 22,
     lead: "Tengo compagnia e poco più al karaoke, speak, e ufficio.",
     body: ["Ma il mio posto sono i tandem. Sono felicissimo di quello che i siti hanno portato alla serata: meno lavoro, giochi più chiari, e un segnale per gli Erasmus che ci teniamo davvero."] },
-  { art: "art/09-cannone/", color: "#ff6b5e", overlap: true, zoom: 1.15,
+  { art: "art/09-cannone/", color: "#ff6b5e", behind: true, zoom: 1.15, textAt: "light",
     lead: "Per questo infilo la testa nel cannone umano",
     body: ["e mi punto verso il responsabile tandem e il webmaster, per portare quello che so fare, e il mio sorriso, lì dove volontari ed Erasmus si incontrano."] },
   { art: "art/10-ragnatele/", color: "#d6cfbf", behind: true, textAt: "lower",
