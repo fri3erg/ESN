@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lettera-06-limoncello</title>
+<meta name="description" content="a bottle of limoncello dancing">
+<meta property="og:title" content="limoncello">
+<meta property="og:description" content="a bottle of limoncello dancing">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="An animated picture drawn with letters"></canvas>
+
+<script>
+"use strict";
+const FONTS_TO_WAIT_FOR = [];                // no text in this one
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+
+// ================================================================ the scene: a limoncello bottle at a party
+// The bottle is a surface of revolution turning on its axis. From T0 a beat starts (120 bpm): the bottle
+// glows and sends out arcs of sound to both sides, confetti falls, sparkles blink.
+const XMAX = COLS * UNIT / 2, YMIN = -Y_OFF, YMAX = ROWS - Y_OFF;     // what the frame actually shows
+const BEAT = 0.5, T0 = 1.6, SPIN = 0.9;
+const PH = 66, K = SCENE_H * 0.5 / PH;                                // bottle profile is PH units tall
+const BOT = SCENE_H / 2 + PH / 2 * K, MID = BOT - 26 * K;                 // bottle bottom, and where the sound comes from
+const LIGHT = (() => { const v = [-0.5, -0.3, 0.81], m = Math.hypot(...v); return v.map((q) => q / m); })();
+const HALF = (() => { const v = [LIGHT[0], LIGHT[1], LIGHT[2] + 1], m = Math.hypot(...v); return v.map((q) => q / m); })();
+const PARTY = [[1, 0.9, 0.15], [1, 0.2, 0.75], [0.15, 0.85, 1], [0.5, 1, 0.2], [1, 0.5, 0.1]].map(tame);
+const LIQ = tame([1, 0.8, 0.06]), LIQ_DEEP = tame([1, 0.5, 0.03]), GLASS = tame([0.75, 0.9, 0.6]);
+const CAP = tame([1, 0.78, 0.3]), CAP_DARK = tame([0.7, 0.45, 0.12]), WHITE = [0.6, 0.6, 0.55];
+const RIND = tame([0.75, 1, 0.15]), PITH = tame([1, 1, 0.9]), FLESH = tame([1, 0.93, 0.45]);
+
+const EDGE = new Float32Array(N), haze = new Float32Array(N);         // dark towards the frame's edges
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const i = r * COLS + c, e = Math.min(XMAX - Math.abs(X[c]), Y[r] - YMIN, YMAX - Y[r]);
+  EDGE[i] = smoothstep(3, 18, e);
+  const d2 = (X[c] / 45) ** 2 + ((Y[r] - MID) / 55) ** 2;
+  if (hash3(r, c, 1) % 100 < 28) haze[i] = 0.1 * Math.exp(-d2 * 1.6) * EDGE[i];
+}
+async function setup() {}
+
+function prof(v) {                                                    // bottle radius at height v (0 = top of cap)
+  if (v <= 0 || v >= PH) return 0;
+  let R;
+  if (v < 7) R = 5.3 * Math.sqrt(clamp(v / 1.3));                     // cap, rounded on top
+  else if (v < 8.4) R = 4.8;                                          // lip of the glass
+  else if (v < 15) R = 4.3 + 0.2 * smoothstep(8.4, 15, v);            // short neck
+  else if (v < 28) R = 4.5 + 9.6 * smoothstep(15, 28, v);             // round shoulder
+  else R = 14.1 - 0.25 * smoothstep(PH - 6, PH - 1, v);
+  return R * Math.sqrt(clamp((PH - v) / 2.2));
+}
+const wrap = (a) => a - TAU * Math.round(a / TAU);
+
+// how the beat is going at time t: index, phase in the beat, and a hit envelope
+function beatAt(t) {
+  if (t < T0) return { on: 0, i: -1, f: 0, env: 0 };
+  const b = (t - T0) / BEAT, i = Math.floor(b), f = b - i;
+  return { on: smoothstep(T0, T0 + 0.3, t), i, f, env: Math.exp(-f * 5) };
+}
+
+function drawBackground(t, B) {
+  // arcs of sound: a cell at distance d sees the sound that left the bottle d / V seconds ago
+  const V = 34, spacing = BEAT * V, off = Math.floor(t * 4);
+  for (let r = 0; r < ROWS; r++) {
+    const dy = Y[r] - MID;
+    for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c, j = i * 3;
+      lum[i] = haze[i]; rgb[j] = 0.5; rgb[j + 1] = 0.45; rgb[j + 2] = 0.2;
+      const dx = X[c], d = Math.sqrt(dx * dx + dy * dy);
+      const te = t - d / V;
+      if (te > T0 && d > 15 * K) {
+        const b = (te - T0) / BEAT, bi = Math.floor(b), f = b - bi, dist = Math.min(f, 1 - f) * spacing;
+        const down = bi % 4 === 0, w = down ? 1.5 : 0.9;
+        if (dist < w * 2.2) {
+          const mask = smoothstep(0.88, 0.6, Math.abs(dy) / d);         // arcs to the left and right
+          const fade = smoothstep(15 * K, 24 * K, d) * (1 - 0.75 * smoothstep(25, 110, d)) * EDGE[i];
+          const l = Math.exp(-((dist / w) ** 2)) * (down ? 0.85 : 0.6) * mask * fade;
+          if (l > lum[i]) { const col = PARTY[bi % PARTY.length]; set(i, l, col[0], col[1], col[2]); }
+        }
+      }
+      if (lum[i] < 0.1 && hash3(c, r + off, 77) % 1000 < 2) set(i, 0.35 * EDGE[i] * B.on, 1, 0.85, 0.5);
+    }
+  }
+}
+
+function drawFloor(t, B, hop, pop) {                                  // a coloured glow where the bottle lands
+  const col = B.i >= 0 ? PARTY[B.i % PARTY.length] : LIQ;
+  const rx = 22 * K * (1 - 0.25 * hop / (3 * K)), ry = 2.6;
+  const r0 = Math.max(0, Math.floor(rowOf(BOT - ry))), r1 = Math.min(ROWS, Math.ceil(rowOf(BOT + ry * 1.6)));
+  const c0 = Math.max(0, Math.floor(colOf(-rx))), c1 = Math.min(COLS, Math.ceil(colOf(rx)));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const q = (X[c] / rx) ** 2 + ((Y[r] - BOT - 0.6) / ry) ** 2;
+    if (q >= 1) continue;
+    const l = (1 - q) * (0.3 + 0.3 * B.env) * pop;
+    const i = r * COLS + c;
+    if (l > lum[i] && hash3(r, c, 5) % 3) set(i, l, col[0], col[1], col[2]);
+  }
+}
+
+function drawBottle(t, B, hop, pop) {
+  const spin = t * SPIN;
+  const k = K * pop, ky = k, kx = k;                                  // stays planted, just turning
+  const bot = BOT - hop, top = bot - PH * ky;
+  const rim = B.i >= 0 ? PARTY[B.i % PARTY.length] : LIQ;
+  const level = 22 + 0.6 * Math.sin(t * 1.7);                         // liquid level (profile units)
+  const r0 = Math.max(0, Math.floor(rowOf(top))), r1 = Math.min(ROWS, Math.ceil(rowOf(bot)));
+  for (let r = r0; r < r1; r++) {
+    const y = Y[r], v = (y - top) / ky, R = prof(v) * kx;
+    if (R <= 0.3) continue;
+    const dR = (prof(v + 0.5 / ky) - prof(v - 0.5 / ky)) * kx;
+    const cx = 0;
+    const c0 = Math.max(0, Math.floor(colOf(cx - R))), c1 = Math.min(COLS, Math.ceil(colOf(cx + R)));
+    for (let c = c0; c < c1; c++) {
+      const s = (X[c] - cx) / R;
+      if (s <= -1 || s >= 1) continue;
+      const phi = Math.asin(s), cphi = Math.cos(phi), a = phi + spin;
+      let nx = s, ny = -dR, nz = cphi, l, col;
+      if (v >= 7 && v < 34 || v > PH - 8) nx += 0.16 * Math.sin(a * 10) * smoothstep(26, 31, v);  // moulded ribs on the body catch the light
+      const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+      const diff = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+      const spec = Math.pow(Math.max(0, nx * HALF[0] + ny * HALF[1] + nz * HALF[2]), 36);
+      const edge = Math.pow(Math.abs(s), 5);
+      if (v < 7) {                                                    // gold screw cap with ridges
+        const ridge = 0.5 + 0.5 * Math.cos(a * 26);
+        l = 0.3 + 0.55 * diff * (0.7 + 0.3 * ridge) + spec * 0.8;
+        col = mix3(mix3(CAP_DARK, CAP, diff + 0.2 * ridge), WHITE, spec);
+        if (v > 6 || v < 0.9) l *= 0.75;
+      } else {
+        const lev = level + (s * 2.2 * Math.sin(t * 3.1) + 1.2 * B.env * Math.sin(s * 3 + t * 9)) * B.on;
+        if (v > lev) {                                                // the limoncello
+          const depth = cphi;
+          l = 0.3 + 0.26 * diff + 0.16 * depth;
+          col = mix3(LIQ_DEEP, LIQ, 0.3 + 0.7 * depth);
+          if (v < lev + 1.1) { l += 0.3; col = mix3(col, PITH, 0.5); }     // bright line at the surface
+          // little bubbles rising inside
+          if (depth > 0.4 && hash3(Math.floor(a * 9 + 900), Math.floor(v * 0.7 + t * 6), 3) % 100 < 2) { l += 0.35; col = PITH; }
+        } else {                                                      // empty glass above it
+          l = 0.1 + 0.6 * edge;
+          col = GLASS;
+        }
+        // a lemon slice painted on each side of the glass, turning with the bottle
+        let painted = false;
+        for (let n = 0; n < 2; n++) {
+          const da = wrap(a - n * Math.PI);
+          if (Math.abs(da) > 1.5) continue;
+          const yc = top + 47 * ky, rw = 9.5 * k;
+          const u = da * 14.1 * kx, w = y - yc, rr = Math.hypot(u, w) / rw;
+          if (rr >= 1.08) continue;
+          painted = true;
+          const th = Math.atan2(w, u);
+          if (rr > 0.97) { col = LIQ_DEEP; l = 0.12; }                    // a dark outline so it reads
+          else if (rr > 0.84) { col = RIND; l = 0.6 + 0.3 * diff; }
+          else if (rr > 0.74 || rr < 0.1 || Math.abs(Math.sin(th * 4)) < 0.13 * (1 + rr)) { col = PITH; l = 0.72 + 0.25 * diff; }
+          else { col = FLESH; l = 0.45 + 0.3 * diff + 0.1 * Math.sin(rr * 12); }
+        }
+        // glints on the glass, and a coloured party light on the edges
+        if (!painted) { l += spec * 0.75; col = mix3(col, WHITE, spec * 1.4); }
+        l += 0.2 * edge;
+        const side = Math.pow(clamp(B.i % 2 ? -s : s), 4) * B.on * (0.5 + 0.5 * B.env);
+        if (side > 0.02) { l += side * 0.4; col = mix3(col, rim, side * 1.3); }
+      }
+      set(r * COLS + c, clamp(l * smoothstep(0, 0.5, pop)), col[0], col[1], col[2]);
+    }
+  }
+}
+
+function drawConfetti(t, B) {
+  if (!B.on) return;
+  const H = YMAX - YMIN, Wd = 2 * XMAX;
+  for (let k = 0; k < 70; k++) {                                      // a gentle rain over the whole frame
+    const life = 4 + rnd(k, 1) * 3, ph = (t - T0) / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+    if (cyc === 0 && u < rnd(k, 2)) continue;                         // nothing before the beat starts
+    const x = (rnd(k, cyc, 3) - 0.5) * Wd * 0.9 + 3 * Math.sin(t * (1 + rnd(k, 4)) + k);
+    const y = YMIN + u * H;
+    const col = PARTY[k % PARTY.length], flip = Math.abs(Math.sin(t * (3 + rnd(k, 5) * 4) + k));
+    const ed = smoothstep(3, 14, Math.min(XMAX - Math.abs(x), y - YMIN, YMAX - y));
+    const l = (0.35 + 0.45 * flip) * ed * B.on;
+    put(x, y, l, col[0], col[1], col[2]);
+    if (flip > 0.4) put(x + UNIT, y, l * 0.8, col[0], col[1], col[2]);
+  }
+  // every eight bars a burst shoots out of the top of the bottle
+  const bars = (t - T0) / (BEAT * 32), bc = Math.floor(bars), dt = (bars - bc) * BEAT * 32;
+  if (dt < 3) for (let k = 0; k < 46; k++) {
+    const ang = -Math.PI / 2 + (rnd(k, bc, 7) - 0.5) * 2.4, sp = 25 + rnd(k, bc, 8) * 30;
+    const x = Math.cos(ang) * sp * dt, y = BOT - PH * K + Math.sin(ang) * sp * dt + 22 * dt * dt;
+    const col = PARTY[(k + bc) % PARTY.length], l = 0.9 * (1 - dt / 3);
+    const ed = smoothstep(3, 14, Math.min(XMAX - Math.abs(x), y - YMIN, YMAX - y));
+    put(x, y, l * ed, col[0], col[1], col[2], true);
+  }
+}
+
+function drawSparkles(t, B) {                                         // little stars blinking on the beat
+  if (!B.on) return;
+  for (let k = 0; k < 6; k++) {
+    const n = B.i * 6 + k, ang = rnd(n, 1) * TAU, d = (20 + rnd(n, 2) * 22) * K;
+    const x = Math.cos(ang) * d * 1.1, y = MID - 6 * K + Math.sin(ang) * d * 1.2;
+    const l = Math.exp(-B.f * 4) * 0.95 * B.on, col = [0.62, 0.6, 0.45];
+    put(x, y, l, ...col, true);
+    const arm = B.f < 0.35 ? 1 : 0;
+    if (arm) for (const [ox, oy] of [[UNIT, 0], [-UNIT, 0], [0, 1], [0, -1]]) put(x + ox, y + oy, l * 0.6, ...col);
+  }
+}
+
+function scene(t) {
+  const B = beatAt(t);
+  const p = smoothstep(0.15, 1.1, t);                                 // intro: the bottle pops up, overshooting a bit
+  const pop = p < 1 ? p + Math.sin(p * Math.PI) * 0.12 : 1;
+  const hop = (1 - p) * 18 * K;                                     // only the rise of the intro, no jumping
+  drawBackground(t, B);
+  drawFloor(t, B, hop, p);
+  drawBottle(t, B, hop, pop);
+  drawConfetti(t, B);
+  drawSparkles(t, B);
+  const fade = smoothstep(0, 0.3, t);
+  if (fade < 1) for (let i = 0; i < N; i++) lum[i] *= fade;
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crime Night</title>
+<meta name="description" content="a fingerprint under a magnifying glass, made of letters">
+<meta property="og:title" content="Crime Night">
+<meta property="og:description" content="a fingerprint under a magnifying glass, made of letters">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="A fingerprint drawn with letters, a magnifying glass sweeping over it under a swinging lamp, police tape across the corners"></canvas>
+
+<script>
+"use strict";
+const FONTS_TO_WAIT_FOR = [];
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. The main subject lives in a SCENE_W x SCENE_H box that is centred; the grid itself covers the
+// whole screen, so the background (desk, lamp, smoke, tape) reaches every edge.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+const VX = COLS * UNIT / 2, YT = -Y_OFF, YB = ROWS - Y_OFF;           // visible extents, in units
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// ================================================================ the scene
+// A fingerprint lies on a dark desk under a slowly swinging lamp. A magnifying glass sweeps over it in a
+// figure of eight: inside the lens the ridges are twice as big and lit warm, outside they are faint.
+// Police tape (stripes only) crosses two corners, smoke drifts through the lamp light.
+const CY = SCENE_H / 2;                                               // fingerprint centre
+const FR = Math.min(SCENE_H * 0.36, SCENE_W * 0.62);                  // fingerprint half-height
+const NR = 18;                                                        // ridges from core to edge
+const MAG = 1.7;                                                      // lens magnification
+const RL = FR * 0.34;                                                  // lens radius
+const RIM = 1.7;                                                      // rim thickness
+const HAND_ANG = 0.72, HAND_LEN = FR * 0.5;                           // handle: angle (down-right), length
+const LOOP = 18;                                                      // seconds per figure of eight
+
+// colours (largest channel about 0.6, the renderer brightens them)
+const DESK = [0.34, 0.38, 0.5], PRINT = [0.48, 0.5, 0.56], LAMPLIT = [0.56, 0.5, 0.4];
+const WARM = [0.6, 0.4, 0.15], WARM_DIM = [0.55, 0.32, 0.12], STEEL = [0.5, 0.52, 0.57];
+const BRASS = [0.6, 0.45, 0.2], WOOD = [0.45, 0.26, 0.14], TAPE_Y = [0.6, 0.48, 0.04], TAPE_K = [0.1, 0.095, 0.08];
+const SMOKE = [0.45, 0.46, 0.5];
+
+// desk grain: long horizontal streaks, like old wood
+function grainAt(x, y) {
+  const w = y * 0.55 + 4 * vnoise(x * 0.025, y * 0.06, 1);
+  return 0.5 + 0.5 * Math.sin(w * 1.9) * (0.6 + 0.4 * vnoise(x * 0.05, y * 0.3, 2));
+}
+
+// the fingerprint at a scene point: returns ridge strength 0..1; also leaves FP_E (0 at the core, 1 at
+// the outline, for the draw-in) and FP_S (which side of a ridge, for relief shading)
+let FP_E = 0, FP_S = 0;
+function fpRidge(x, y) {
+  const px = x / FR, py = (y - CY) / FR;
+  const wx = px + 0.04 * vnoise(px * 2.3, py * 2.3, 11), wy = py + 0.04 * vnoise(px * 2.3 + 5, py * 2.3, 12);
+  const e = Math.hypot(wx / 0.7, wy < 0 ? wy : wy / 0.92);
+  FP_E = e;
+  if (e > 1.06) return 0;
+  const mask = 1 - smoothstep(0.88, 1.02, e + 0.06 * vnoise(px * 7, py * 7, 13));
+  // a whorl round a core a little above the middle; lower down the loops flatten into arches
+  const qx = wx - 0.04, qy = wy + 0.12;
+  const rw = Math.hypot(qx / 0.62, qy) * 0.62;
+  const flat = smoothstep(0.15, 0.75, qy);
+  const ra = qy * 0.62 + 0.18 * qx * qx;
+  const rr = mix(rw, ra + 0.22, flat * 0.4);
+  const phase = rr * NR / 0.7 + Math.atan2(qy, qx) / TAU + 0.25 * vnoise(px * 2.6, py * 2.6, 14);
+  const a = phase * TAU, wave = Math.cos(a);
+  FP_S = Math.sin(a);
+  let ridge = smoothstep(-0.05, 0.6, wave);
+  const br = vnoise(px * 8, py * 8, 15);                              // ridge endings and islands
+  if (br > 0.42) ridge *= 1 - smoothstep(0.42, 0.58, br);
+  if (hash3(Math.floor(x * 7), Math.floor(y * 3), 16) % 100 < 6) ridge *= 0.5;   // pores
+  return ridge * mask;
+}
+
+// pool of light from a lamp hanging over the desk, swinging slowly like a pendulum
+let LAMP_X = 0, LAMP_Y = 0;
+const LAMP_R = FR * 1.2;
+function lampAt(x, y) {
+  const d = Math.hypot(x - LAMP_X, y - LAMP_Y) / LAMP_R;
+  return d >= 1 ? 0 : 1 - smoothstep(0.25, 1, d);
+}
+
+// static layers, computed once
+const grain = new Float32Array(N), fp = new Float32Array(N), fpE = new Float32Array(N), fpS = new Float32Array(N);
+const vign = new Float32Array(N), dith = new Float32Array(N);
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const i = r * COLS + c, x = X[c], y = Y[r];
+  grain[i] = grainAt(x, y); dith[i] = rnd(c, r, 31);
+  fp[i] = fpRidge(x, y); fpE[i] = FP_E; fpS[i] = FP_S;
+  const ex = Math.min(c + 0.5, COLS - c - 0.5) * UNIT, ey = Math.min(r + 0.5, ROWS - r - 0.5);
+  vign[i] = smoothstep(0, 14, ex) * smoothstep(0, 9, ey);
+}
+// smoke is sampled on a coarse grid (every 3 columns, 2 rows) to keep it cheap
+const SMW = Math.ceil(COLS / 3), SMH = Math.ceil(ROWS / 2), smoke = new Float32Array(SMW * SMH);
+
+// police tape across a corner: centre line through a point D units in from the corner (sx, sy = ±1)
+function tapeOf(sx, sy) {
+  const D = Math.min(VX, (YB - YT) / 2) * 0.62;
+  const cx = sx * VX, cy = sy > 0 ? YB : YT;
+  const ang = sx * sy > 0 ? -0.62 : 0.62;                             // tilt so it cuts the corner
+  const ux = Math.cos(ang), uy = Math.sin(ang);
+  const nx = -sx, ny = -sy, nl = Math.hypot(nx, ny);
+  return { ox: cx + nx / nl * D, oy: cy + ny / nl * D, ux, uy, seed: sx + 2 * sy };
+}
+const TAPES = [tapeOf(1, -1), tapeOf(-1, 1)];
+const TAPE_W = 4.4;
+
+function drawTape(T, t, on) {
+  // bounding box: the whole visible grid near that corner (cheap enough: a strip)
+  for (let r = 0; r < ROWS; r++) {
+    const y = Y[r];
+    for (let c = 0; c < COLS; c++) {
+      const dx = X[c] - T.ox, dy = y - T.oy;
+      const v0 = -dx * T.uy + dy * T.ux;
+      if (v0 > TAPE_W + 2 || v0 < -TAPE_W - 2) continue;
+      const u = dx * T.ux + dy * T.uy;
+      const wave = Math.sin(u * 0.11 - t * 1.5 + T.seed), wave2 = Math.sin(u * 0.27 + t * 1.1 + T.seed * 2);
+      const v = v0 - 0.7 * wave - 0.25 * wave2;
+      const w = TAPE_W * (0.86 + 0.14 * Math.cos(u * 0.11 - t * 1.5 + T.seed + 1.2));   // twisting
+      if (Math.abs(v) > w) continue;
+      const i = r * COLS + c;
+      const shade = 0.72 + 0.28 * Math.cos(u * 0.11 - t * 1.5 + T.seed + 1.2);
+      const edge = Math.abs(v) > w - 0.6;
+      const stripe = ((u + v * 1.1) / 6.5 % 1 + 1) % 1 < 0.56;
+      let l, col;
+      if (edge) { l = 0.3 * shade; col = TAPE_Y; }
+      else if (stripe) { l = (0.72 + 0.2 * (1 - Math.abs(v) / w)) * shade; col = TAPE_Y; }
+      else { l = 0.42 * shade; col = TAPE_K; }
+      set(i, l * on, col[0], col[1], col[2]);
+    }
+  }
+}
+
+// where the lens is: it slides in from the lower right, then sweeps a figure of eight over the print
+let LX = 0, LY = 0;
+function lensAt(t) {
+  const tt = t - 1.4, w = TAU / LOOP;
+  const px = FR * 0.38 * Math.sin(w * tt), py = CY - FR * 0.05 + FR * 0.42 * Math.sin(2 * w * tt) * 0.9;
+  const k = smoothstep(1.2, 3.6, t);
+  LX = mix(VX * 0.9 + RL, px, k); LY = mix(YB + RL * 1.5, py, k);
+}
+
+function scene(t) {
+  // lamp
+  const sw = Math.sin(t * 0.42) + 0.15 * Math.sin(t * 1.1);
+  LAMP_X = FR * 0.55 * sw; LAMP_Y = CY - FR * 0.2 + FR * 0.12 * sw * sw;
+  const lampOn = smoothstep(0.1, 1.2, t) * (0.93 + 0.07 * Math.sin(t * 7.3) * Math.sin(t * 2.1));
+
+  // smoke, coarse
+  for (let sr = 0; sr < SMH; sr++) for (let sc = 0; sc < SMW; sc++) {
+    const x = X[Math.min(COLS - 1, sc * 3)], y = Y[Math.min(ROWS - 1, sr * 2)];
+    const n = vnoise(x * 0.035 + t * 0.06, y * 0.05 - t * 0.09 + 0.6 * vnoise(x * 0.02, y * 0.02 + t * 0.03, 22), t * 0.05);
+    smoke[sr * SMW + sc] = smoothstep(0.05, 0.7, n);
+  }
+
+  // desk, lamp light, smoke and the faint print
+  for (let r = 0; r < ROWS; r++) {
+    const y = Y[r], srow = (r >> 1) * SMW;
+    for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c, x = X[c];
+      const L = lampAt(x, y) * lampOn, g = grain[i];
+      let l = 0.02 + 0.035 * g + L * (0.06 + 0.07 * g);
+      const sm = smoke[srow + ((c / 3) | 0)];            // smoke: a scatter of dots, denser where thicker
+      if (dith[i] < sm * 0.45) l = Math.max(l, 0.075 + 0.1 * sm + 0.12 * L);
+      let cr = mix(DESK[0], LAMPLIT[0], L), cg = mix(DESK[1], LAMPLIT[1], L), cb = mix(DESK[2], LAMPLIT[2], L);
+      const f = fp[i];
+      if (f > 0) {
+        const e = fpE[i], appear = smoothstep(e * 1.7 + 0.1, e * 1.7 + 0.5, t);
+        const pl = f * appear * (0.24 + 0.26 * L);
+        if (pl > l) { l = pl; cr = mix(PRINT[0], LAMPLIT[0], L); cg = mix(PRINT[1], LAMPLIT[1], L); cb = mix(PRINT[2], LAMPLIT[2], L); }
+      }
+      set(i, l, cr, cg, cb);
+    }
+  }
+
+  // tape
+  const tapeOn = smoothstep(0.4, 1.6, t);
+  for (const T of TAPES) drawTape(T, t, tapeOn);
+
+  // lens
+  lensAt(t);
+  const lensOn = smoothstep(1.2, 2.2, t);
+  const hx = Math.cos(HAND_ANG), hy = Math.sin(HAND_ANG);
+  // shadow, falling down-right
+  const SX = LX + 3.2, SY = LY + 2.6, ext = RL + RIM + HAND_LEN + 6;
+  const r0 = Math.max(0, Math.floor(rowOf(LY - RL - RIM - 2))), r1 = Math.min(ROWS, Math.ceil(rowOf(LY + ext)));
+  const c0 = Math.max(0, Math.floor(colOf(LX - RL - RIM - 2))), c1 = Math.min(COLS, Math.ceil(colOf(LX + ext)));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const dx = X[c] - SX, dy = Y[r] - SY, d = Math.hypot(dx, dy);
+    const u = dx * hx + dy * hy, v = -dx * hy + dy * hx;
+    const inRing = d > RL - 0.6 && d < RL + RIM + 0.8;
+    const inHand = u > RL && u < RL + RIM + HAND_LEN && Math.abs(v) < 2;
+    if (inRing || inHand) lum[r * COLS + c] *= 1 - 0.75 * lensOn;
+  }
+  // glass, rim, handle
+  const GL = -2.3;                                                    // where the light hits the rim
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const x = X[c], y = Y[r], dx = x - LX, dy = y - LY, d = Math.hypot(dx, dy);
+    const i = r * COLS + c;
+    if (d < RL) {
+      const k = d / RL;
+      const sx = LX + dx / MAG, sy = LY + dy / MAG;
+      const f = fpRidge(sx, sy), e = FP_E, side = FP_S;
+      const appear = smoothstep(e * 1.7 + 0.1, e * 1.7 + 0.5, t);
+      const g = grainAt(sx, sy), L = lampAt(x, y) * lampOn;
+      const edgeDim = 1 - 0.45 * Math.pow(k, 4);
+      const valley = 0.1 + 0.06 * g + 0.05 * L;
+      const ridge = f * appear * (0.55 + 0.25 * side + 0.15 * L);
+      let l = Math.max(valley, ridge) * edgeDim;
+      let col = ridge > valley ? WARM : WARM_DIM;
+      // a soft highlight on the glass, upper left
+      const a = Math.atan2(dy, dx), da = Math.abs(((a - GL) % TAU + TAU + Math.PI) % TAU - Math.PI);
+      const hl = (1 - smoothstep(0.1, 0.45, da)) * (1 - smoothstep(0.06, 0.12, Math.abs(k - 0.78)));
+      l = mix(l, 0.62, hl * 0.8);
+      const lo = mix(lum[i], l, lensOn);
+      if (hl > 0.2) set(i, lo, 0.58, 0.56, 0.5); else set(i, lo, col[0], col[1], col[2]);
+    } else if (d < RL + RIM) {
+      const a = Math.atan2(dy, dx), lit = 0.5 + 0.5 * Math.cos(a - GL);
+      const across = (d - RL) / RIM, bev = 1 - Math.abs(across - 0.4) * 1.4;
+      const l = (0.3 + 0.35 * lit + 0.2 * bev) * lensOn;
+      set(i, l, STEEL[0], STEEL[1], STEEL[2]);
+    } else {
+      const u = dx * hx + dy * hy, v = -dx * hy + dy * hx;
+      const s0 = RL + RIM - 0.3;
+      if (u < s0 || u > s0 + HAND_LEN) continue;
+      const q = u - s0;
+      const hw = q < 2.2 ? 1.0 : q < 5 ? 1.5 : 1.75 - 0.25 * smoothstep(HAND_LEN - 3, HAND_LEN, q);
+      if (Math.abs(v) > hw) continue;
+      const round = 1 - Math.abs(v + 0.35 * hw) / (hw * 1.35);        // lit from the upper side
+      if (q < 5) set(i, (0.35 + 0.4 * round) * lensOn, BRASS[0], BRASS[1], BRASS[2]);
+      else {
+        const ring = Math.abs(q - 5.8) < 0.5 || Math.abs(q - HAND_LEN + 1.2) < 0.4;
+        const l = (ring ? 0.5 : 0.22 + 0.3 * round) * lensOn;
+        const cc = ring ? BRASS : WOOD;
+        set(i, l, cc[0], cc[1], cc[2]);
+      }
+    }
+  }
+
+  // dust motes drifting in the lamp light
+  for (let k = 0; k < 46; k++) {
+    const life = 7 + rnd(k, 1) * 6, ph = t / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+    const x = (rnd(k, cyc, 3) - 0.5) * VX * 1.6 + Math.sin(t * 0.4 + k) * 3;
+    const y = YT + (YB - YT) * (rnd(k, cyc, 4) * 0.9 + u * 0.15);
+    const L = lampAt(x, y) * lampOn;
+    if (L < 0.05) continue;
+    const tw = hash3(k, Math.floor(t * 6), 10) % 4 ? 1 : 0.5;
+    put(x, y, 0.45 * L * Math.sin(Math.PI * u) * tw, 0.6, 0.55, 0.45);
+  }
+
+  // dark edges (the letter fades the frame edge), and a quick fade-in
+  const fade = smoothstep(0, 0.4, t);
+  for (let i = 0; i < N; i++) lum[i] *= vign[i] * fade;
+}
+async function setup() {}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

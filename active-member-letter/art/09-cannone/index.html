@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lettera-09-cannone</title>
+<meta name="description" content="a human cannon at the circus">
+<meta property="og:title" content="cannone">
+<meta property="og:description" content="a human cannon at the circus">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="An animated picture drawn with letters"></canvas>
+
+<script>
+"use strict";
+const FONTS_TO_WAIT_FOR = [];                // no text in this one
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+
+// ================================================================ the scene: a circus human cannon
+// A little performer hops into a striped cannon, the fuse burns down, BOOM, they fly across the frame in a
+// parabola, spinning and flailing, and land in a safety net with their arms up. Then it starts again.
+// Everything is placed from the part of the grid the frame really shows, so the arc fits any shape.
+const XMAX = COLS * UNIT / 2, XMIN = -XMAX, YMIN = -Y_OFF, YMAX = ROWS - Y_OFF;
+const XW = XMAX - XMIN, YH = YMAX - YMIN;
+const S = clamp(Math.min(XW * 0.0102, YH * 0.0102), 0.8, 1.6);      // size of everything
+const YG = YMAX - (PORTRAIT ? 0.23 : 0.19) * YH;                                          // the ground
+const WR = 7 * S, LB = 31 * S;                                      // wheel radius, barrel length
+const PIV = { x: XMIN + Math.max(0.25 * XW, 21 * S), y: YG - WR };                      // wheel centre, the barrel turns on it
+const NET = { x: XMAX - Math.max(0.24 * XW, 18 * S), y: YG - 9.5 * S, w: Math.min(11 * S, 0.1 * XW) };
+const APEX = YMIN + 0.2 * YH;                                        // top of the flight
+const HIP = 5.4 * S;                                                    // hip height above the feet
+// boarding: appear and wave, run, crouch, jump with a tuck onto the muzzle, wobble there, slide in feet first,
+// wave a hand out of the muzzle, duck in; then the fuse burns down
+const INTRO = 0.9, T_IN = 0.45, T_RUN = 0.45, T_CROUCH = 0.85, T_JUMP = 0.97, T_PERCH = 1.57, T_SLIDE = 1.85,
+  T_HAND = 2.3, T_DUCK = 2.85, T_FUSE = 2.95, T_BOOM = 3.75, FLY = 1.6, T_LAND = T_BOOM + FLY, T_GONE = T_LAND + 1.15,
+  LOOP = T_GONE + 0.3;
+
+// barrel angle and flight path: muzzle M, landing L, a parabola through the apex; the barrel points
+// along the start of the parabola (solved a few times, since the muzzle moves with the angle)
+let ANG = 0.9, M = { x: 0, y: 0 }, PB = 0, PA = 0;
+const LAND = { x: NET.x, y: NET.y - 0.8 * S - HIP };
+for (let it = 0; it < 8; it++) {
+  M = { x: PIV.x + Math.cos(ANG) * LB * 0.88, y: PIV.y - Math.sin(ANG) * LB * 0.88 };
+  const D = LAND.y - M.y, h = Math.max(4, M.y - APEX);
+  PB = -2 * h - 2 * Math.sqrt(h * h + h * D);                         // y(u) = M.y + PB u + PA u^2
+  ANG = clamp(Math.atan2(-PB, LAND.x - M.x), 0.55, 1.22);
+}
+PB = -Math.tan(ANG) * (LAND.x - M.x); PA = LAND.y - M.y - PB;        // start the flight along the barrel
+const pathAt = (u) => ({ x: M.x + (LAND.x - M.x) * u, y: M.y + PB * u + PA * u * u });
+
+const RED = tame([1, 0.12, 0.1]), CREAM = tame([1, 0.88, 0.62]), GOLD = tame([1, 0.72, 0.18]);
+const WOOD = tame([0.7, 0.32, 0.12]), SUIT = tame([0.1, 0.75, 1]), HELMET = tame([1, 0.15, 0.6]);
+const SKIN = tame([1, 0.8, 0.62]), SMOKE = [0.5, 0.5, 0.5], FIRE = tame([1, 0.55, 0.1]);
+const PARTY = [[1, 0.2, 0.2], [1, 0.85, 0.15], [0.15, 0.8, 1], [0.4, 1, 0.3], [1, 0.25, 0.75]].map(tame);
+const LIGHT = (() => { const v = [-0.5, -0.45, 0.74], m = Math.hypot(...v); return v.map((q) => q / m); })();
+
+const EDGE = new Float32Array(N), haze = new Float32Array(N), hazeCol = new Float32Array(N * 3);
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const i = r * COLS + c, e = Math.min(XMAX - Math.abs(X[c]), Y[r] - YMIN, YMAX - Y[r]);
+  EDGE[i] = smoothstep(3, 18, e);
+  // faint warm dust in the air, fading towards the edges
+  const vig = Math.exp(-((X[c] / (XW * 0.42)) ** 2 + ((Y[r] - YMIN - YH * 0.5) / (YH * 0.5)) ** 2) * 1.4) * EDGE[i];
+  if (Y[r] < YG - 0.5 && hash3(r, c, 1) % 1000 < 260 * vig) { haze[i] = 0.09; hazeCol.set(hash3(r, c, 4) % 3 ? RED : CREAM, i * 3); }
+  if (Math.abs(Y[r] - YG - 0.5) < 0.6 && hash3(r, c, 2) % 3) { haze[i] = 0.32 * smoothstep(0.02, 0.25, vig); hazeCol.set(WOOD, i * 3); }
+  else if (Y[r] > YG && hash3(r, c, 3) % 100 < 22) { haze[i] = 0.1 * vig; hazeCol.set(WOOD, i * 3); }
+}
+async function setup() {}
+
+// ---------------------------------------------------------------- drawing helpers (loop over bounding boxes only)
+function seg(x0, y0, x1, y1, w, l, col, front = true) {              // a thick line with round ends
+  const r0 = Math.max(0, Math.floor(rowOf(Math.min(y0, y1) - w))), r1 = Math.min(ROWS, Math.ceil(rowOf(Math.max(y0, y1) + w)));
+  const c0 = Math.max(0, Math.floor(colOf(Math.min(x0, x1) - w))), c1 = Math.min(COLS, Math.ceil(colOf(Math.max(x0, x1) + w)));
+  const dx = x1 - x0, dy = y1 - y0, dd = dx * dx + dy * dy || 1e-6;
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const px = X[c] - x0, py = Y[r] - y0, k = clamp((px * dx + py * dy) / dd);
+    const ex = px - dx * k, ey = py - dy * k;
+    if (ex * ex + ey * ey > w * w) continue;
+    const i = r * COLS + c;
+    if (front || l > lum[i]) set(i, l, col[0], col[1], col[2]);
+  }
+}
+function disc(x, y, R, l, col, front = true) {
+  const r0 = Math.max(0, Math.floor(rowOf(y - R))), r1 = Math.min(ROWS, Math.ceil(rowOf(y + R)));
+  const c0 = Math.max(0, Math.floor(colOf(x - R))), c1 = Math.min(COLS, Math.ceil(colOf(x + R)));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const dx = X[c] - x, dy = Y[r] - y;
+    if (dx * dx + dy * dy > R * R) continue;
+    const i = r * COLS + c;
+    if (front || l > lum[i]) set(i, l, col[0], col[1], col[2]);
+  }
+}
+
+// ---------------------------------------------------------------- the cannon
+function cannonPose(lt) {                                             // recoil and shiver for this moment of the loop
+  const db = lt - T_BOOM;
+  let kick = 0;
+  if (db >= 0) kick = db < 0.05 ? db / 0.05 : Math.exp(-(db - 0.05) * 4.5) * Math.cos((db - 0.05) * 7);
+  const shiver = lt > T_FUSE + 0.3 && lt < T_BOOM ? 0.012 * Math.sin(lt * 90) * smoothstep(T_FUSE + 0.3, T_BOOM, lt) : 0;
+  const back = 3.2 * S * kick;
+  return { ang: ANG + 0.07 * kick + shiver, dx: -back * 0.9, roll: -back / WR };
+}
+
+function drawCarriage(P, a) {                                         // the wooden trail resting on the ground
+  const px = PIV.x + P.dx;
+  seg(px, PIV.y, px - 10 * S, YG - 1.2 * S, 1.6 * S, 0.42 * a, WOOD);
+  seg(px - 10 * S, YG - 1.2 * S, px - 12 * S, YG - 0.6 * S, 1.1 * S, 0.35 * a, WOOD);
+}
+
+function drawBarrel(P, a) {
+  const ca = Math.cos(P.ang), sa = -Math.sin(P.ang);                  // axis direction on screen (y down)
+  const bx = PIV.x + P.dx - ca * LB * 0.12, by = PIV.y - sa * LB * 0.12;   // back end
+  const R0 = 5 * S, R1 = 3.9 * S, RM = 4.7 * S, ML = 2.6 * S;
+  const ext = LB + R0;
+  const xs = [bx - R0, bx + ca * ext + R0], ys = [by - R0, by + sa * ext + R0];
+  const r0 = Math.max(0, Math.floor(rowOf(Math.min(...ys) - R0))), r1 = Math.min(ROWS, Math.ceil(rowOf(Math.max(...ys) + R0)));
+  const c0 = Math.max(0, Math.floor(colOf(Math.min(...xs) - R0))), c1 = Math.min(COLS, Math.ceil(colOf(Math.max(...xs) + R0)));
+  const nxp = -sa, nyp = ca;                                          // across the barrel
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const dx = X[c] - bx, dy = Y[r] - by;
+    const u = dx * ca + dy * sa, v = dx * nxp + dy * nyp;
+    if (u < -R0 || u > LB) continue;
+    let rad;
+    if (u < 0) rad = Math.sqrt(R0 * R0 - u * u);                      // rounded back end
+    else if (u > LB - ML) rad = RM;                                   // flared muzzle
+    else rad = mix(R0, R1, u / (LB - ML));
+    if (Math.abs(v) >= rad) continue;
+    const s = v / rad, nz = Math.sqrt(1 - s * s);
+    let nx = nxp * s, ny = nyp * s;
+    if (u < 0) { const q = u / R0; nx = nx * Math.sqrt(1 - q * q) + ca * q; ny = ny * Math.sqrt(1 - q * q) + sa * q; }
+    const diff = Math.max(0, nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]);
+    const spec = Math.pow(diff, 18);
+    let col, l = 0.3 + 0.55 * diff;
+    if (u > LB - ML || (u > 0 && u < 1.6 * S) || u < -R0 * 0.75) col = GOLD;   // gold rings and knob
+    else if (u < 0) col = RED;
+    else {
+      const ph = u / (4.2 * S) + Math.asin(s) * 0.9;                  // spiral stripes, like a barber's pole
+      col = (Math.floor(ph) & 1) ? RED : CREAM;
+      if (col === CREAM) l *= 0.9;
+    }
+    if (u > LB - ML && u < LB - ML + 0.6 * S) l *= 0.55;              // groove before the muzzle ring
+    col = mix3(col, [0.62, 0.6, 0.55], spec);
+    set(r * COLS + c, clamp((l + spec * 0.5) * a), col[0], col[1], col[2]);
+  }
+  return { bx, by, ca, sa, mx: bx + ca * LB, my: by + sa * LB };
+}
+
+function drawWheel(P, a) {
+  const cx = PIV.x + P.dx, cy = PIV.y;
+  const r0 = Math.max(0, Math.floor(rowOf(cy - WR))), r1 = Math.min(ROWS, Math.ceil(rowOf(cy + WR)));
+  const c0 = Math.max(0, Math.floor(colOf(cx - WR))), c1 = Math.min(COLS, Math.ceil(colOf(cx + WR)));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const dx = X[c] - cx, dy = Y[r] - cy, d = Math.hypot(dx, dy);
+    if (d > WR) continue;
+    let l = 0, col = GOLD;
+    if (d > WR * 0.84) { l = 0.6 + 0.3 * clamp(-(dx + dy) / WR); }    // gold tyre
+    else if (d > WR * 0.74) { l = 0.4; col = RED; }
+    else if (d < WR * 0.2) { l = 0.85; }                              // hub
+    else {
+      const th = Math.atan2(dy, dx) - P.roll;
+      if (Math.abs(Math.sin(th * 4)) * d < 0.6 * Math.max(1, S)) { l = 0.6; col = CREAM; }
+    }
+    set(r * COLS + c, l * a, col[0], col[1], col[2]);                 // dark between the spokes
+  }
+}
+
+function drawFuse(B, lt) {                                            // a short curly fuse at the back, burning down
+  const burn = smoothstep(T_FUSE, T_BOOM, lt);
+  if (lt >= T_BOOM) return;
+  const ox = B.bx + B.sa * 4.6 * S, oy = B.by - B.ca * 4.6 * S;        // on top of the back end
+  let lx = 0, ly = 0;
+  for (let n = 0; n <= 14; n++) {
+    const f = n / 14;
+    if (f < burn) continue;                                           // the burnt part is gone
+    const x = ox - 6 * S * f, y = oy - 5 * S * Math.sin(f * 2.4);
+    if (n > 0 && f - 1 / 14 >= burn) seg(lx, ly, x, y, 0.5 * Math.max(1, S), 0.55, CREAM);
+    lx = x; ly = y;
+  }
+  if (lt > T_FUSE) {                                                  // the spark at the burning end
+    const f = burn, x = ox - 6 * S * f, y = oy - 5 * S * Math.sin(f * 2.4);
+    const tick = Math.floor(lt * 20);
+    disc(x, y, 1.5 * S, 1, [0.62, 0.6, 0.45]);
+    for (let k = 0; k < 18; k++) {
+      const ang = rnd(k, tick, 1) * TAU, d = (1.2 + rnd(k, tick, 2) * 4) * S;
+      put(x + Math.cos(ang) * d, y + Math.sin(ang) * d * 0.8, 0.7 + 0.3 * rnd(k, tick, 3), ...(k % 2 ? FIRE : GOLD), true);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- the performer
+// angles are measured from straight down, positive to the right
+function drawPerson(x, y, rot, scl, pose, a) {
+  if (a <= 0.02 || scl <= 0.05) return;
+  const k = S * 1.3 * scl, cr = Math.cos(rot), sr = Math.sin(rot);
+  const P = (px, py) => [x + (px * cr - py * sr) * k, y + (px * sr + py * cr) * k];
+  const w = Math.max(0.6, 0.62 * k), lb = 0.9 * a;
+  const hip = P(0, 0), neck = P(0, -3.6), head = P(0, -5.5);
+  const limb = (from, fx, fy, ang, bend, len) => {                    // two segments with a joint
+    const jx = fx + Math.sin(ang) * len, jy = fy + Math.cos(ang) * len;
+    const ex = jx + Math.sin(ang + bend) * len, ey = jy + Math.cos(ang + bend) * len;
+    const J = P(jx, jy), E = P(ex, ey);
+    return [J, E];
+  };
+  const [lk, lf] = limb(hip, 0, 0, pose.lL, pose.kL, 2.1), [rk, rf] = limb(hip, 0, 0, pose.lR, pose.kR, 2.1);
+  seg(hip[0], hip[1], lk[0], lk[1], w, lb, SUIT); seg(lk[0], lk[1], lf[0], lf[1], w, lb, SUIT);
+  seg(hip[0], hip[1], rk[0], rk[1], w, lb, SUIT); seg(rk[0], rk[1], rf[0], rf[1], w, lb, SUIT);
+  seg(hip[0], hip[1], neck[0], neck[1], w * 1.35, lb, SUIT);
+  const [le, lh] = limb(neck, 0, -3.3, pose.aL, pose.eL, 1.6), [re, rh] = limb(neck, 0, -3.3, pose.aR, pose.eR, 1.6);
+  const sh = P(0, -3.3);
+  seg(sh[0], sh[1], le[0], le[1], w, lb, SKIN); seg(le[0], le[1], lh[0], lh[1], w, lb, SKIN);
+  seg(sh[0], sh[1], re[0], re[1], w, lb, SKIN); seg(re[0], re[1], rh[0], rh[1], w, lb, SKIN);
+  // head: a face below, a helmet on top (top = the person's own "up")
+  const HR = Math.max(1.2, 1.6 * k);
+  const r0 = Math.max(0, Math.floor(rowOf(head[1] - HR))), r1 = Math.min(ROWS, Math.ceil(rowOf(head[1] + HR)));
+  const c0 = Math.max(0, Math.floor(colOf(head[0] - HR))), c1 = Math.min(COLS, Math.ceil(colOf(head[0] + HR)));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const dx = X[c] - head[0], dy = Y[r] - head[1];
+    if (dx * dx + dy * dy > HR * HR) continue;
+    const up = (dx * sr - dy * cr) / HR;                              // +1 at the top of the head
+    const col = up > 0.15 ? HELMET : SKIN;
+    set(r * COLS + c, (up > 0.15 ? 0.8 : 0.7) * a, col[0], col[1], col[2]);
+  }
+}
+
+const STAND = { aL: -0.35, eL: -0.2, aR: 0.35, eR: 0.2, lL: -0.22, kL: 0, lR: 0.22, kR: 0 };
+function waving(lt) {                                                 // standing by the cannon, waving one arm
+  return { ...STAND, aR: 2.5 + 0.35 * Math.sin(lt * 11), eR: 0.4 };
+}
+function flailing(t) {
+  return {
+    aL: -2.2 + 0.9 * Math.sin(t * 17), eL: -0.8 + 0.6 * Math.sin(t * 23),
+    aR: 2.2 + 0.9 * Math.sin(t * 19 + 1), eR: 0.8 + 0.6 * Math.sin(t * 21),
+    lL: -0.5 + 0.5 * Math.sin(t * 15 + 2), kL: 0.9 * Math.max(0, Math.sin(t * 15 + 2)),
+    lR: 0.5 + 0.5 * Math.sin(t * 15 + 3.6), kR: -0.9 * Math.max(0, Math.sin(t * 15 + 3.6)),
+  };
+}
+const TADA = { aL: -2.55, eL: -0.15, aR: 2.55, eR: 0.15, lL: -0.3, kL: 0, lR: 0.3, kR: 0 };
+const CROUCH = { aL: 1.1, eL: -0.3, aR: 0.9, eR: -0.3, lL: -1.0, kL: 1.7, lR: -0.8, kR: 1.5 };   // arms back, knees bent
+const TUCK = { aL: -1.4, eL: 0.9, aR: -1.6, eR: 0.9, lL: -2.1, kL: 2.6, lR: -1.9, kR: 2.6 };    // hugging the knees
+const SLIDE = { aL: -2.75, eL: 0, aR: 2.75, eR: 0, lL: -0.06, kL: 0, lR: 0.06, kR: 0 };         // arms up, legs together
+function balancing(lt) {                                              // arms out, wobbling on the rim
+  const w = Math.sin(lt * 13) * 0.35;
+  return { aL: -1.57 + w, eL: -0.3 * w, aR: 1.57 + w, eR: 0.3 * w, lL: -0.1, kL: 0, lR: 0.12, kR: 0 };
+}
+function running(lt) {                                                // running to the left
+  const ph = lt * 15, s = Math.sin(ph);
+  return { aL: 0.9 * s, eL: -1.2, aR: -0.9 * s, eR: -1.2,
+    lL: -0.75 * s, kL: 1.3 * Math.max(0, s), lR: 0.75 * s, kR: 1.3 * Math.max(0, -s) };
+}
+function mixPose(A, B, k) {
+  k = clamp(k);
+  const o = {};
+  for (const key in A) o[key] = A[key] + (B[key] - A[key]) * k;
+  return o;
+}
+
+// ---------------------------------------------------------------- the net
+function netSag(lt) {
+  const d = lt - T_LAND;
+  return d < 0 ? 0 : 5.5 * S * Math.exp(-d * 2.6) * Math.cos(d * 9);
+}
+function drawNet(lt, a) {
+  const sag = netSag(lt), x0 = NET.x - NET.w, x1 = NET.x + NET.w, pw = 0.5 * Math.max(1, S), top = NET.y - 5 * S;
+  seg(x0 - 1.5 * S, YG, x0, top, pw, 0.55 * a, GOLD);                // posts, leaning out a little
+  seg(x1 + 1.5 * S, YG, x1, top, pw, 0.55 * a, GOLD);
+  disc(x0, top - 0.6 * S, 1.1 * S, 0.8 * a, RED); disc(x1, top - 0.6 * S, 1.1 * S, 0.8 * a, RED);
+  const c0 = Math.max(0, Math.floor(colOf(x0 + UNIT))), c1 = Math.min(COLS, Math.ceil(colOf(x1 - UNIT)));
+  const p = 1.7 * S;
+  for (let c = c0; c < c1; c++) {                                     // a hanging mesh, pushed down where they land
+    const f = (X[c] - NET.x) / NET.w, curve = 1 - f * f;
+    const yTop = top + 0.8 * S + (3.4 * S + Math.max(-2 * S, sag)) * curve, depth = 3.6 * S * (0.25 + 0.75 * curve);
+    for (let dy = 0; dy < depth; dy += 1) {
+      const r = Math.floor(rowOf(yTop + dy));
+      if (r < 0 || r >= ROWS) continue;
+      const fa = ((X[c] + dy) / p) % 1, fb = ((X[c] - dy) / p + 1000) % 1;
+      const rope = dy < 1 ? 0.8 : dy + 1 >= depth ? 0.5 : (Math.abs(fa) < 0.22 || fb < 0.22) ? 0.55 : 0;
+      if (rope) set(r * COLS + c, rope * a, CREAM[0], CREAM[1], CREAM[2]);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- the bang
+function drawBoom(B, lt, cyc) {
+  const db = lt - T_BOOM;
+  if (db < 0 || db > 2.6) return;
+  // smoke puffs rolling out of the muzzle and drifting up
+  for (let k = 0; k < 11; k++) {
+    const ang = Math.atan2(B.sa, B.ca) + (rnd(k, cyc, 1) - 0.5) * 2.2, far = (5 + rnd(k, cyc, 2) * 9) * S;
+    const go = 1 - Math.exp(-db * 3.2), d = far * go;
+    const x = B.mx + Math.cos(ang) * d * 1.1, y = B.my + Math.sin(ang) * d - 3 * S * db * db;
+    const R = (1.4 + 2.4 * go + rnd(k, cyc, 3)) * S, life = 1 - smoothstep(0.4, 1.9 + rnd(k, cyc, 4) * 0.3, db);
+    if (life <= 0) continue;
+    const r0 = Math.max(0, Math.floor(rowOf(y - R))), r1 = Math.min(ROWS, Math.ceil(rowOf(y + R)));
+    const c0 = Math.max(0, Math.floor(colOf(x - R))), c1 = Math.min(COLS, Math.ceil(colOf(x + R)));
+    const warm = 1 - smoothstep(0.05, 0.5, db);
+    for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+      const dx = X[c] - x, dy = Y[r] - y, q = (dx * dx + dy * dy) / (R * R);
+      if (q >= 1) continue;
+      const n = vnoise(X[c] * 0.35 + k * 7, Y[r] * 0.5 - db * 2, k);
+      const l = (0.42 * (1 - q) + 0.15 * n) * life;
+      const i = r * COLS + c;
+      if (l > lum[i]) { const col = mix3(SMOKE, FIRE, warm * (1 - q)); set(i, l, col[0], col[1], col[2]); }
+    }
+  }
+  // the flash: a spiky star of fire at the muzzle
+  if (db < 0.4) {
+    const p = db / 0.4, R = (7 + 12 * Math.sqrt(p)) * S, rot = rnd(cyc, 9) * TAU;
+    const cx = B.mx + B.ca * 2 * S, cy = B.my + B.sa * 2 * S;
+    const r0 = Math.max(0, Math.floor(rowOf(cy - R))), r1 = Math.min(ROWS, Math.ceil(rowOf(cy + R)));
+    const c0 = Math.max(0, Math.floor(colOf(cx - R))), c1 = Math.min(COLS, Math.ceil(colOf(cx + R)));
+    for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+      const dx = X[c] - cx, dy = Y[r] - cy, d = Math.hypot(dx, dy);
+      const th = Math.atan2(dy, dx) + rot, edge = R * (0.45 + 0.55 * Math.pow(Math.abs(Math.cos(th * 4)), 4));
+      if (d >= edge) continue;
+      const q = d / edge;
+      const col = q < 0.35 ? [0.62, 0.6, 0.5] : mix3(GOLD, FIRE, (q - 0.35) * 1.6);
+      set(r * COLS + c, clamp((1.05 - 0.4 * q) * (1 - p * p)), col[0], col[1], col[2]);
+    }
+  }
+  // sparks and confetti flying out
+  for (let k = 0; k < 44; k++) {
+    const spark = k < 18, life = spark ? 0.5 + rnd(k, cyc, 5) * 0.6 : 2.6;
+    if (db > life) continue;
+    const ang = Math.atan2(B.sa, B.ca) + (rnd(k, cyc, 6) - 0.5) * (spark ? 1.4 : 2.2);
+    const sp = (spark ? 45 + rnd(k, cyc, 7) * 50 : 18 + rnd(k, cyc, 7) * 30) * S;
+    const tt = spark ? db : (1 - Math.exp(-db * 1.8)) / 1.8;          // confetti slows down in the air
+    const x = B.mx + Math.cos(ang) * sp * tt, y = B.my + Math.sin(ang) * sp * tt + (spark ? 30 : 9) * S * db * db;
+    const fade = 1 - db / life, col = spark ? (k % 2 ? GOLD : FIRE) : PARTY[k % PARTY.length];
+    const ed = smoothstep(2, 12, Math.min(XMAX - Math.abs(x), y - YMIN, YMAX - y));
+    const flip = spark ? 1 : 0.5 + 0.5 * Math.abs(Math.sin(db * 9 + k));
+    put(x, y, (spark ? 0.95 : 0.85) * fade * flip * ed, col[0], col[1], col[2], true);
+    if (spark) put(x - Math.cos(ang) * 1.2 * S, y - Math.sin(ang) * 1.2 * S, 0.5 * fade * ed, col[0], col[1], col[2]);
+    else if (flip > 0.6) put(x + UNIT, y, 0.7 * fade * ed, col[0], col[1], col[2]);
+  }
+}
+
+// little stars circling the performer's head after the landing
+function drawDizzy(x, y, lt) {
+  const d = lt - T_LAND - 0.25;
+  if (d < 0 || lt > T_GONE) return;
+  const a = smoothstep(0, 0.3, d) * (1 - smoothstep(T_GONE - 0.5, T_GONE, lt));
+  for (let k = 0; k < 4; k++) {
+    const th = d * 5 + k * TAU / 4, sx = x + Math.cos(th) * 4.5 * S, sy = y - 9.5 * S + Math.sin(th) * 1.3 * S;
+    const front = Math.sin(th) > 0, l = (front ? 0.95 : 0.5) * a, col = GOLD;
+    put(sx, sy, l, ...col, true);
+    for (const [ox, oy] of [[UNIT, 0], [-UNIT, 0], [0, 1], [0, -1]]) put(sx + ox, sy + oy, l * 0.6, ...col, true);
+  }
+}
+
+function scene(t) {
+  for (let i = 0; i < N; i++) { lum[i] = haze[i]; const j = i * 3; rgb[j] = hazeCol[j]; rgb[j + 1] = hazeCol[j + 1]; rgb[j + 2] = hazeCol[j + 2]; }
+  const a = smoothstep(0.05, 0.8, t);                                 // intro: the circus fades up
+  const lt0 = t - INTRO, cyc = Math.floor(lt0 / LOOP), lt = lt0 < 0 ? -1 : lt0 - cyc * LOOP;
+  const P = cannonPose(lt);
+
+  // where the performer is and what they're doing
+  let px = 0, py = 0, rot = 0, scl = 1, pose = STAND, pa = 0, behind = false;
+  const dax = Math.cos(ANG), day = -Math.sin(ANG);                    // along the barrel, towards the muzzle
+  const rotIn = Math.atan2(dax, -day);                                // body lined up with the barrel, head out
+  const jumpX = M.x + 11 * S, standX = jumpX + 11 * S, standY = YG - HIP;
+  const perchX = M.x + dax * HIP, perchY = M.y + day * HIP;           // feet on the muzzle rim
+  let hand = -1;
+  if (lt >= 0 && lt < T_RUN) {                                        // appear and wave
+    px = standX; py = standY; pose = waving(lt); pa = smoothstep(0, T_IN, lt);
+  } else if (lt >= T_RUN && lt < T_CROUCH) {                          // run up to the cannon
+    const u = (lt - T_RUN) / (T_CROUCH - T_RUN);
+    px = mix(standX, jumpX, smoothstep(0, 1, u) * 0.3 + u * 0.7); py = standY - Math.abs(Math.sin(lt * 15)) * 0.8 * S;
+    rot = -0.25; pose = mixPose(waving(lt), running(lt), u * 5); pa = 1;
+  } else if (lt >= T_CROUCH && lt < T_JUMP) {                         // crouch to spring
+    const u = (lt - T_CROUCH) / (T_JUMP - T_CROUCH);
+    px = jumpX; py = standY + 1.8 * S * Math.sin(u * Math.PI * 0.5); rot = -0.15; pose = mixPose(running(T_CROUCH), CROUCH, u * 2); pa = 1;
+  } else if (lt >= T_JUMP && lt < T_PERCH) {                          // a big tucked somersault onto the muzzle
+    const u = (lt - T_JUMP) / (T_PERCH - T_JUMP), e = u * u * (3 - 2 * u) * 0.6 + u * 0.4;
+    const top = Math.min(standY, perchY) - 9 * S;
+    px = mix(jumpX, perchX, e); py = (1 - e) * (1 - e) * standY + 2 * e * (1 - e) * top + e * e * perchY;
+    rot = mix(-0.15, rotIn - TAU, smoothstep(0.05, 0.9, u));
+    pose = u < 0.15 ? mixPose(CROUCH, SLIDE, u / 0.15) : u < 0.75 ? mixPose(SLIDE, TUCK, (u - 0.15) * 6) : mixPose(TUCK, balancing(lt), (u - 0.75) * 4);
+    pa = 1;
+  } else if (lt >= T_PERCH && lt < T_SLIDE) {                         // wobbling on the rim
+    px = perchX; py = perchY; rot = rotIn + 0.12 * Math.sin(lt * 13); pose = balancing(lt); pa = 1;
+  } else if (lt >= T_SLIDE && lt < T_HAND) {                          // slide in feet first, arms up
+    const u = (lt - T_SLIDE) / (T_HAND - T_SLIDE), d = (u * u) * (HIP + 10 * S);
+    px = perchX - dax * d; py = perchY - day * d; rot = rotIn; pose = mixPose(balancing(lt), SLIDE, u * 4); pa = 1; behind = true;
+  } else if (lt >= T_HAND && lt < T_DUCK + 0.1) {                     // a hand waves out of the muzzle, then ducks in
+    hand = smoothstep(T_HAND, T_HAND + 0.15, lt) * (1 - smoothstep(T_DUCK, T_DUCK + 0.1, lt));
+  } else if (lt >= T_BOOM && lt < T_LAND) {                           // flying
+    const u = (lt - T_BOOM) / FLY, q = pathAt(u);
+    px = q.x; py = q.y; rot = -TAU * 2 * u; pose = flailing(t); pa = 1; scl = 0.7 + 0.3 * smoothstep(0, 0.15, u);
+  } else if (lt >= T_LAND) {                                          // in the net, arms up
+    const sag = netSag(lt);
+    px = LAND.x; py = LAND.y + 0.4 * S + Math.max(-2 * S, sag); pose = lt < T_LAND + 0.35 ? flailing(t) : TADA;
+    pa = 1 - smoothstep(T_GONE - 0.35, T_GONE, lt);
+  }
+
+  drawCarriage(P, a);
+  if (behind) drawPerson(px, py, rot, scl, pose, pa);
+  if (hand > 0) {                                                     // the arm comes out along the barrel, waving
+    const k = S * 1.3, out = hand * 4.2 * k, w = Math.max(0.6, 0.62 * k);
+    const ex = M.x + dax * (out - 1.5 * k), ey = M.y + day * (out - 1.5 * k);
+    const wav = 0.7 * Math.sin(lt * 14), hx = ex + (dax * Math.cos(wav) - day * Math.sin(wav)) * 1.8 * k * hand;
+    const hy = ey + (day * Math.cos(wav) + dax * Math.sin(wav)) * 1.8 * k * hand;
+    seg(M.x - dax * 3 * k, M.y - day * 3 * k, ex, ey, w, 0.9, SKIN);
+    seg(ex, ey, hx, hy, w, 0.9, SKIN);
+    disc(hx, hy, w * 1.25, 0.95, SKIN);
+  }
+  const B = drawBarrel(P, a);
+  drawWheel(P, a);
+  drawNet(lt, a);
+  if (lt >= 0) drawFuse(B, lt);
+  if (lt >= T_BOOM && lt < T_LAND) {                                  // a dotted trail behind the flyer
+    const u = (lt - T_BOOM) / FLY;
+    for (let k = 1; k < 14; k++) {
+      const uu = u - k * 0.035;
+      if (uu < 0) break;
+      const q = pathAt(uu);
+      put(q.x, q.y - 2 * S, 0.45 * (1 - k / 14), ...PARTY[(k + cyc) % PARTY.length]);
+    }
+  }
+  if (lt >= 0) drawBoom(B, lt, cyc);
+  if (!behind) drawPerson(px, py, rot, scl, pose, pa);
+  if (lt >= T_LAND) drawDizzy(px, py, lt);
+  if (lt > T_GONE - 0.4 && lt < T_GONE + 0.2) {                       // they vanish in a little puff of sparkles
+    const d = (lt - T_GONE + 0.4) / 0.6;
+    for (let k = 0; k < 14; k++) {
+      const ang = rnd(k, cyc, 11) * TAU, r = d * (4 + 6 * rnd(k, cyc, 12)) * S;
+      put(px + Math.cos(ang) * r, py - 2 * S + Math.sin(ang) * r * 0.8, 0.8 * (1 - d), ...PARTY[k % PARTY.length], true);
+    }
+  }
+  const off = Math.floor(t * 4);                                      // a few twinkles
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c;
+    if (lum[i] < 0.1 && hash3(c, r + off, 77) % 1000 < 2) set(i, 0.3 * EDGE[i], 1, 0.85, 0.5);
+  }
+  if (a < 1) for (let i = 0; i < N; i++) lum[i] *= a;
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

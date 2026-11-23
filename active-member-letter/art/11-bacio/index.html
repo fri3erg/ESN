@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>un bacio</title>
+<meta name="description" content="fatto di lettere">
+<meta property="og:title" content="un bacio">
+<meta property="og:description" content="fatto di lettere">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💋</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="Someone blowing a kiss, with hearts flying out of their hands, drawn with letters"></canvas>
+
+<script>
+"use strict";
+// ================================================================ settings: edit these
+// Each slide is a photo drawn as an impression: only the main subject is filled in (simplified to a few
+// tones), its edges glow as outlines, and the rest of the photo is dropped to black except for a faint
+// sketch of its strongest lines. Shapes are rough outlines of the subject in photo fractions (0..1 of
+// width and height): `fill` is how much of the photo shows inside, `line` how strongly its edges glow,
+// `sat` keeps only the colourful cells (blossoms, not sky). The edges come from the photo itself, so
+// the shapes only need to be roughly right.
+const SLIDES = [
+  { id: "bacio", src: "5-bacio.jpg", reveal: "ripple", from: [0.52, 0.45], accent: [1, 0.62, 0.38], sketch: 0, tight: true,
+    trim: (C, L) => L > 0.35 && C[2] > C[0] * 1.15 && C[2] > C[1],    // sky
+    shapes: [
+      { fill: 1, line: 1, pts: [[0.36, 0.3], [0.4, 0.25], [0.47, 0.23], [0.56, 0.23], [0.63, 0.26], [0.67, 0.31], [0.67, 0.38], [0.65, 0.45],
+        [0.67, 0.51], [0.66, 0.54], [0.72, 0.55], [0.8, 0.57], [0.87, 0.61], [0.91, 0.7], [0.95, 0.8], [0.97, 0.9], [0.98, 1], [0.05, 1],
+        [0.06, 0.85], [0.09, 0.72], [0.15, 0.62], [0.25, 0.565], [0.37, 0.54], [0.38, 0.5], [0.39, 0.46], [0.37, 0.4], [0.36, 0.35]] },
+    ] },
+];
+const LEAVE = 1e9;                      // one scene that never dissolves: it stays and keeps moving
+const FONTS_TO_WAIT_FOR = [];
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 190 : 140;  // taller than usual: more rows = more photo detail
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+// ================================================================ text -> cells
+// Rasterises lines of text into the grid. Returns per-cell coverage, colour and letter index, so a
+// scene can reveal, flicker or dissolve letters individually.
+function buildText(lines, { y, maxW = SCENE_W * 0.9, maxH = 20, gap = 1.15 }) {
+  const S = 4, RS = Math.max(1, Math.round(S / UNIT)), RW = COLS * S, RH = ROWS * RS, PXU = S / UNIT;
+  const g = document.createElement("canvas"); g.width = RW; g.height = RH;
+  const gx = g.getContext("2d", { willReadFrequently: true });
+  gx.textBaseline = "middle";
+  const EMOJI = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+  const parts = (s) => s.split(/(\p{Extended_Pictographic}+)/u).filter(Boolean)
+    .map((p) => ({ p, emoji: /\p{Extended_Pictographic}/u.test(p) }));
+  const fontOf = (q, l, fs) => `${q.emoji ? fs * 0.92 : fs}px ${q.emoji ? EMOJI : l.font}`;
+  const width = (l, fs) => parts(l.text).reduce((w, q) => { gx.font = fontOf(q, l, fs); return w + gx.measureText(q.p).width; }, 0);
+  const w100 = Math.max(...lines.map((l) => width(l, 100)));
+  const fs = Math.min(100 * Math.min(maxW, COLS * UNIT * 0.92) * PXU / w100, maxH * PXU);
+  const lineH = fs * gap, centres = [];
+  lines.forEach((l, li) => {
+    let x = (RW - width(l, fs)) / 2;
+    const yPx = rowOf(y) * RS + (li - (lines.length - 1) / 2) * lineH;
+    for (const q of parts(l.text)) for (const ch of q.emoji ? [q.p] : [...q.p]) {
+      gx.font = fontOf(q, l, fs);
+      const w = gx.measureText(ch).width;
+      gx.fillStyle = q.emoji ? "#ffd36b" : `rgb(${(l.color || [1, 1, 1]).map((v) => v * 255).join(",")})`;
+      gx.fillText(ch, x, yPx);
+      if (ch.trim()) centres.push({ c: (x + w / 2) / S, r: yPx / RS });
+      x += w;
+    }
+  });
+  const d = gx.getImageData(0, 0, RW, RH).data, cell = S * RS;
+  const T = { cov: new Float32Array(N), col: new Float32Array(N * 3), letter: new Int16Array(N).fill(-1), count: centres.length };
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    let a = 0, R = 0, G = 0, B = 0;
+    for (let yy = r * RS; yy < (r + 1) * RS; yy++) for (let xx = c * S; xx < (c + 1) * S; xx++) {
+      const o = (yy * RW + xx) * 4, al = d[o + 3] / 255;
+      a += al; R += d[o] * al; G += d[o + 1] * al; B += d[o + 2] * al;
+    }
+    if (a < 1e-3) continue;
+    const i = r * COLS + c, k = tame([R / a / 255, G / a / 255, B / a / 255]);
+    T.cov[i] = a / cell; T.col.set(k, i * 3);
+    let best = -1, bd = 1e9;                                             // nearest letter
+    centres.forEach((m, n) => { const dd = (c - m.c) ** 2 + (2 * (r - m.r)) ** 2; if (dd < bd) { bd = dd; best = n; } });
+    T.letter[i] = best;
+  }
+  return T;
+}
+
+// Draws a text layer: letters write themselves in order from `start`, shimmer, and (optionally)
+// dissolve into golden sparks from `leaveAt`.
+function drawText(T, t, { start = 0.3, perLetter = 0.12, leaveAt = Infinity, leaveSpread = 1.8 } = {}) {
+  for (let i = 0; i < N; i++) {
+    const cov = T.cov[i];
+    if (cov < 0.04) continue;
+    const k = T.letter[i], h = rnd(i, 4242);
+    const appear = smoothstep(start + k * perLetter, start + k * perLetter + 0.25, t);
+    if (appear <= 0) continue;
+    const tOut = leaveAt + h * leaveSpread, leave = smoothstep(tOut, tOut + 0.45, t);
+    if (leave >= 1) continue;
+    const r = (i / COLS) | 0, c = i - r * COLS;
+    let l = clamp(Math.pow(cov, 0.7) * 1.05) * (0.88 + 0.12 * Math.sin(t * 3 + c * 0.18 - r * 0.25)) * appear;
+    const j = i * 3;
+    let col = [T.col[j], T.col[j + 1], T.col[j + 2]];
+    if (leave > 0) { col = mix3(col, [1, 0.8, 0.4], leave * 2); l = l * (1 - leave) + 0.25 * Math.sin(Math.PI * leave); }
+    if (l > lum[i]) set(i, clamp(l), col[0], col[1], col[2]);
+  }
+}
+
+// ================================================================ photo -> cells
+// Loads an image and samples it into the cells of a box (scene units, image kept in proportion), along
+// with the slide's subject shapes. Needs to be served over http (Vercel, or `npx serve` locally):
+// browsers block reading pixels of images opened straight from disk.
+function loadPhoto(S, box) {
+  return new Promise((ok, fail) => {
+    const im = new Image();
+    im.onload = () => {
+      const c0 = Math.max(0, Math.floor(colOf(box.x - box.w / 2))), c1 = Math.min(COLS, Math.ceil(colOf(box.x + box.w / 2)));
+      const r0 = Math.max(0, Math.floor(rowOf(box.y))), r1 = Math.min(ROWS, Math.ceil(rowOf(box.y + box.h)));
+      const SS = 4, RS = Math.max(1, Math.round(SS / UNIT)), PW = (c1 - c0) * SS, PH = (r1 - r0) * RS;
+      // zoom so the subject fills the box (the rest is black anyway): `focus` is [x0, y0, x1, y1] in
+      // photo fractions, by default the bounding box of the main shapes plus a margin
+      let f = S.focus;
+      if (!f) {
+        const pts = (S.shapes || []).filter((sh) => sh.fill >= 0.9 && !sh.sat).flatMap((sh) => sh.pts);
+        f = pts.length ? [Math.min(...pts.map((q) => q[0])) - 0.05, Math.min(...pts.map((q) => q[1])) - 0.05,
+          Math.max(...pts.map((q) => q[0])) + 0.05, Math.max(...pts.map((q) => q[1])) + 0.05].map((v) => clamp(v)) : [0, 0, 1, 1];
+      }
+      const sc = Math.min(PW / ((f[2] - f[0]) * im.width), PH / ((f[3] - f[1]) * im.height)), dw = im.width * sc, dh = im.height * sc;
+      const ox = PW / 2 - (f[0] + f[2]) / 2 * dw, oy = PH / 2 - (f[1] + f[3]) / 2 * dh;
+      const sample = (draw) => {
+        const g = document.createElement("canvas"); g.width = PW; g.height = PH;
+        const gx = g.getContext("2d", { willReadFrequently: true });
+        draw(gx);
+        return gx.getImageData(0, 0, PW, PH).data;
+      };
+      const d = sample((gx) => gx.drawImage(im, ox, oy, dw, dh));
+      const shapes = (pick, colour) => sample((gx) => {
+        gx.globalCompositeOperation = "lighten"; gx.lineJoin = gx.lineCap = "round";
+        for (const sh of (S.shapes || []).filter(pick)) {
+          const col = colour(sh);
+          gx.beginPath();
+          sh.pts.forEach(([fx, fy], n) => gx[n ? "lineTo" : "moveTo"](ox + fx * dw, oy + fy * dh));
+          if (sh.stroke) { gx.strokeStyle = col; gx.lineWidth = sh.stroke * dw; gx.stroke(); }
+          else { gx.fillStyle = col; gx.fill(); }
+        }
+      });
+      // subject shapes: R = fill, G = line, B = sat; then R = detail, G = vivid
+      const m = shapes((sh) => sh.fill !== undefined, (sh) => `rgb(${sh.fill * 255 | 0},${(sh.line || 0) * 255 | 0},${sh.sat ? 255 : 0})`);
+      const m2 = shapes((sh) => sh.detail || sh.vivid || sh.paint, (sh) => `rgb(${sh.detail ? 255 : 0},${sh.vivid ? 255 : 0},${sh.paint ? 255 : 0})`);
+      const P = { L: new Float32Array(N), C: new Float32Array(N * 3), M: new Float32Array(N * 3), M2: new Float32Array(N * 3), inImg: new Uint8Array(N), cells: [] };
+      const raw = [];
+      for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+        let a = 0, R = 0, G = 0, B = 0, mr = 0, mg = 0, mb = 0, dr = 0, vg = 0, pb = 0;
+        for (let yy = (r - r0) * RS; yy < (r - r0 + 1) * RS; yy++) for (let xx = (c - c0) * SS; xx < (c - c0 + 1) * SS; xx++) {
+          const o = (yy * PW + xx) * 4, al = d[o + 3] / 255;
+          a += al; R += d[o] * al; G += d[o + 1] * al; B += d[o + 2] * al;
+          mr += m[o]; mg += m[o + 1]; mb += m[o + 2]; dr += m2[o]; vg += m2[o + 1]; pb += m2[o + 2];
+        }
+        if (a < SS * RS * 0.5) continue;                                 // outside the image
+        const n = SS * RS * 255, i = r * COLS + c;
+        R /= a * 255; G /= a * 255; B /= a * 255;
+        raw.push([i, 0.3 * R + 0.59 * G + 0.11 * B]);
+        P.C.set([R, G, B], i * 3); P.M.set([mr / n, mg / n, mb / n], i * 3); P.M2.set([dr / n, vg / n, pb / n], i * 3);
+        P.inImg[i] = 1; P.cells.push(i);
+      }
+      // stretch contrast between the 2nd and 98th percentile so the letters use the full range
+      const sorted = raw.map((q) => q[1]).sort((a, b) => a - b);
+      const lo = sorted[Math.floor(sorted.length * 0.02)] || 0, hi = sorted[Math.floor(sorted.length * 0.98)] || 1;
+      for (const [i, v] of raw) P.L[i] = Math.pow(clamp((v - lo) / Math.max(1e-3, hi - lo)), 0.9);
+      // where the image itself landed, in cells
+      P.rect = { c0: c0 + ox / SS, c1: c0 + (ox + dw) / SS, r0: r0 + oy / RS, r1: r0 + (oy + dh) / RS };
+      ok(P);
+    };
+    im.onerror = () => fail(new Error("could not load " + S.src));
+    im.src = S.src;
+  });
+}
+
+// Turns a sampled photo into the impression: per cell a fill (lum + colour) and an outline (lum + colour).
+function stylise(S, P) {
+  const blur = (src) => {                                               // 3x3 box blur, keeps edges soft
+    const out = new Float32Array(N);
+    for (const i of P.cells) {
+      const r = (i / COLS) | 0, c = i - r * COLS;
+      let s = 0, n = 0;
+      for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+        const rr = r + dr, cc = c + dc;
+        if (rr < 0 || rr >= ROWS || cc < 0 || cc >= COLS) continue;
+        s += src[rr * COLS + cc]; n++;
+      }
+      out[i] = s / n;
+    }
+    return out;
+  };
+  const fillM = new Float32Array(N), lineM = new Float32Array(N), satM = new Float32Array(N);
+  for (const i of P.cells) { fillM[i] = P.M[i * 3]; lineM[i] = P.M[i * 3 + 1]; satM[i] = P.M[i * 3 + 2]; }
+  const satB = blur(satM);                                              // blurred like the fill, so its edges match
+  let F = blur(fillM), Ln = blur(blur(lineM));                          // outlines reach a little past the shape...
+  if (S.tight) for (const i of P.cells) {                               // ...unless the slide says to stay inside it
+    F[i] = Math.min(F[i], fillM[i]); Ln[i] = lineM[i] > 0.05 ? Ln[i] : 0;
+  }
+  const detM = new Float32Array(N), paintM = new Float32Array(N);
+  for (const i of P.cells) { detM[i] = P.M2[i * 3]; paintM[i] = P.M2[i * 3 + 2]; }
+  const detB = blur(blur(detM)), detCore = blur(blur(detB)), paintB = blur(blur(paintM));
+  const deep = blur(blur(blur(blur(fillM))));                          // ~1 well inside a shape, lower near its border
+
+  // edges: Sobel on the photo's brightness
+  const Lat = (r, c, i0) => { const i = r * COLS + c; return r >= 0 && r < ROWS && c >= 0 && c < COLS && P.inImg[i] ? P.L[i] : P.L[i0]; };
+  const E = new Float32Array(N), inside = [];
+  for (const i of P.cells) {
+    const r = (i / COLS) | 0, c = i - r * COLS;
+    const gx = Lat(r - 1, c + 1, i) + 2 * Lat(r, c + 1, i) + Lat(r + 1, c + 1, i) - Lat(r - 1, c - 1, i) - 2 * Lat(r, c - 1, i) - Lat(r + 1, c - 1, i);
+    const gy = Lat(r + 1, c - 1, i) + 2 * Lat(r + 1, c, i) + Lat(r + 1, c + 1, i) - Lat(r - 1, c - 1, i) - 2 * Lat(r - 1, c, i) - Lat(r - 1, c + 1, i);
+    E[i] = Math.hypot(gx, gy);
+    if (Ln[i] > 0.3) inside.push(E[i]);
+  }
+  const all = inside.length > 50 ? inside : P.cells.map((i) => E[i]);
+  all.sort((a, b) => a - b);
+  const top = all[Math.floor(all.length * 0.9)] || 1;
+
+  // faces ("detail" shapes) get their own contrast stretch, so eyes and mouth stay dark on bright skin
+  const det = P.cells.filter((i) => detM[i] > 0.5).map((i) => P.L[i]).sort((a, b) => a - b);
+  const dlo = det[Math.floor(det.length * 0.05)] || 0, dhi = det[Math.floor(det.length * 0.97)] || 1;
+  const boost = (c, k) => { const m = (c[0] + c[1] + c[2]) / 3; return c.map((v) => Math.max(0, m + (v - m) * k)); };
+  P.fl = new Float32Array(N); P.ol = new Float32Array(N); P.fc = new Float32Array(N * 3); P.oc = new Float32Array(N * 3);
+  const accent = tame(S.accent);
+  for (const i of P.cells) {
+    const j = i * 3, C = [P.C[j], P.C[j + 1], P.C[j + 2]], L = P.L[i];
+    const mx = Math.max(...C), sat = mx > 0.02 ? (mx - Math.min(...C)) / mx : 0;
+    let fw = F[i];
+    const pink = satB[i] > 0.01 && P.M[j] < 0.9;                     // "sat" shapes: only the blossom-coloured cells
+    if (pink) fw *= smoothstep(0.1, 0.3, sat) * (C[0] > C[1] * 1.12 && C[2] > C[1] * 0.92 ? 1 : 0) * (rnd(i, 99) < 0.7 ? 1 : 0.3)
+      * smoothstep(0, ROWS * 0.14, (i / COLS) | 0) * smoothstep(0, COLS * 0.1, i % COLS);   // fade out towards the screen edges
+    const detail = detB[i], vivid = P.M2[i * 3 + 1];
+    const floor = 0.16 * smoothstep(0.6, 0.95, F[i]);                   // dark parts of a full subject stay faintly visible
+    let base, fcol;
+    if (S.invert) {                                                     // silhouettes: dark glows
+      base = floor * 1.6 + 0.45 * Math.pow(1 - L, 1.2);
+      fcol = mix3(tame(C), accent, 0.6);
+    } else {                                                            // a few flat tones
+      base = pink ? 0.4 + 0.45 * L : floor + 0.8 * Math.round(Math.pow(L, 0.7) * 3) / 3;
+      fcol = tame(boost(C, pink ? 1.5 : 1.2));
+    }
+    if (detail > 0.01) {                                                // smooth tones, deep shadows
+      const Ld = clamp((L - dlo) / Math.max(1e-3, dhi - dlo));
+      base = mix(base, 0.17 + 0.8 * Math.pow(Ld, S.faceGamma || 1.3), detail);
+    }
+    if (S.desat && !pink) { const g = (fcol[0] + fcol[1] + fcol[2]) / 3; fcol = tame(mix3(fcol, [g, g, g * 1.02], S.desat)); }  // grey fur stays grey
+    if (vivid > 0.01) {                                                 // flags: bright and saturated
+      base = mix(base, 0.55 + 0.4 * L, vivid);
+      fcol = mix3(fcol, tame(boost(C, 2.2)), vivid);
+    }
+    if (S.cap) base = S.cap * (1 - Math.exp(-base / S.cap));          // soften highlights: bright parts level off below `cap`
+    // near the border, drop cells that look like background (the slide's `trim` test)
+    const trimmed = S.trim && !pink && deep[i] < (S.trimDepth || 0.97) && detail < 0.1 && S.trim(C, L, fxOf(P, i % COLS), fyOf(P, (i / COLS) | 0));
+    if (trimmed) fw = 0;
+    P.fl[i] = fw * base; P.fc.set(fcol, j);
+    const border = (trimmed ? 0 : 1) * (1 - (S.faceLines ? 0 : 0.85) * smoothstep(0.75, 1, detCore[i]))  // no outlines inside a face: they'd bury the eyes
+      * (1 - smoothstep(0.1, 0.4, paintB[i]));                         // nor along a painted-in part
+    const e = clamp(E[i] / top), line = Ln[i] * border * smoothstep(0.35, 0.9, e) * (0.6 + 0.4 * e);
+    const sketch = (S.sketch || 0) * smoothstep(0.7, 1.4, E[i] / top) * 0.32;
+    P.ol[i] = Math.max(clamp(line * 1.1), sketch) * (S.capLines || 1);
+    let ocol = line >= sketch ? mix3(tame(boost(C, 1.3)), accent, 0.25 + 0.5 * (1 - deep[i])) : accent;
+    if (S.desat && !pink) { const g = (ocol[0] + ocol[1] + ocol[2]) / 3; ocol = tame(mix3(ocol, [g * 1.05, g, g * 0.97], S.desat)); }
+    P.oc.set(ocol, j);
+  }
+  for (const i of P.cells) {
+    if (paintM[i] < 0.5) continue;
+    const r = (i / COLS) | 0, c = i - r * COLS, j = i * 3;
+    const solid = (rr, cc) => { const k = rr * COLS + cc; return rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && (fillM[k] > 0.5 || paintM[k] > 0.5); };
+    const edge = !solid(r - 1, c) || !solid(r + 1, c) || !solid(r, c - 1) || !solid(r, c + 1) || !solid(r, c - 2) || !solid(r, c + 2);
+    const fcol = mix3(tame(S.paint || [0.1, 0.3, 0.35]), accent, 0.6);
+    const fl = 0.45 + 0.12 * vnoise(c * 0.25, r * 0.4, 3);
+    if (fl > P.fl[i]) { P.fl[i] = fl; P.fc.set(fcol, j); }                 // fills the seam with the real wing too
+    if (edge) { P.ol[i] = 0.75; P.oc.set(accent, j); } else if (fillM[i] < 0.5) P.ol[i] = 0;
+  }
+  return P;
+}
+
+// ================================================================ the album
+const PICS = [];
+const AFTER = () => {};
+async function setup() {                                              // runs once, after fonts are loaded
+  // the photo box: almost the whole screen, whatever its shape
+  const box = { x: 0, y: -Y_OFF + ROWS * 0.04, w: COLS * UNIT * 0.94, h: ROWS * 0.92 };
+  for (const s of SLIDES) {
+    try { const P = stylise(s, await loadPhoto(s, box)); AFTER(s, P); PICS.push(P); } catch (e) { console.error(e); PICS.push(null); }
+  }
+}
+
+// photo fractions <-> scene units and cells
+const atX = (P, fx) => X[0] + (P.rect.c0 + fx * (P.rect.c1 - P.rect.c0)) * UNIT;
+const atY = (P, fy) => Y[0] + P.rect.r0 + fy * (P.rect.r1 - P.rect.r0);
+const fxOf = (P, c) => (c - P.rect.c0) / (P.rect.c1 - P.rect.c0), fyOf = (P, r) => (r - P.rect.r0) / (P.rect.r1 - P.rect.r0);
+const inBox = (fx, fy, b) => fx > b[0] && fx < b[2] && fy > b[1] && fy < b[3];
+
+// how far into its reveal each cell is (0..1), per reveal style
+function appearOf(S, P, r, c, lt) {
+  const fy = fyOf(P, r);
+  if (S.reveal === "scan") return smoothstep(0.2 + fy * 1.8, 0.5 + fy * 1.8, lt);              // top to bottom
+  if (S.reveal === "surface") { const h = rnd(r, c, 31); return smoothstep(0.2 + h * 1.6, 0.6 + h * 1.6, lt); }
+  const ox = P.rect.c0 + S.from[0] * (P.rect.c1 - P.rect.c0), oy = P.rect.r0 + S.from[1] * (P.rect.r1 - P.rect.r0);
+  const d = Math.hypot((c - ox) * UNIT, r - oy) / (S.speed || 45);                               // ripple
+  return smoothstep(0.2 + d, 0.6 + d, lt);
+}
+
+// Where each cell reads the picture from this frame, as an offset in cells [dc, dr]: flags wave, the
+// crowd bounces, the manta flaps, the fist pumps.
+const FLAGS = [[0.53, 0.53, 0.73, 0.69], [0.75, 0.61, 0.9, 0.8], [0.43, 0.6, 0.478, 0.69]];
+// the towers' bases are hidden behind buildings in the photo: below where they disappear, repeat a band
+// of their own stones down to the crowd. [x0, y0, x1, y1] of the missing part, then the band to copy.
+const TOWER_BASES = [[[0.394, 0.598, 0.438, 0.69], 0.55, 0.045], [[0.477, 0.64, 0.526, 0.69], 0.58, 0.055]];
+function towerBase(P, r, fx, fy) {
+  for (const [b, y0, h] of TOWER_BASES) if (inBox(fx, fy, b)) {
+    const src = y0 + ((fy - y0) % h);
+    return Math.round((src - fy) * (P.rect.r1 - P.rect.r0));
+  }
+  return null;
+}
+function warp(k, P, r, c, lt) {
+  const fx = fxOf(P, c), fy = fyOf(P, r);
+  const id = SLIDES[k].id;
+  if (id === "bologna") {
+    const tb = towerBase(P, r, fx, fy);
+    if (tb !== null) return [0, tb];
+    if (FLAGS.some((b) => inBox(fx, fy, b))) return [Math.round(1.1 * Math.sin(lt * 5 - c * 0.45 + r * 0.2)), Math.round(0.6 * Math.sin(lt * 4 - c * 0.3))];
+    if (fy > 0.68) {                                                    // the crowd jumps, a few people at a time
+      const g = Math.floor(c / 7), beat = Math.max(0, Math.sin(lt * 5.5 + rnd(g, 5) * TAU));
+      return [0, Math.round(2.2 * beat * beat * smoothstep(0.68, 0.74, fy))];
+    }
+  }
+  if (id === "manta") {
+    const dc = Math.round(Math.sin(lt * 1.7 + r * 0.11));
+    if (inBox(fx, fy, [0.2, 0.33, 0.57, 0.92])) {                       // wings flap, more towards the tips
+      const span = Math.abs(fx - 0.39) / 0.16;
+      return [dc, Math.round(2.2 * Math.sin(lt * 1.6) * Math.min(1.3, span) ** 1.5)];
+    }
+    return [dc, 0];
+  }
+  if (id === "laurea" && fx < 0.45) {
+    const amp = smoothstep(0.36, 0.12, fy);
+    return [0, Math.round(amp * 1.6 * Math.sin(lt * 3.2))];
+  }
+  return [0, 0];
+}
+
+// One cell of a slide at time lt: outline (brightness OL, colour oc) and fill (FL, fc) appear with the
+// slide's reveal (outlines first) and break into golden sparks at the end. Returns [lum, colour] or null.
+function revealCell(S, P, r, c, lt, OL, FL, oc, fc) {
+  const aLine = appearOf(S, P, r, c, lt), aFill = appearOf(S, P, r, c, lt - 0.9);
+  if (aLine <= 0) return null;
+  const h = rnd(r, c, 4242), tOut = LEAVE + h * 1.1, leave = smoothstep(tOut, tOut + 0.35, lt);
+  if (leave >= 1) return null;
+  const lf = FL * aFill, lo = OL * aLine;
+  let col = lo >= lf ? oc : fc, l = Math.max(lo, lf);
+  if (aLine < 1 && OL > 0.2) l = Math.max(l, 0.6 * Math.sin(Math.PI * aLine));              // bright tip of the line being drawn
+  if (leave > 0) { col = mix3(col, [1, 0.8, 0.4], leave * 2); l = l * (1 - leave) + 0.3 * Math.sin(Math.PI * leave); }
+  return l < 0.05 ? null : [clamp(l), col];
+}
+
+function drawSlide(k, lt) {
+  const S = SLIDES[k], P = PICS[k];
+  if (!P) return;
+  const r0 = Math.max(0, Math.floor(P.rect.r0)), r1 = Math.min(ROWS, Math.ceil(P.rect.r1));
+  const c0 = Math.max(0, Math.floor(P.rect.c0)), c1 = Math.min(COLS, Math.ceil(P.rect.c1));
+  for (let r = r0; r < r1; r++) for (let c = c0; c < c1; c++) {
+    const [dc, dr] = warp(k, P, r, c, lt);
+    const src = Math.min(r1 - 1, Math.max(r0, r + dr)) * COLS + Math.min(c1 - 1, Math.max(c0, c + dc));
+    const FL = P.fl[src], OL = P.ol[src];
+    if (FL < 0.05 && OL < 0.05) continue;
+    const j = src * 3, v = P.M2[src * 3 + 1];
+    let fl = FL * (0.9 + 0.1 * Math.sin(lt * 1.5 - r * 0.15));
+    if (v > 0.01) fl *= 1 + v * 0.3 * Math.sin(lt * 5 - c * 0.45 + r * 0.2);                // light running along the flag
+    const out = revealCell(S, P, r, c, lt, OL, fl, [P.oc[j], P.oc[j + 1], P.oc[j + 2]], [P.fc[j], P.fc[j + 1], P.fc[j + 2]]);
+    if (out) set(r * COLS + c, out[0], out[1][0], out[1][1], out[1][2]);
+  }
+  if (S.id === "manta") drawLegs(S, P, lt);
+  const on = smoothstep(0.6, 1.8, lt) * (1 - smoothstep(LEAVE, LEAVE + 1, lt));  // extras fade in and out
+  if (on > 0 && EXTRAS[S.id]) EXTRAS[S.id](P, lt, on);
+}
+
+// a rising stream of bubbles from (x, y): wobbly, growing a little as they rise
+function bubbles(x0, y0, count, { top = -Y_OFF, spread = 6, drift = 6, col = [0.5, 0.6, 0.62], speed = 1, seed = 0, on = 1, lt }) {
+  for (let k = 0; k < count; k++) {
+    const life = (2.2 + rnd(k, 1, seed) * 2) / speed, ph = lt / life + rnd(k, 2, seed), cyc = Math.floor(ph), u = ph - cyc;
+    const x = x0 + (rnd(k, cyc, 3 + seed) - 0.4) * spread + 2.5 * Math.sin(lt * 3 + k) * u + u * drift;
+    const y = y0 - u * (y0 - top);
+    const l = (0.55 + 0.3 * rnd(k, cyc, 4 + seed)) * on * (1 - u * 0.5);
+    put(x, y, l, col[0], col[1], col[2], true);
+    if (rnd(k, cyc, 5 + seed) > 0.6 - u * 0.3) { put(x + UNIT, y, l * 0.8, col[0], col[1], col[2], true); put(x, y - 1, l * 0.7, col[0], col[1], col[2], true); }
+  }
+}
+
+// a little bird: a body and two wings that flap
+function bird(x, y, flap, l, col) {
+  put(x, y, l, col[0], col[1], col[2], true);
+  const up = flap > 0 ? -1 : 0.4;
+  put(x - UNIT * 1.2, y + up, l * 0.9, col[0], col[1], col[2], true);
+  put(x + UNIT * 1.2, y + up, l * 0.9, col[0], col[1], col[2], true);
+  if (flap > 0) { put(x - UNIT * 2.4, y + up * 0.3, l * 0.7, col[0], col[1], col[2], true); put(x + UNIT * 2.4, y + up * 0.3, l * 0.7, col[0], col[1], col[2], true); }
+}
+
+// Solid shapes made of tapered segments [ax, ay, bx, by, wa, wb, flatEnd] (scene units), merged into one
+// smooth outline: a dim textured fill with a single glowing rim, the same look as the photo's silhouettes.
+// Cells above `yMin` are left alone (that's where the photo is).
+function solid(segs, rim, fill, on, yMin, fillL = 0.42, hook = null) {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [ax, ay, bx, by, wa, wb] of segs) {
+    const w = Math.max(wa, wb);
+    x0 = Math.min(x0, ax - w, bx - w); x1 = Math.max(x1, ax + w, bx + w); y0 = Math.min(y0, ay - w, by - w); y1 = Math.max(y1, ay + w, by + w);
+  }
+  const r0 = Math.max(0, Math.floor(rowOf(Math.max(y0, yMin)))), r1 = Math.min(ROWS - 1, Math.ceil(rowOf(y1)));
+  const c0 = Math.max(0, Math.floor(colOf(x0))), c1 = Math.min(COLS - 1, Math.ceil(colOf(x1)));
+  const smin = (a, b, k) => { const h = clamp(0.5 + 0.5 * (b - a) / k); return mix(b, a, h) - k * h * (1 - h); };
+  for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+    let d = 1e9;
+    for (const [ax, ay, bx, by, wa, wb, flat] of segs) {
+      const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+      const px = X[c] - ax, py = Y[r] - ay, k0 = (px * dx + py * dy) / len2, k = clamp(k0);
+      let sd = Math.hypot(px - dx * k, py - dy * k) - mix(wa, wb, k);
+      if (flat) sd = Math.max(sd, (k0 - 1) * Math.sqrt(len2));          // cut square at the end
+      d = smin(d, sd, 0.8);
+    }
+    if (d > 0) continue;
+    const i = r * COLS + c, edge = d > -1.1;
+    let l = (edge ? 0.72 : fillL * (0.85 + 0.3 * vnoise(c * 0.25, r * 0.4, 3))) * on, col = edge ? rim : fill;
+    if (hook) { const o = hook(r, c, edge, l, col); if (!o) continue; [l, col] = o; }
+    if (l > lum[i]) set(i, l, col[0], col[1], col[2]);
+  }
+}
+
+// The scuba photo stops at the waist: draw the legs and fins below it, kicking slowly, in the body's look.
+function drawLegs(S, P, lt) {
+  const Wu = (P.rect.c1 - P.rect.c0) * UNIT, Hu = P.rect.r1 - P.rect.r0, hipY = atY(P, 0.985);
+  const rim = tame(S.accent);
+  if (!P.legLook) {                                                   // the body's average look just above the cut
+    let n = 0, l = 0, cr = 0, cg = 0, cb = 0;
+    for (const i of P.cells) {
+      const fx = fxOf(P, i % COLS), fy = fyOf(P, (i / COLS) | 0);
+      if (fy < 0.9 || fx < 0.57 || fx > 0.69 || P.fl[i] < 0.1) continue;
+      n++; l += P.fl[i]; cr += P.fc[i * 3]; cg += P.fc[i * 3 + 1]; cb += P.fc[i * 3 + 2];
+    }
+    P.legLook = n ? { l: l / n, col: [cr / n, cg / n, cb / n] } : { l: 0.42, col: mix3(tame([0.1, 0.3, 0.35]), rim, 0.6) };
+  }
+  const fill = P.legLook.col;
+  const segs = [];
+  [[0.597, 0], [0.668, 1]].forEach(([fx, side]) => {
+    const kick = 0.22 * Math.sin(lt * 2.2 + side * Math.PI), hx = atX(P, fx), out = (side ? 1 : -1) * 0.04;
+    const kx = hx + Math.sin(out + kick * 0.5) * Hu * 0.15, ky = hipY + Math.cos(kick * 0.5) * Hu * 0.15;
+    const ax = kx + Math.sin(out * 0.5 + kick) * Hu * 0.15, ay = ky + Math.cos(kick) * Hu * 0.15;
+    const tx = ax + Math.sin(kick * 1.6) * Hu * 0.13, ty = ay + Math.cos(kick * 1.6) * Hu * 0.13;
+    segs.push([hx, hipY - 4, kx, ky, Wu * 0.035, Wu * 0.028], [kx, ky, ax, ay, Wu * 0.03, Wu * 0.021],
+      [ax, ay, tx, ty, Wu * 0.021, Wu * 0.045, true]);
+  });
+  solid(segs, rim, fill, 1, atY(P, 0.975), P.legLook.l,              // the legs appear and leave with the body
+    (r, c, edge, l, col) => revealCell(S, P, r, c, lt, edge ? l : 0, edge ? 0 : l, col, col));
+}
+
+// a heart centred at (x, y), `size` units tall: a glowing rim around a softer fill
+function heart(x, y, size, l, col) {
+  if (l <= 0.02) return;
+  const w = size * 0.65, r0 = Math.max(0, Math.floor(rowOf(y - w))), r1 = Math.min(ROWS - 1, Math.ceil(rowOf(y + w)));
+  const c0 = Math.max(0, Math.floor(colOf(x - w * 1.1))), c1 = Math.min(COLS - 1, Math.ceil(colOf(x + w * 1.1)));
+  for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+    const u = (X[c] - x) / w, v = -(Y[r] - y) / w + 0.15;              // the classic implicit heart, y up
+    const f = (u * u + v * v - 1) ** 3 - u * u * v * v * v;
+    if (f > 0) continue;
+    const i = r * COLS + c, lv = (f > -0.12 ? 0.95 : 0.6) * l;
+    if (lv > 0.05) set(i, lv, col[0], col[1], col[2]);                 // on top of everything
+  }
+}
+
+const EXTRAS = {
+  bologna: (P, lt, on) => {                                                    // Bologna: swifts circling the towers
+    const tx = atX(P, 0.5), ty = atY(P, 0.4), W = P.rect.c1 - P.rect.c0;
+    for (let k = 0; k < 9; k++) {
+      const a = lt * (0.5 + rnd(k, 1) * 0.35) * (k % 3 ? 1 : -1) + rnd(k, 2) * TAU;
+      const rx = (0.12 + rnd(k, 3) * 0.25) * W * UNIT, ry = 4 + rnd(k, 4) * 10;
+      const x = tx + rx * Math.cos(a), y = ty - 6 + ry * Math.sin(a) + 3 * Math.sin(lt * 0.7 + k);
+      bird(x, y, Math.sin(lt * 14 + k * 1.7), 0.75 * on, tame([0.9, 0.85, 0.75]));
+    }
+    // and voices rising from the crowd: little sparks drifting up and fading
+    bubbles(atX(P, 0.6), atY(P, 0.75), 24, { top: atY(P, 0.5), spread: (P.rect.c1 - P.rect.c0) * UNIT * 0.9, drift: 0, col: tame([1, 0.72, 0.38]), speed: 0.8, seed: 9, on: on * 0.8, lt });
+  },
+  blossoms: (P, lt, on) => {                                                    // cherry blossom petals drifting down
+    const W = COLS * UNIT;
+    for (let k = 0; k < 70; k++) {
+      const life = 5 + rnd(k, 1) * 4, ph = lt / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+      const x = (rnd(k, cyc, 3) - 0.5) * W + 6 * Math.sin(lt * 1.3 + k) + u * 8;
+      const y = -Y_OFF + u * (ROWS + 4) - 2;
+      const pink = mix3([0.62, 0.26, 0.4], [0.62, 0.45, 0.52], rnd(k, cyc, 4));
+      const flip = Math.floor(lt * 6 + k) & 1;
+      put(x, y, 0.75 * on, pink[0], pink[1], pink[2], true);
+      put(x + UNIT, y + (flip ? 0 : 0.6), 0.55 * on, pink[0], pink[1], pink[2], true);
+    }
+  },
+  manta: (P, lt, on) => {                                                    // bubbles rising from the diver, specks of plankton
+    bubbles(atX(P, 0.57), atY(P, 0.5), 60, { spread: 8, drift: 9, on, lt });
+    for (let k = 0; k < 40; k++) {
+      const x = (rnd(k, 7) - 0.5) * COLS * UNIT + 3 * Math.sin(lt * 0.4 + k), y = -Y_OFF + ((rnd(k, 8) * ROWS - lt * 1.5) % ROWS + ROWS) % ROWS;
+      put(x, y, (0.2 + 0.15 * Math.sin(lt * 2 + k)) * on, 0.3, 0.55, 0.62);
+    }
+  },
+  laurea: (P, lt, on) => {                                                    // graduation: champagne bubbles, fizz and confetti
+    const W = COLS * UNIT, COLORS = [[0.62, 0.15, 0.2], [0.6, 0.5, 0.08], [0.1, 0.45, 0.62], [0.2, 0.55, 0.2], [0.6, 0.25, 0.55]];
+    for (let k = 0; k < 60; k++) {
+      const life = 3 + rnd(k, 1) * 3, ph = lt / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+      const x = (rnd(k, cyc, 3) - 0.5) * W + 3 * Math.sin(lt * 2 + k), y = -Y_OFF + u * (ROWS + 4) - 2;
+      const col = COLORS[k % COLORS.length], spin = (Math.floor(lt * 8 + k) & 3);
+      put(x, y, (spin === 0 ? 0.35 : 0.85) * on, col[0], col[1], col[2], true);
+      if (spin === 2) put(x + UNIT, y, 0.7 * on, col[0], col[1], col[2], true);
+    }
+    const bx = atX(P, 0.675), by = atY(P, 0.565);                     // top of the bottle
+    bubbles(bx, by, 34, { spread: 4, drift: 3, col: tame([1, 0.85, 0.45]), speed: 1.3, seed: 5, on, lt });
+    for (let k = 0; k < 22; k++) {
+      const life = 0.8 + rnd(k, 1) * 0.8, ph = lt / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+      const vx = (rnd(k, cyc, 3) - 0.5) * 14, vy = -(10 + rnd(k, cyc, 4) * 14);
+      put(bx + vx * u, by + vy * u + 12 * u * u, 0.9 * (1 - u) * on, 0.62, 0.55, 0.32, true);
+    }
+  },
+  bacio: (P, lt, on) => {                                                    // the kiss: hearts flying out of the hands, growing towards you
+    const hx = atX(P, 0.52), hy = atY(P, 0.47);
+    for (let k = 0; k < 4; k++) {
+      const life = 3 + rnd(k, 1) * 1.2, ph = lt / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
+      const a = -Math.PI / 2 + (rnd(k, cyc, 3) - 0.5) * 2.8, dist = u * (45 + 35 * rnd(k, cyc, 4));
+      const x = hx + Math.cos(a) * dist + 2 * Math.sin(lt * 2 + k), y = hy + Math.sin(a) * dist * 0.8;
+      const size = 2 + u * (8 + 6 * rnd(k, cyc, 5)), fade = Math.sin(Math.PI * Math.min(1, u * 1.15));
+      heart(x, y, size, fade * on, tame(mix3([1, 0.3, 0.45], [1, 0.5, 0.65], rnd(k, cyc, 6))));
+    }
+  },
+};
+
+function scene(t) {
+  lum.fill(0); rgb.fill(0);
+  drawSlide(0, t);
+  const off = Math.floor(t * 4);                                      // a few twinkles in the empty space
+  for (let i = 0; i < N; i += 7) {
+    if (lum[i] < 0.05 && hash3(i, off, 77) % 1000 < 3) set(i, 0.25, 1, 0.8, 0.5);
+  }
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

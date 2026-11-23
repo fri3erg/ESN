@@ -11,101 +11,77 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500..700&family=Caveat:wght@500;600&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #000; --ink: #f3efe7; --dim: #9d978c;
-    --cyan: #00aeef; --magenta: #ec008c; --green: #7ac143; --orange: #f47b20;
-    --accent: var(--cyan);
+    --bg: #000; --dim: #9d978c;
+    --c: #f3efe7;                       /* the slide's text colour, set per slide */
     --pad: clamp(16px, 4vw, 56px);
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; }
-  body { font-family: "Fraunces", Georgia, serif; -webkit-tap-highlight-color: transparent;
-    user-select: none; -webkit-user-select: none; cursor: pointer; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--c); overflow: hidden; }
+  body { -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; cursor: pointer; }
 
-  /* ---------- slides ---------- */
-  .slide { position: fixed; inset: 0; display: grid; opacity: 0; visibility: hidden;
+  /* ---------- a slide: text in the top part, art below (or behind) ---------- */
+  .slide { position: fixed; inset: 0; display: flex; flex-direction: column; opacity: 0; visibility: hidden;
     transition: opacity .7s ease, visibility 0s linear .7s; }
   .slide.on { opacity: 1; visibility: visible; transition: opacity .7s ease .15s, visibility 0s; }
 
-  /* phone: art on top, text below */
-  .slide { grid-template-rows: minmax(0, 52fr) minmax(0, 48fr); }
-  .art { position: relative; overflow: hidden; }
+  .text { position: relative; z-index: 2; flex: none; max-height: 52%; overflow-y: auto; touch-action: pan-y;
+    width: 100%; max-width: 980px; margin: 0 auto; text-align: center;
+    padding: calc(34px + env(safe-area-inset-top)) var(--pad) 10px; }
+  .art { position: relative; flex: 1; min-height: 46%; }
   .art iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none;
-    background: #000; }
-  .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(to bottom, transparent 70%, var(--bg)); }
-  .text { display: flex; flex-direction: column; justify-content: flex-start;
-    padding: 4px var(--pad) calc(84px + env(safe-area-inset-bottom)); overflow-y: auto; touch-action: pan-y; }
+    background: #000;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 100%); }
 
-  /* PC: art and text side by side, alternating sides */
-  @media (min-aspect-ratio: 1/1) {
-    .slide { grid-template-rows: none; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
-    .slide.flip .art { order: 2; }
-    .art::after { background: linear-gradient(to right, transparent 78%, var(--bg)); }
-    .slide.flip .art::after { background: linear-gradient(to left, transparent 78%, var(--bg)); }
-    .text { justify-content: center; padding: var(--pad) calc(var(--pad) * 1.4); }
-  }
+  /* the art fills the screen behind the text, darkened under the words so they stay readable */
+  .slide.behind .art { position: absolute; inset: 0; min-height: 0; }
+  .slide.behind .art iframe { -webkit-mask-image: none; mask-image: none; }
+  .slide.behind .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to bottom, rgba(0,0,0,.72) 0, rgba(0,0,0,.45) 34%, transparent 55%); }
 
-  .lead { font-weight: 600; font-size: clamp(26px, 3.2vw + 1vh, 54px); line-height: 1.08;
-    letter-spacing: -0.01em; margin: 0 0 .55em; color: var(--ink); text-wrap: balance; }
-  .lead::first-letter { color: var(--accent); }
-  .body p { font-weight: 330; font-size: clamp(17px, 1.1vw + 0.9vh, 26px); line-height: 1.45;
-    margin: 0 0 .8em; color: #ddd7cc; max-width: 34em; text-wrap: pretty; }
-  .bar { width: 44px; height: 4px; border-radius: 2px; background: var(--accent); margin: 0 0 1.1em; }
+  /* the words: handwriting, glowing softly in the slide's colour */
+  .lead, .body p { color: var(--c); text-wrap: balance;
+    text-shadow: 0 0 22px color-mix(in srgb, var(--c) 35%, transparent), 0 2px 3px #000, 0 0 2px #000; }
+  .lead { font-family: "Dancing Script", cursive; font-weight: 700; line-height: 1.12; margin: 0 0 .3em;
+    font-size: clamp(32px, 3.4vw + 1.6vh, 66px); }
+  .lead.long { font-size: clamp(25px, 2.1vw + 1.3vh, 44px); line-height: 1.2; }
+  .body p { font-family: "Caveat", cursive; font-weight: 500; line-height: 1.22; margin: 0 auto .35em;
+    font-size: clamp(25px, 1.7vw + 1.2vh, 38px); max-width: 30em;
+    color: color-mix(in srgb, var(--c) 82%, #fff); }
 
   /* lines come in one after another */
-  .reveal { opacity: 0; transform: translateY(14px); filter: blur(4px);
-    transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1), filter .8s ease; }
+  .reveal { opacity: 0; transform: translateY(12px); filter: blur(5px);
+    transition: opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1), filter .9s ease; }
   .slide.on .reveal { opacity: 1; transform: none; filter: none; transition-delay: var(--d, 0s); }
 
-  /* cover and finale: the star fills the screen, text sits over it at the bottom */
-  .slide.cover, .slide.finale { grid-template-columns: none; grid-template-rows: none; }
-  .slide.cover .art, .slide.finale .art { position: absolute; inset: 0; }
-  .slide.cover .art::after, .slide.finale .art::after {
-    background: linear-gradient(to bottom, transparent 45%, rgba(0,0,0,.88) 82%); }
-  .slide.cover .text, .slide.finale .text { position: absolute; left: 0; right: 0; bottom: 0;
-    justify-content: flex-end; text-align: center; align-items: center;
-    padding: var(--pad) var(--pad) calc(96px + env(safe-area-inset-bottom)); overflow: visible; }
-  .slide.cover .lead, .slide.finale .lead { font-size: clamp(40px, 6vw + 1vh, 92px); font-style: italic;
-    font-weight: 500; margin-bottom: .3em; }
-  .slide.cover .lead::first-letter { color: inherit; }
-  .slide.cover .bar, .slide.finale .bar { display: none; }
-  .slide.cover .body p, .slide.finale .body p { margin-left: auto; margin-right: auto; }
-  .slide.finale .lead { background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--orange), var(--green));
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .slide.finale .lead::first-letter { color: transparent; }
-  .hint { font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: .06em; color: var(--dim);
-    margin-top: 1.6em; line-height: 1.7; }
-  .hint b { color: var(--ink); font-weight: 400; }
-  .slide.cover .art, .slide.finale .art { bottom: 30dvh; }
-  @media (min-aspect-ratio: 1/1) { .slide.cover .art, .slide.finale .art { bottom: 18vh; } }
+  .cover .lead { font-size: clamp(46px, 6vw + 2vh, 104px); }
+  .hint { position: absolute; z-index: 3; left: 0; right: 0; bottom: calc(84px + env(safe-area-inset-bottom));
+    text-align: center; font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: .05em;
+    color: var(--dim); line-height: 1.8; pointer-events: none; text-shadow: 0 1px 3px #000; }
+  .hint b { color: #f3efe7; font-weight: 400; }
   @media (max-width: 480px) { .hint { font-size: 10.5px; letter-spacing: .02em; } }
-  .lead.long { font-size: clamp(23px, 2.2vw + 1vh, 40px); line-height: 1.15; }
-
-  /* the aside: smaller, a wink */
-  .slide.aside .lead { font-weight: 400; font-style: italic; font-size: clamp(24px, 2.4vw + 1vh, 44px);
-    color: #ddd7cc; }
 
   /* ---------- chrome ---------- */
   .progress { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: var(--pad); right: var(--pad);
     display: flex; gap: 5px; z-index: 5; pointer-events: none; }
-  .progress i { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16);
-    transition: background .5s ease; }
-  .progress i.done { background: rgba(255,255,255,.6); }
-  .progress i.now { background: var(--accent); }
+  .progress i { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16); transition: background .5s ease; }
+  .progress i.done { background: rgba(255,255,255,.55); }
+  .progress i.now { background: var(--c); }
 
   .back { position: fixed; left: calc(12px + env(safe-area-inset-left)); bottom: calc(12px + env(safe-area-inset-bottom));
-    width: 58px; height: 58px; padding: 9px; border: 0; border-radius: 50%; background: rgba(255,255,255,.06);
-    cursor: pointer; z-index: 6; transition: opacity .4s ease, transform .3s ease; }
+    width: 58px; height: 58px; padding: 9px; border: 0; border-radius: 50%; background: rgba(0,0,0,.55);
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08); cursor: pointer; z-index: 6; transition: opacity .4s ease, transform .3s ease; }
   .back:hover { transform: rotate(-22deg) scale(1.06); }
   .back:active { transform: rotate(-45deg) scale(.94); }
   .back[disabled] { opacity: .28; cursor: default; transform: none; }
   .back svg { width: 100%; height: 100%; display: block; }
 
   .count { position: fixed; right: calc(16px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom));
-    font-family: "Space Mono", monospace; font-size: 12px; color: var(--dim); z-index: 5; pointer-events: none; }
+    font-family: "Space Mono", monospace; font-size: 12px; color: var(--dim); z-index: 5; pointer-events: none;
+    text-shadow: 0 1px 3px #000; }
 
   @media (prefers-reduced-motion: reduce) {
     .reveal, .slide { transition: opacity .3s ease !important; transform: none !important; filter: none !important; }
@@ -136,7 +112,6 @@
 import { SLIDES } from "./slides.js";
 import { step, gesture, slideFromHash } from "./nav.js";
 
-const ACCENTS = ["--cyan", "--magenta", "--green", "--orange"];
 const deck = document.getElementById("deck"), progress = document.getElementById("progress");
 const back = document.getElementById("back"), count = document.getElementById("count");
 const N = SLIDES.length;
@@ -146,29 +121,25 @@ const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">":
 // build every slide once; the art iframe is only loaded while its slide is showing
 const els = SLIDES.map((s, i) => {
   const el = document.createElement("section");
-  el.className = "slide" + (s.cover ? " cover" : "") + (s.finale ? " finale" : "") + (s.aside ? " aside" : "")
-    + (i % 2 === 0 ? " flip" : "");
-  el.style.setProperty("--accent", `var(${ACCENTS[i % ACCENTS.length]})`);
+  el.className = "slide" + (s.cover ? " cover" : "") + (s.behind ? " behind" : "");
+  el.style.setProperty("--c", s.color);
   el.setAttribute("aria-hidden", "true");
-  let d = 0.55;
-  const next = () => (d += 0.45, `style="--d:${d.toFixed(2)}s"`);
+  let d = 0.5;
+  const next = () => (d += 0.5, `style="--d:${d.toFixed(2)}s"`);
   el.innerHTML = `
-    <div class="art"></div>
     <div class="text">
-      <div class="bar reveal" style="--d:.4s"></div>
-      <h1 class="lead reveal${s.lead.length > 90 && !s.aside ? " long" : ""}" style="--d:.55s">${esc(s.lead)}</h1>
+      <h1 class="lead reveal${s.lead.length > 70 ? " long" : ""}" style="--d:${d}s">${esc(s.lead)}</h1>
       <div class="body">${s.body.map((p) => `<p class="reveal" ${next()}>${esc(p)}</p>`).join("")}</div>
-      ${s.cover ? `<div class="hint reveal" ${next()}><b>tocca</b> o <b>scorri</b> per andare avanti<br>
-        <b>stella</b> in basso a sinistra per tornare indietro</div>` : ""}
-    </div>`;
+    </div>
+    <div class="art"></div>
+    ${s.cover ? `<div class="hint reveal" ${next()}><b>tocca</b> o <b>scorri</b> per andare avanti<br>
+      <b>stella</b> in basso a sinistra per tornare indietro</div>` : ""}`;
   deck.appendChild(el);
   progress.appendChild(document.createElement("i"));
   return el;
 });
 
-function artUrl(i) {
-  return SLIDES[i].art || `art/placeholder/index.html?seed=${i + 1}`;
-}
+const artUrl = (i) => SLIDES[i].art || `art/placeholder/index.html?seed=${i + 1}`;
 
 let cur = -1;
 function show(i) {
@@ -179,12 +150,11 @@ function show(i) {
     el.classList.toggle("on", k === i);
     el.setAttribute("aria-hidden", k === i ? "false" : "true");
   });
-  // fresh iframe so the art plays its intro each time; drop the old one after the fade
-  const box = els[i].querySelector(".art");
-  box.innerHTML = `<iframe src="${artUrl(i)}" title="" tabindex="-1" loading="eager"></iframe>`;
+  // a fresh iframe so the art plays its intro each time; the old one goes once it has faded out
+  els[i].querySelector(".art").innerHTML = `<iframe src="${artUrl(i)}" title="" tabindex="-1"></iframe>`;
   if (prev >= 0) setTimeout(() => { if (cur !== prev) els[prev].querySelector(".art").innerHTML = ""; }, 900);
   [...progress.children].forEach((b, k) => { b.className = k < i ? "done" : k === i ? "now" : ""; });
-  progress.style.setProperty("--accent", els[i].style.getPropertyValue("--accent"));
+  progress.style.setProperty("--c", SLIDES[i].color);
   back.disabled = i === 0;
   count.textContent = `${i + 1} / ${N}`;
   history.replaceState(null, "", i ? `#${i + 1}` : location.pathname + location.search);

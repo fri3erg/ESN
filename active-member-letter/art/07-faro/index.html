@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lettera-07-faro</title>
+<meta name="description" content="Un faro di notte, disegnato con le lettere.">
+<meta property="og:title" content="lettera-07-faro">
+<meta property="og:description" content="Un faro di notte, disegnato con le lettere.">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="An animated picture drawn with letters"></canvas>
+
+<script>
+"use strict";
+// ================================================================ settings
+const FONTS_TO_WAIT_FOR = [];          // no text in this picture
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+// ================================================================ the scene: a lighthouse at night
+// The sky, mist and sea fill the whole grid; the lighthouse sits in the centred box. Its beam turns
+// round: seen from the side it is a narrow wedge sweeping left or right, and as it turns towards us
+// it opens up into a wide flash.
+const HOR = SCENE_H * 0.75;                      // horizon
+const XL = -5;                                   // the lighthouse's x
+const T_TOP = SCENE_H * 0.36, T_BASE = HOR - 7;  // tower: top (gallery) and foot
+const R_TOP = 4.2, R_BASE = 6.6;
+const LAMP_Y = T_TOP - 3.4;
+const SPIN = 0.85;                               // radians per second (a turn every ~7.4 s)
+const TOP = Y[0], BOT = Y[ROWS - 1];
+const R_HOR = Math.floor(rowOf(HOR));
+const MOON = [0.36, 0.44, 0.62];                 // cool moonlight
+const BEAM = [0.58, 0.52, 0.34];                 // warm lamp light
+
+const vig = new Float32Array(N), sr = new Float32Array(N), mistT = new Float32Array(N);
+const bA = new Float32Array(N), bD = new Float32Array(N);       // angle and distance from the lamp
+const rowP = new Float32Array(ROWS), rowK = new Float32Array(ROWS), rowPh = new Float32Array(ROWS),
+  rowPh2 = new Float32Array(ROWS), rowAmp = new Float32Array(ROWS);
+const rockTop = new Float32Array(COLS);          // top of the rock per column (y), or Infinity
+
+function setup() {
+  for (let r = 0; r < ROWS; r++) {
+    const ey = Math.min(r, ROWS - 1 - r) / ROWS;
+    for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c, ex = Math.min(c, COLS - 1 - c) / COLS;
+      vig[i] = smoothstep(0, 0.12, ex) * smoothstep(0, 0.1, ey);
+      sr[i] = rnd(c, r, 3);
+      const a = c / COLS * TAU, R = COLS * UNIT * 0.035 / TAU * 6;        // mist noise, seamless round the columns
+      const n = vnoise(Math.cos(a) * R + 3, Math.sin(a) * R + 7, Y[r] * 0.12) + 0.5 * vnoise(Math.cos(a) * R * 2.3, Math.sin(a) * R * 2.3, Y[r] * 0.3 + 4);
+      mistT[i] = sr[i] < 0.6 ? clamp(0.45 + 0.6 * n) : 0;
+      const dx = X[c] - XL, dy = Y[r] - LAMP_Y;
+      bA[i] = Math.atan2(dy, dx); bD[i] = Math.hypot(dx, dy);
+    }
+    const p = clamp((Y[r] - HOR) / Math.max(1, BOT - HOR));
+    rowP[r] = p; rowK[r] = 1.3 / (0.35 + p * 7);
+    rowPh[r] = rnd(r, 1) * TAU; rowPh2[r] = rnd(r, 2) * TAU; rowAmp[r] = 0.7 + 0.3 * rnd(r, 5);
+  }
+  for (let c = 0; c < COLS; c++) {                                       // a lumpy rock under the tower
+    const u = (X[c] - XL) / 26;
+    rockTop[c] = Math.abs(u) < 1 ? HOR + 2 - 11 * Math.pow(1 - u * u, 0.7) - 2 * vnoise(X[c] * 0.22, 1, 2) - 1.2 * vnoise(X[c] * 0.7, 3, 2) : Infinity;
+  }
+}
+
+const angDiff = (a, b) => { let d = Math.abs(a - b) % TAU; return d > Math.PI ? TAU - d : d; };
+
+function scene(t) {
+  const on = smoothstep(0.5, 1.6, t) * (t < 1.4 ? (hash3(7, Math.floor(t * 18), 1) % 3 ? 1 : 0.25) : 1);   // lamp flickers on
+  const theta = (t - 1.2) * SPIN + 1.1;
+  const sx = Math.sin(theta), cz = Math.cos(theta);                     // cz > 0: pointing at us
+  const asx = Math.abs(sx);
+  const w = Math.atan2(0.15, asx);                                      // the cone's half-width on screen
+  const phi = sx >= 0 ? 0.035 : Math.PI - 0.035;                       // a little below horizontal
+  const beamI = on * (0.55 + 0.45 * Math.max(0, cz)) * smoothstep(0.9, 2.2, t);
+  const reach = 40 + 140 * asx;                                         // fades sooner when foreshortened
+  const flash = on * Math.pow(Math.max(0, cz), 10);
+  const drift = Math.floor(t * 2.2);                                    // mist drifts slowly to the right
+
+  // ---- sky with mist, stars and the beam
+  for (let r = 0; r < R_HOR && r < ROWS; r++) {
+    const h = clamp((HOR - Y[r]) / (HOR - TOP));
+    const skyL = 0.03 + 0.07 * Math.exp(-h * 3);
+    for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c;
+      const m = mistT[r * COLS + (c - drift % COLS + COLS) % COLS];
+      let l = skyL * m * 1.6 + (sr[i] < 0.25 ? skyL * 0.8 : 0);
+      let cr = MOON[0] * 0.8, cg = MOON[1] * 0.9, cb = MOON[2];
+      if (h > 0.3 && sr[i] > 0.9965) {                                  // stars
+        l = Math.max(l, 0.3 + 0.3 * Math.sin(t * 2.3 + sr[i] * 4000)); cr = 0.5; cg = 0.52; cb = 0.6;
+      }
+      if (beamI > 0) {
+        const d = angDiff(bA[i], phi);
+        if (d < w * 2) {
+          const q = Math.exp(-(d * d) / (w * w) * 2.2) * beamI * Math.exp(-bD[i] / reach);
+          const b = q * (0.3 + 1.1 * m);                               // mist catches the light
+          if (b > 0.01) {
+            const k = clamp(b * 2.5);
+            l += b; cr = mix(cr, BEAM[0], k); cg = mix(cg, BEAM[1], k); cb = mix(cb, BEAM[2], k);
+          }
+        }
+      }
+      const halo = on * 0.4 * Math.exp(-bD[i] / 4.5);
+      if (halo > 0.02) { const k = clamp(halo * 3); l += halo; cr = mix(cr, BEAM[0], k); cg = mix(cg, BEAM[1], k); cb = mix(cb, BEAM[2], k); }
+      if (flash > 0.01) {
+        const f = flash * Math.exp(-bD[i] / 14) * (0.35 + 0.65 * m);
+        if (f > 0.01) { const k = clamp(f * 3); l += f; cr = mix(cr, BEAM[0], k); cg = mix(cg, BEAM[1], k); cb = mix(cb, BEAM[2], k); }
+      }
+      lum[i] = clamp(l, 0, 0.85); const o = i * 3; rgb[o] = cr; rgb[o + 1] = cg; rgb[o + 2] = cb;
+    }
+  }
+
+  // ---- sea: dark waves; where the beam falls on the water, a glittering patch that sweeps across
+  const patchX = XL + sx * 46, patchP = 0.18 + 0.45 * Math.max(0, cz), patchW = 22 + 20 * Math.max(0, cz);
+  const seaI = beamI * (0.4 + 0.6 * asx + 0.5 * Math.max(0, cz));
+  for (let r = R_HOR; r < ROWS; r++) {
+    const p = rowP[r], kx = rowK[r], ph = rowPh[r] + t * 0.9, ph2 = rowPh2[r] - t * 0.6, amp = rowAmp[r];
+    const baseL = 0.09 + 0.16 * p;
+    const dp = (p - patchP) / 0.3, rowLit = seaI * Math.exp(-dp * dp);
+    const pw = patchW * (0.4 + p);
+    for (let c = 0; c < COLS; c++) {
+      const i = r * COLS + c, x = X[c];
+      const wv = (0.6 * Math.sin(x * kx + ph) + 0.4 * Math.sin(x * kx * 0.37 + ph2)) * amp;
+      let l = wv > 0.15 ? baseL * (0.8 + 0.9 * (wv - 0.15)) : (wv > -0.4 && sr[i] < 0.3 ? baseL * 0.45 : 0);
+      let cr = 0.16, cg = 0.26, cb = 0.58;
+      if (rowLit > 0.02) {
+        const ex = (x - patchX) / pw, lit = rowLit * Math.exp(-ex * ex);
+        if (lit > 0.02 && wv + (sr[i] - 0.5) * 0.8 > 0) {
+          const g = lit * (0.6 + 0.4 * wv);
+          if (g > l) { l = g; const k = clamp(lit * 2); cr = mix(cr, BEAM[0], k); cg = mix(cg, BEAM[1], k); cb = mix(cb, BEAM[2], k); }
+        }
+      }
+      lum[i] = l; const o = i * 3; rgb[o] = cr; rgb[o + 1] = cg; rgb[o + 2] = cb;
+    }
+  }
+
+  // ---- rock (with foam where the sea touches it)
+  const rc0 = Math.max(0, Math.floor(colOf(XL - 27))), rc1 = Math.min(COLS - 1, Math.ceil(colOf(XL + 27)));
+  for (let c = rc0; c <= rc1; c++) {
+    const top = rockTop[c];
+    if (top === Infinity) continue;
+    const ra = Math.max(0, Math.floor(rowOf(top))), rb = Math.min(ROWS - 1, Math.floor(rowOf(HOR + 3)));
+    for (let r = ra; r <= rb; r++) {
+      const i = r * COLS + c, y = Y[r];
+      const u = (X[c] - XL) / 26, tex = vnoise(X[c] * 0.35, y * 0.55, 5);
+      let l = 0.3 + 0.16 * tex - 0.1 * u + (y - top < 1.2 ? 0.1 : 0) - 0.08 * clamp((y - HOR + 3) / 5);      // lit a bit from the upper left
+      let cr = 0.36, cg = 0.38, cb = 0.5;
+      const foam = y > HOR + 0.5 ? 0.5 + 0.5 * Math.sin(t * 1.6 + X[c] * 0.5 + r) : 0;
+      if (foam > 0.55 && sr[i] < 0.7) { l = 0.25 + 0.25 * foam; cr = 0.42; cg = 0.5; cb = 0.6; }
+      lum[i] = Math.max(0.07, l); const o = i * 3; rgb[o] = cr; rgb[o + 1] = cg; rgb[o + 2] = cb;
+    }
+  }
+
+  // ---- tower: red and white bands, round, lit from the upper left
+  const tr0 = Math.floor(rowOf(T_TOP)), tr1 = Math.ceil(rowOf(T_BASE + 3));
+  const BANDS = 5, bandH = (T_BASE - T_TOP) / BANDS;
+  for (let r = Math.max(0, tr0); r <= Math.min(ROWS - 1, tr1); r++) {
+    const y = Y[r], v = clamp((y - T_TOP) / (T_BASE - T_TOP)), R = mix(R_TOP, R_BASE, v);
+    const red = Math.floor((y - T_TOP) / bandH) % 2 === 0;
+    const c0 = Math.max(0, Math.floor(colOf(XL - R))), c1 = Math.min(COLS - 1, Math.ceil(colOf(XL + R)));
+    for (let c = c0; c <= c1; c++) {
+      const s = (X[c] - XL) / R;
+      if (Math.abs(s) >= 1 || y > rockTop[c] + 1.5) continue;
+      const nz = Math.sqrt(1 - s * s), diff = Math.max(0, -0.55 * s + 0.75 * nz);
+      const i = r * COLS + c;
+      let l = 0.14 + 0.55 * diff;
+      let cr, cg, cb;
+      if (red) { cr = 0.58; cg = 0.12; cb = 0.12; } else { cr = 0.5; cg = 0.53; cb = 0.58; l += 0.08; }
+      if (Math.abs(X[c] - XL) < 1.1 && Math.abs(y - (T_TOP + bandH * 2.5)) < 1.2) { l = 0.5; cr = 0.58; cg = 0.46; cb = 0.22; }   // a lit window
+      if (Math.abs(X[c] - XL) < 1.6 && y > T_BASE - 4.5 && y < T_BASE + 1) { l = 0.07; cr = 0.2; cg = 0.2; cb = 0.3; }        // door
+      lum[i] = l; const o = i * 3; rgb[o] = cr; rgb[o + 1] = cg; rgb[o + 2] = cb;
+    }
+  }
+
+  // ---- gallery, lantern room with its lamp, and the dome
+  const pulse = 0.85 + 0.15 * Math.sin(t * 4.7);
+  for (let r = Math.max(0, Math.floor(rowOf(T_TOP - 11))); r <= Math.floor(rowOf(T_TOP + 0.6)); r++) {
+    const y = Y[r];
+    for (let c = Math.max(0, Math.floor(colOf(XL - 7.5))); c <= Math.min(COLS - 1, Math.ceil(colOf(XL + 7.5))); c++) {
+      const x = X[c] - XL, ax = Math.abs(x), i = r * COLS + c, o = i * 3;
+      if (y > T_TOP - 1.2) {                                          // gallery deck
+        if (ax < 6.4) { lum[i] = 0.3 - 0.02 * x; rgb[o] = 0.3; rgb[o + 1] = 0.3; rgb[o + 2] = 0.42; }
+      } else if (y > T_TOP - 2.6) {                                   // railing
+        if (ax < 6.2 && (Math.round(x * 1.2) % 2 === 0 || ax > 5.4)) { lum[i] = 0.22; rgb[o] = 0.32; rgb[o + 1] = 0.32; rgb[o + 2] = 0.45; }
+      } else if (y > T_TOP - 7) {                                     // lantern glass with the lamp
+        if (ax < 3.6) {
+          const bar = Math.abs(Math.abs(x) - 2.1) < 0.35;
+          const core = Math.exp(-(x * x + (y - LAMP_Y) * (y - LAMP_Y)) / 4);
+          const l = bar ? 0.18 : (0.12 + on * (0.45 + 0.4 * core) * pulse) + flash * 0.3;
+          lum[i] = clamp(l); rgb[o] = bar ? 0.3 : 0.58; rgb[o + 1] = bar ? 0.3 : mix(0.44, 0.55, core); rgb[o + 2] = bar ? 0.4 : mix(0.2, 0.42, core * on);
+        }
+      } else {                                                        // dome and finial
+        const dy = (T_TOP - 7 - y) / 3.6;
+        if (dy < 1 && ax < 4.2 * Math.sqrt(1 - dy * dy)) { lum[i] = 0.24 - 0.03 * x; rgb[o] = 0.5; rgb[o + 1] = 0.12; rgb[o + 2] = 0.12; }
+        else if (ax < 0.5 && y > T_TOP - 11.5) { lum[i] = 0.25; rgb[o] = 0.4; rgb[o + 1] = 0.4; rgb[o + 2] = 0.5; }
+      }
+    }
+  }
+
+  // ---- when the beam faces us, its light washes over the front of the lighthouse too
+  if (flash > 0.02) {
+    const fr0 = Math.max(0, Math.floor(rowOf(LAMP_Y - 30))), fr1 = Math.min(ROWS - 1, Math.ceil(rowOf(LAMP_Y + 30)));
+    const fc0 = Math.max(0, Math.floor(colOf(XL - 30))), fc1 = Math.min(COLS - 1, Math.ceil(colOf(XL + 30)));
+    for (let r = fr0; r <= fr1; r++) for (let c = fc0; c <= fc1; c++) {
+      const i = r * COLS + c, f = flash * 0.6 * Math.exp(-bD[i] / 7);
+      if (f < 0.02) continue;
+      const k = clamp(f * 2), o = i * 3;
+      lum[i] = clamp(lum[i] + f, 0, 1);
+      rgb[o] = mix(rgb[o], BEAM[0], k); rgb[o + 1] = mix(rgb[o + 1], BEAM[1], k); rgb[o + 2] = mix(rgb[o + 2], BEAM[2], k);
+    }
+  }
+
+  const fade = smoothstep(0, 0.6, t);
+  for (let i = 0; i < N; i++) lum[i] *= vig[i] * fade;
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const GLOW = 0.7;
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

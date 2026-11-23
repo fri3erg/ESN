@@ -1,39 +1,39 @@
 // The letter, one entry per slide. `lead` is the first line, shown bigger; `body` the paragraphs after it.
-// `art` is the page drawn next to the text (a folder in art/). Slides without their own art yet use the
-// placeholder; when a piece is ready in the ascii_art repo, copy it to art/<name>/index.html and point
-// the slide at it.
+// `art`: the page drawn under the text (a folder in art/, copied from the ascii_art repo's projects/lettera).
+// `color`: the text colour, picked to match the art.
+// `behind: true` lets the art fill the whole screen behind the text instead of sitting below it.
 export const SLIDES = [
-  { art: "art/esn/index.html", cover: true,
+  { art: "art/esn/index.html", color: "#8fdcff", cover: true,
     lead: "Ciao amori miei.", body: ["Sì lo so, grande sorpresa"] },
-  { art: null,
+  { art: "art/02-pioggia/index.html", color: "#a9c6e6", behind: true,
     lead: "Devo dirlo, non sono entrato in ESN per un nobile motivo.",
     body: ["Volevo amici. Una scusa per uscire di casa. Gente con cui organizzare cose, come facevo già prima, ma con chi ha davvero voglia di farlo."] },
-  { art: null,
+  { art: "art/03-alba/index.html", color: "#ffc76e",
     lead: "Poi però",
     body: ["Mi sono innamorato del sorridere alla gente. Del farla sentire in uno spazio fatto tutto per loro.",
            "Dell'essere una faccia gentile in un posto sconosciuto."] },
-  { art: null,
+  { art: "art/04-sezione/index.html", color: "#ff9fcf",
     lead: "Ho iniziato in una sezione piccola, un po' disorganizzata e molto umana.",
     body: ["Lì, da newbie ed Erasmus io stesso, mi sentivo davvero accolto come persona, e non come un ruolo."] },
-  { art: null,
+  { art: "art/05-bologna/index.html", color: "#f2a65e",
     lead: "Di Bologna, lo ammetto, avevo un po' paura.",
     body: ["Me la immaginavo organizzata, burocratica, piena di aspettative."] },
-  { art: null,
+  { art: "art/06-limoncello/index.html", color: "#f3e45e",
     lead: "Non mi aspettavo voi.",
     body: ["Le vostre personalità così diverse e interessanti, il limoncello, le party bag, le benedizioni… e vabbè, anche il file eventi."] },
-  { art: null,
+  { art: "art/07-faro/index.html", color: "#fff0b3",
     lead: "Qui posso inebriarmi nella mia tossica ricerca di essere il più utile, gentile e perfetto faro per chiunque mi rivolga la parola.",
     body: ["Ma col tempo ho capito che ESN mi rispecchia davvero: nell'organizzazione, nell'accoglienza e nella balotta."] },
-  { art: null,
+  { art: "art/08-crime-night/index.html", color: "#ffd23f",
     lead: "Tengo compagnia e poco più al karaoke, speak, e ufficio.",
     body: ["Ma il mio posto sono i tandem. Sono felicissimo di quello che i siti hanno portato alla serata: meno lavoro, giochi più chiari, e un segnale per gli Erasmus che ci teniamo davvero."] },
-  { art: null,
+  { art: "art/09-cannone/index.html", color: "#ff6b5e",
     lead: "Per questo infilo la testa nel cannone umano",
     body: ["e mi punto verso il responsabile tandem e il webmaster, per portare quello che so fare, e il mio sorriso, lì dove volontari ed Erasmus si incontrano."] },
-  { art: null, aside: true,
+  { art: "art/10-ragnatele/index.html", color: "#d6cfbf", behind: true,
     lead: "(E magari, finalmente, mandare in pensione quel vecchissimo Jupiter e il pagamento con bonifico :P)",
     body: [] },
-  { art: "art/esn/index.html", finale: true,
+  { art: "art/11-bacio/index.html", color: "#ff8597",
     lead: "Vi voglio bene stronzi",
     body: ["So di poter dare ancora tanto a questa sezione, e come sapete non ho paura di farmi avanti."] },
 ];

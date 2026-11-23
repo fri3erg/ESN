@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lettera-10-ragnatele</title>
+<meta name="description" content="Dusty cobwebs in the corners and a little spider on a thread, drawn with letters">
+<meta property="og:title" content="lettera-10-ragnatele">
+<meta property="og:description" content="Dusty cobwebs in the corners and a little spider on a thread, drawn with letters">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕸</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="Dusty cobwebs in the corners and a little spider on a thread, drawn with letters"></canvas>
+
+<script>
+"use strict";
+// ================================================================ settings: edit these
+// An old dusty corner: cobwebs in the top corners (and a smaller one at the bottom right) that sway in
+// a draught, dust drifting through the air, and a little spider letting itself down on a thread in the
+// middle, hanging there a while, and climbing back up.
+const SILK = [0.74, 0.72, 0.66];        // threads: silver with a faint warm tint
+const DUST = [0.66, 0.60, 0.50];        // dust caught in the web and floating in the air
+const BODY = [0.50, 0.46, 0.42];        // the spider
+const EYE = [0.90, 0.90, 0.84];
+const GLOW = 0.6;
+const FONTS_TO_WAIT_FOR = [];
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+// ================================================================ the scene
+// Webs hang from the corners of the whole grid (X[0]..X[COLS-1], Y[0]..Y[ROWS-1]), not the centred box,
+// so they sit in the real corners of any frame; the spider stays inside the box, near the middle.
+// glyph[i] >= 0 forces the character of a cell (an index into the renderer's characters), so threads
+// are drawn with - | / \ along their direction instead of random letters
+const glyph = new Int16Array(N);
+const CHARS = " .'`:-~,=+!/\|()<>";                                // the start of the renderer's RAMP
+const G_H = CHARS.indexOf("-"), G_V = CHARS.indexOf("|"), G_S = CHARS.indexOf("/"), G_B = CHARS.indexOf("\\");
+const PXX = CW / UNIT, PXY = CH;                                      // pixels per unit, across and down
+function dirGlyph(dx, dy) {
+  const ax = Math.abs(dx) * PXX, ay = Math.abs(dy) * PXY;
+  if (ay < ax * 0.45) return G_H;
+  if (ax < ay * 0.45) return G_V;
+  return (dx > 0) === (dy > 0) ? G_B : G_S;
+}
+const XL = X[0], XR = X[COLS - 1], YT = Y[0], YB = Y[ROWS - 1];
+const WIN_W = XR - XL, WIN_H = YB - YT;
+
+// ---------------------------------------------------------------- webs, built once
+// A corner web: spokes fanning out from the corner over a quarter turn, sagging rings strung between
+// neighbouring spokes, a few broken rings with loose ends hanging down, and lumps of dust on the silk.
+const WEBS = [];
+function buildWeb(seed, cx, cy, sx, sy, R) {
+  const NS = 7 + (hash3(seed, 1, 1) % 2), NR = 7;
+  const spokes = [];
+  for (let j = 0; j < NS; j++) {
+    const a = (0.1 + 0.8 * (j + (rnd(seed, j, 2) - 0.5) * 0.4) / (NS - 1)) * Math.PI / 2;
+    const L = R * (0.8 + rnd(seed, j, 3) * 0.3);
+    const pts = [];
+    for (let k = 1; k <= NR; k++) pts.push(L * Math.pow(k / NR, 1.15) * (0.92 + rnd(seed, j * 31 + k, 4) * 0.12));
+    spokes.push({ c: Math.cos(a) * sx, s: Math.sin(a) * sy, L, pts });
+  }
+  const segs = [], dangles = [], lumps = [];
+  for (let j = 0; j + 1 < NS; j++) for (let k = 0; k < NR; k++) {
+    const h = hash3(seed, j * 17 + k, 5) % 100;
+    if (h < 9 && k > 1) {                                              // broken: two loose ends hang down
+      dangles.push({ j, k, len: 3 + rnd(seed, j * 7 + k, 6) * 7, ph: rnd(seed, j, k) * TAU });
+      continue;
+    }
+    const sag = (0.6 + 1.2 * (k / NR) + rnd(seed, j * 13 + k, 7) * 0.8) * R / 60;
+    segs.push({ j, k, sag });
+    if (hash3(seed, j * 19 + k, 8) % 100 < 22) lumps.push({ j, k, sag, u: 0.2 + rnd(seed, j + k, 9) * 0.6, s: 0.6 + rnd(seed, k, j + 3) * 0.7 });
+  }
+  WEBS.push({ seed, cx, cy, sx, sy, R, spokes, segs, dangles, lumps, NR });
+}
+const WEB_R = Math.min(0.42 * WIN_W, 0.5 * WIN_H, 90);
+buildWeb(1, XL, YT, 1, 1, WEB_R);
+buildWeb(2, XR, YT, -1, 1, WEB_R * 0.92);
+buildWeb(3, XR, YB, -1, -1, WEB_R * 0.55);
+
+// ---------------------------------------------------------------- drawing helpers
+let swayX = 0, swayY = 0;                                             // set by sway()
+function sway(w, r, t) {                                              // a draught: far parts move most
+  const f = Math.pow(r / w.R, 1.6);
+  const wind = 0.6 * Math.sin(t * 0.45 + w.seed) + 0.35 * Math.sin(t * 0.83 + w.seed * 2.1) + 0.2 * Math.sin(t * 1.9);
+  swayX = wind * 2.4 * f;
+  swayY = 0.8 * f * Math.sin(t * 0.6 + w.seed * 1.7);
+}
+function webPoint(w, j, r, t, out) {                                  // a point on spoke j at distance r
+  const sp = w.spokes[j];
+  sway(w, r, t);
+  out[0] = w.cx + sp.c * r + swayX; out[1] = w.cy + sp.s * r + swayY;
+}
+const PA = [0, 0], PB = [0, 0];
+// a thread from (x0,y0) to (x1,y1), bowed by (bx,by) units in the middle; g forces one character
+function line(x0, y0, x1, y1, l, col, g = -1, bx = 0, by = 0) {
+  const len = Math.hypot(x1 - x0, y1 - y0) + Math.abs(bx) + Math.abs(by), n = Math.max(2, Math.ceil(len / 0.33));
+  for (let s = 0; s <= n; s++) {
+    const u = s / n, w = 4 * u * (1 - u), x = x0 + (x1 - x0) * u + bx * w, y = y0 + (y1 - y0) * u + by * w;
+    const c = Math.floor(colOf(x)), r = Math.floor(rowOf(y));
+    if (c < 0 || c >= COLS || r < 0 || r >= ROWS) continue;
+    const i = r * COLS + c;
+    if (l > lum[i]) {
+      set(i, l, col[0], col[1], col[2]);
+      const d = 4 * (1 - 2 * u);
+      glyph[i] = g >= 0 ? g : dirGlyph(x1 - x0 + bx * d, y1 - y0 + by * d);
+    }
+  }
+}
+function blob(x, y, rx, ry, l, col) {                                 // a soft round lump
+  const r0 = Math.max(0, Math.floor(rowOf(y - ry))), r1 = Math.min(ROWS - 1, Math.floor(rowOf(y + ry)));
+  const c0 = Math.max(0, Math.floor(colOf(x - rx))), c1 = Math.min(COLS - 1, Math.floor(colOf(x + rx)));
+  for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) {
+    const dx = (X[c] - x) / rx, dy = (Y[r] - y) / ry, d2 = dx * dx + dy * dy;
+    if (d2 > 1) continue;
+    const i = r * COLS + c, ll = l * (0.55 + 0.45 * (1 - d2));
+    if (ll > lum[i]) { set(i, ll, col[0], col[1], col[2]); glyph[i] = -1; }
+  }
+}
+
+function drawWeb(w, t, appear) {
+  if (appear <= 0) return;
+  const L = 0.3 * appear;
+  for (let j = 0; j < w.spokes.length; j++) {                         // spokes, from the corner outwards
+    let px = w.cx, py = w.cy;
+    for (let k = 0; k < w.NR; k++) {
+      webPoint(w, j, w.spokes[j].pts[k], t, PA);
+      line(px, py, PA[0], PA[1], L * 1.05, SILK);
+      px = PA[0]; py = PA[1];
+    }
+  }
+  for (const sg of w.segs) {                                          // rings
+    webPoint(w, sg.j, w.spokes[sg.j].pts[sg.k], t, PA);
+    webPoint(w, sg.j + 1, w.spokes[sg.j + 1].pts[sg.k], t, PB);
+    const mx = (PA[0] + PB[0]) / 2 - w.cx, my = (PA[1] + PB[1]) / 2 - w.cy, md = Math.hypot(mx, my) + 1e-3;
+    line(PA[0], PA[1], PB[0], PB[1], L * (0.95 - 0.25 * sg.k / w.NR), SILK, -1, -mx / md * sg.sag, -my / md * sg.sag + sg.sag * 0.3);
+  }
+  for (const d of w.dangles) {                                        // loose ends, swinging
+    for (let e = 0; e < 2; e++) {
+      webPoint(w, d.j + e, w.spokes[d.j + e].pts[d.k], t, PA);
+      const sw = Math.sin(t * 1.1 + d.ph + e * 1.3) * 0.25 + swayX * 0.08;
+      const len = d.len * (e ? 0.7 : 1);
+      line(PA[0], PA[1], PA[0] + Math.sin(sw) * len, PA[1] + Math.cos(sw) * len, L * 0.85, SILK);
+    }
+  }
+  for (const m of w.lumps) {                                          // dust caught in the silk
+    webPoint(w, m.j, w.spokes[m.j].pts[m.k], t, PA);
+    webPoint(w, m.j + 1, w.spokes[m.j + 1].pts[m.k], t, PB);
+    const u = m.u;
+    const mx = (PA[0] + PB[0]) / 2 - w.cx, my = (PA[1] + PB[1]) / 2 - w.cy, md = Math.hypot(mx, my) + 1e-3, k4 = 4 * u * (1 - u) * m.sag;
+    const x = PA[0] + (PB[0] - PA[0]) * u - mx / md * k4, y = PA[1] + (PB[1] - PA[1]) * u + (0.3 - my / md) * k4;
+    blob(x, y, 0.9 * m.s, 0.8 * m.s, 0.45 * appear, DUST);
+  }
+}
+
+// ---------------------------------------------------------------- the spider
+// It drops in from above, then loops every 16 s: hangs and bobs, climbs back up most of the way,
+// waits, and lets itself down again.
+const ANCHOR_X = 5, Y_LOW = SCENE_H * 0.5, Y_HIGH = SCENE_H * 0.16, LOOP = 16, FIRST = 5.5;
+const ease = (x) => { x = clamp(x); return x * x * (3 - 2 * x); };
+let climbing = 0;
+function spiderY(t) {
+  climbing = 0;
+  const top = Math.min(YT, 0) - 14;
+  if (t < FIRST) {                                                    // first drop: paying out silk in jerks
+    const u = clamp((t - 0.3) / (FIRST - 0.3)), steps = 5, k = Math.min(steps - 1, Math.floor(u * steps)), f = u * steps - k;
+    return mix(top, Y_LOW, (k + ease(f * 1.6)) / steps);
+  }
+  const s = (t - FIRST) % LOOP;
+  if (s < 4) return Y_LOW + 1.2 * Math.sin(s * 2.6) * Math.exp(-s * 0.7);          // bob, settling
+  if (s < 9) {                                                        // climb, hand over hand
+    climbing = 1;
+    const u = (s - 4) / 5, steps = 9, k = Math.min(steps - 1, Math.floor(u * steps)), f = u * steps - k;
+    return mix(Y_LOW, Y_HIGH, (k + ease(f * 1.5)) / steps);
+  }
+  if (s < 11) return Y_HIGH + 0.3 * Math.sin((s - 9) * 4);
+  const u = (s - 11) / 5;                                             // let itself down again
+  return mix(Y_HIGH, Y_LOW, ease(u));
+}
+
+const SP = 1.9;                                                       // spider size
+// per leg, front (0) to back (3), in spider-size units: how far out and up the knee is, the angle of the
+// lower part below horizontal, and its length
+const LEG_REACH = [3.8, 4.6, 4.4, 3.8], LEG_RISE = [1.4, 2.6, 3.6, 4.3];
+const LEG_DROP = [1.05, 1.1, 1.2, 1.3], LEG_LOW = [4.4, 4.6, 4.8, 5.0];
+function drawSpider(t) {
+  const y = spiderY(t);
+  const swing = 1.2 * Math.sin(t * 0.9) * clamp((y - YT) / 60);       // a little pendulum
+  const x = ANCHOR_X + swing;
+  line(ANCHOR_X, Math.min(YT, 0) - 2, x, y - 5.0 * SP, 0.3, SILK, G_V);   // the thread
+  // legs: four a side, every one jointed like a real spider's: the upper part rises to a knee above
+  // the body, the lower part angles down and out to the foot. They paddle slowly while hanging and
+  // scramble while climbing.
+  const hy = y + 1.6 * SP;
+  for (let side = -1; side <= 1; side += 2) for (let j = 0; j < 4; j++) {
+    const speed = climbing ? 10 : 1.8, amp = climbing ? 1 : 0.3;
+    const ph = t * speed + j * 1.9 + (side > 0 ? Math.PI : 0);
+    const hipX = x + side * 1.2 * SP, hipY = hy + (1.5 - j) * 0.95 * SP;   // front legs sit lowest, by the head
+    const kx = hipX + side * LEG_REACH[j] * SP;
+    const ky = hipY - (LEG_RISE[j] + 0.5 * Math.sin(ph) * amp) * SP;
+    const fb = LEG_DROP[j] + 0.12 * Math.cos(ph) * amp;                // angle of the lower part below horizontal
+    const fx = kx + side * Math.cos(fb) * LEG_LOW[j] * SP, fy = ky + Math.sin(fb) * LEG_LOW[j] * SP;
+    line(hipX, hipY, kx, ky, 0.55, BODY);
+    line(kx, ky, fx, fy, 0.5, BODY);
+  }
+  // abdomen up top (where the silk comes out), head below it, then two big round eyes
+  blob(x, y - 2.0 * SP, 3.0 * SP, 3.3 * SP, 0.72, BODY);
+  blob(x - 1.0 * SP, y - 3.2 * SP, 1.0 * SP, 1.0 * SP, 0.85, [0.62, 0.58, 0.53]);   // a sheen on the abdomen
+  blob(x, y + 1.9 * SP, 2.2 * SP, 1.9 * SP, 0.68, BODY);
+  const blink = (t % 5.3) < 0.15 ? 0.2 : 1;
+  for (let e = -1; e <= 1; e += 2) {
+    const ex = x + e * 0.95 * SP, ey = y + 1.9 * SP;
+    blob(ex, ey, 0.95 * SP, 0.95 * SP * blink, 0.95, EYE);
+    if (blink < 1) continue;
+    const px = ex + 0.2 * SP * Math.sin(t * 0.7), py = ey + 0.2 * SP;   // pupils looking about
+    for (let dy = 0; dy < 1; dy++) {
+      const pc = Math.floor(colOf(px)), pr = Math.floor(rowOf(py)) - dy;
+      if (pc >= 0 && pc + 1 < COLS && pr >= 0 && pr < ROWS) { const i = pr * COLS + pc; lum[i] = 0; lum[i + 1] = 0; }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- dust in the air
+const NMOTES = Math.round(WIN_W * WIN_H / 260);
+function drawMotes(t, appear) {
+  for (let k = 0; k < NMOTES; k++) {
+    const x = XL + ((rnd(k, 1) * WIN_W + t * (0.5 + rnd(k, 3)) + vnoise(k * 1.3, t * 0.07, 0) * 14) % WIN_W + WIN_W) % WIN_W;
+    const y = YT + ((rnd(k, 2) * WIN_H + t * (0.25 + rnd(k, 4) * 0.4) + vnoise(k * 1.7, t * 0.06, 5) * 10) % WIN_H + WIN_H) % WIN_H;
+    const tw = Math.pow(0.5 + 0.5 * Math.sin(t * (0.6 + rnd(k, 5)) + rnd(k, 6) * TAU), 4);
+    put(x, y, (0.1 + 0.32 * tw) * appear, DUST[0], DUST[1], DUST[2]);
+  }
+}
+
+function setup() {}
+
+function scene(t) {
+  lum.fill(0); glyph.fill(-1);
+  drawMotes(t, smoothstep(0, 1.5, t));
+  for (let w = 0; w < WEBS.length; w++) drawWeb(WEBS[w], t, smoothstep(0.1 + w * 0.3, 1.4 + w * 0.3, t));
+  drawSpider(t);
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const g = glyph[i], m = g >= 0 ? MASKS[g] : MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>

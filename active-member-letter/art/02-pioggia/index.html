@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lettera-02-pioggia</title>
+<meta name="description" content="Rain drops sliding down a dark window, drawn with letters">
+<meta property="og:title" content="lettera-02-pioggia">
+<meta property="og:description" content="Rain drops sliding down a dark window, drawn with letters">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌧</text></svg>">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block;
+    object-fit: contain; background: #000; }
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="Rain drops sliding down a dark window, drawn with letters"></canvas>
+
+<script>
+"use strict";
+// ================================================================ settings: edit these
+// Rain on a dark window: drops that slide down in jerks, stop, get caught up by a smaller drop and
+// swallow it, and leave a faint wet trail. Soft, muted blues; nothing else on screen.
+const DROP = [0.45, 0.62, 0.86];        // the drop itself
+const SHINE = [0.70, 0.82, 0.96];       // the glint on its upper side
+const WET = [0.28, 0.42, 0.64];         // the trail it leaves
+const MIST = [0.30, 0.40, 0.58];        // tiny condensation beads
+const DENSITY = 1 / 230;                // drops per square unit of window
+const GLOW = 0.55;
+const FONTS_TO_WAIT_FOR = [];
+
+// ================================================================ grid
+// The picture is drawn in "units": a row is 1 unit tall and a column is UNIT units wide, so units are
+// square. Everything lives in a SCENE_W x SCENE_H box that is centred and always fits the screen;
+// phones get more rows (a finer grid) instead of a cropped picture.
+const FONT_SIZE = 10, FPS = 30;
+const FONT = `${FONT_SIZE}px Menlo, Consolas, "DejaVu Sans Mono", "Courier New", monospace`;
+const probe = document.createElement("canvas").getContext("2d");
+probe.font = FONT;
+const CW = Math.max(1, Math.round(probe.measureText("M").width)), CH = Math.round(FONT_SIZE * 1.15);
+const UNIT = CW / CH;
+const ASPECT = innerWidth / Math.max(1, innerHeight), PORTRAIT = ASPECT < 1;
+const SCENE_W = 84, SCENE_H = PORTRAIT ? 140 : 122;
+const ROWS = Math.min(320, Math.ceil(Math.max(SCENE_H * 1.06, SCENE_W * 1.1 / ASPECT)));
+const COLS = Math.min(900, Math.max(60, Math.round(ROWS * ASPECT / UNIT)));
+const N = COLS * ROWS, Y_OFF = (ROWS - SCENE_H) / 2;
+const X = new Float32Array(COLS), Y = new Float32Array(ROWS);
+for (let c = 0; c < COLS; c++) X[c] = (c + 0.5 - COLS / 2) * UNIT;    // x = 0 is the centre
+for (let r = 0; r < ROWS; r++) Y[r] = r + 0.5 - Y_OFF;                // y = 0 is the top of the box
+const colOf = (x) => x / UNIT + COLS / 2, rowOf = (y) => y + Y_OFF;
+
+const lum = new Float32Array(N), rgb = new Float32Array(N * 3);       // brightness 0..1 and colour per cell
+function set(i, l, r, g, b) { lum[i] = l; const j = i * 3; rgb[j] = r; rgb[j + 1] = g; rgb[j + 2] = b; }
+function put(x, y, l, r, g, b, front = false) {                       // one cell at a scene point
+  const c = Math.floor(colOf(x)), rr = Math.floor(rowOf(y));
+  if (c < 0 || c >= COLS || rr < 0 || rr >= ROWS) return;
+  const i = rr * COLS + c;
+  if (front || l > lum[i]) set(i, l, r, g, b);
+}
+
+// ================================================================ maths
+const TAU = Math.PI * 2;
+const clamp = (x, lo = 0, hi = 1) => (x < lo ? lo : x > hi ? hi : x);
+function smoothstep(a, b, x) { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+const mix = (a, b, k) => a + (b - a) * k;
+const mix3 = (a, b, k) => { k = clamp(k); return [mix(a[0], b[0], k), mix(a[1], b[1], k), mix(a[2], b[2], k)]; };
+function hash3(a, b, c) {
+  let h = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663) ^ Math.imul(c, 83492791)) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+const rnd = (a, b = 0, c = 0) => hash3(a, b, c + 7) / 4294967296;    // fixed pseudo-random 0..1
+const hv = (a, b, c) => hash3(a, b, c) / 2147483648 - 1;
+function vnoise(x, y, z) {                                            // smooth value noise, about -1..1
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  let u = x - xi, v = y - yi, w = z - zi;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = mix(mix(hv(xi, yi, zi), hv(xi + 1, yi, zi), u), mix(hv(xi, yi + 1, zi), hv(xi + 1, yi + 1, zi), u), v);
+  const b = mix(mix(hv(xi, yi, zi + 1), hv(xi + 1, yi, zi + 1), u), mix(hv(xi, yi + 1, zi + 1), hv(xi + 1, yi + 1, zi + 1), u), v);
+  return mix(a, b, w);
+}
+
+// The renderer brightens colours up to ~1.8x, so any colour you hand it is rescaled to this
+// brightness first; otherwise saturated colours clip to white.
+const COLOR_GAIN = 0.58;
+const tame = (c) => { const m = Math.max(c[0], c[1], c[2], 1e-3); return c.map((v) => v * COLOR_GAIN / m); };
+
+// ================================================================ the scene
+// The whole grid is the window, not just the centred box: drops are spread over X[0]..X[COLS-1],
+// Y[0]..Y[ROWS-1]. Each drop lives in cycles; within one cycle it appears, slides down in a few jerks
+// with pauses in between, then fades. Everything is computed from t, nothing is kept between frames.
+const XL = X[0], XR = X[COLS - 1], YT = Y[0], YB = Y[ROWS - 1];
+const WIN_W = XR - XL, WIN_H = YB - YT;
+const NDROPS = Math.max(14, Math.round(WIN_W * WIN_H * DENSITY));
+const MAXSTEP = 10;
+
+// condensation: a sparse, fixed sprinkle of beads over the whole window, breathing very slowly
+const BEADS = [];
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+  if (hash3(c, r, 31) % 1000 < 9) BEADS.push(r * COLS + c);
+const BEAD_PH = new Float32Array(BEADS.length).map((_, k) => rnd(k, 5) * TAU);
+
+// per-frame scratch for one drop's path (no allocations while drawing)
+const PY = new Float32Array(MAXSTEP + 2), PX = new Float32Array(MAXSTEP + 2), PT = new Float32Array(MAXSTEP + 2), PS = new Float32Array(MAXSTEP + 2);
+
+function setup() {}
+
+// a soft blob of water at (x, y): rows ry tall, rx units wide, brighter low down where it gathers
+function drop(x, y, rx, ry, a) {
+  const ci = Math.floor(colOf(x)), ri = Math.floor(rowOf(y));         // its own cell, however small it is
+  if (ci >= 0 && ci < COLS && ri >= 0 && ri < ROWS && 0.6 * a > lum[ri * COLS + ci]) set(ri * COLS + ci, 0.6 * a, DROP[0], DROP[1], DROP[2]);
+  const r0 = Math.max(0, Math.floor(rowOf(y - ry))), r1 = Math.min(ROWS - 1, Math.floor(rowOf(y + ry)));
+  const c0 = Math.max(0, Math.floor(colOf(x - rx))), c1 = Math.min(COLS - 1, Math.floor(colOf(x + rx)));
+  for (let r = r0; r <= r1; r++) {
+    const dy = (Y[r] - y) / ry;
+    for (let c = c0; c <= c1; c++) {
+      const dx = (X[c] - x) / rx, d2 = dx * dx + dy * dy;
+      if (d2 > 1) continue;
+      const i = r * COLS + c;
+      let l = (0.3 + 0.42 * (1 - d2) + 0.14 * dy) * a;
+      if (l <= lum[i]) continue;
+      const glint = dy < -0.15 && dx < 0.2 && dx > -0.7;
+      if (glint) set(i, clamp(l + 0.12 * a), SHINE[0], SHINE[1], SHINE[2]);
+      else set(i, l, DROP[0], DROP[1], DROP[2]);
+    }
+  }
+}
+
+// the wet streak between two points of the path, faint and fading with how long ago the drop passed;
+// hw is its half width in units, with a slightly brighter core
+function trail(xa, ya, xb, yb, l, hw) {
+  if (l < 0.065) return;
+  const ra = Math.max(0, Math.ceil(rowOf(ya))), rb = Math.min(ROWS - 1, Math.floor(rowOf(yb)));
+  for (let r = ra; r <= rb; r++) {
+    const k = yb > ya ? (Y[r] - ya) / (yb - ya) : 0, x = xa + (xb - xa) * k;
+    const c0 = Math.max(0, Math.floor(colOf(x - hw))), c1 = Math.min(COLS - 1, Math.floor(colOf(x + hw)));
+    for (let c = c0; c <= c1; c++) {
+      const d = Math.abs(X[c] - x) / (hw + 0.01), i = r * COLS + c;
+      const ll = l * (1 - 0.45 * d * d) * (0.75 + 0.25 * ((hash3(c, r, 3) & 7) / 7));
+      if (ll > lum[i]) set(i, ll, WET[0], WET[1], WET[2]);
+    }
+  }
+}
+
+function scene(t) {
+  lum.fill(0);
+  const fadeIn = smoothstep(0, 1.5, t);
+  for (let k = 0; k < BEADS.length; k++) {                            // condensation
+    const i = BEADS[k], l = (0.08 + 0.04 * Math.sin(t * 0.4 + BEAD_PH[k])) * fadeIn;
+    set(i, l, MIST[0], MIST[1], MIST[2]);
+  }
+
+  for (let k = 0; k < NDROPS; k++) {
+    const period = 7 + rnd(k, 1) * 6;
+    const tk = t - (k % 3 === 1 ? rnd(k, 2) * 1.2 : 0.4 + rnd(k, 2) * period);   // a third start right away
+    if (tk < 0) continue;
+    const cyc = Math.floor(tk / period), u = tk - cyc * period;      // seconds into this life
+
+    // the path: a start point, then steps of (pause, slide)
+    const x0 = XL + 3 + rnd(k, cyc, 3) * (WIN_W - 6);
+    const y0 = hash3(k, cyc, 8) % 4 === 0 ? YT - 2 : YT + 2 + rnd(k * 7 + 3, cyc, 4) * WIN_H * 0.85;   // some run in from the top
+    const big = 0.45 + Math.pow(rnd(k, cyc, 5), 1.5) * 0.55;                         // size of this drop
+    const nst = 5 + (hash3(k, cyc, 6) % 5);
+    PX[0] = x0; PY[0] = y0; PT[0] = 0.4;                             // it forms for 0.4 s first
+    let tt = 0.4;
+    for (let s = 1; s <= nst; s++) {
+      tt += 0.15 + rnd(k, cyc, 10 + s) * 0.7;                          // pause
+      const dur = 0.2 + rnd(k, cyc, 30 + s) * 0.35;                   // slide
+      PY[s] = PY[s - 1] + 3 + rnd(k, cyc, 50 + s) * 8;
+      PX[s] = PX[s - 1] + (rnd(k, cyc, 70 + s) - 0.5) * 0.8;
+      PS[s] = tt; PT[s] = tt + dur; tt += dur;
+    }
+    const endT = Math.min(tt + 0.6, period - 1);                    // then it thins out and goes
+    const fadeOut = 1 - smoothstep(endT, endT + 1, u);
+    if (fadeOut <= 0) continue;
+
+    // where the head is now
+    let hx = x0, hy = y0, seg = 0;
+    for (let s = 1; s <= nst; s++) {
+      if (u >= PT[s]) { hx = PX[s]; hy = PY[s]; seg = s; continue; }
+      if (u > PS[s]) { const e = smoothstep(PS[s], PT[s], u); hx = mix(PX[s - 1], PX[s], e); hy = mix(PY[s - 1], PY[s], e); }
+      break;
+    }
+
+    // trail: each finished stretch dries over a few seconds; the current one is freshest
+    for (let s = 1; s <= seg; s++) {
+      const age = u - PT[s];
+      trail(PX[s - 1], PY[s - 1], PX[s], PY[s], 0.2 * Math.exp(-age / 3.5) * fadeOut, 0.15);
+    }
+    if (hy > PY[seg]) trail(PX[seg], PY[seg], hx, hy, 0.22 * fadeOut, 0.15);
+
+    // a smaller drop above it sometimes slides down its trail and is swallowed
+    let grow = 0;
+    if (hash3(k, cyc, 90) % 3 === 0 && nst >= 3) {
+      const tm = (PS[2] + PT[2]) * 0.5;                   // merges during its 2nd slide
+      const tb = 0.6 + rnd(k, cyc, 91) * 0.8;                         // the small one appears this much earlier
+      const gap0 = 6 + rnd(k, cyc, 92) * 8;
+      if (u > tm - tb - 2 && u < tm) {
+        const app = smoothstep(tm - tb - 2, tm - tb - 1.6, u);
+        const g = gap0 * (1 - smoothstep(tm - tb, tm, u));            // it closes the gap in one run
+        const bx = hx + 0.3, by = hy - Math.max(1.2, g);
+        trail(x0 + 0.3, y0 - gap0, bx, by - 0.5, 0.16 * app, 0.12);
+        drop(bx, by, 0.3, 0.5, app * 0.8);
+      }
+      grow = smoothstep(tm - 0.1, tm + 0.3, u) * 0.2;
+    }
+    const form = smoothstep(0, 0.6, u);
+    drop(hx, hy, (0.75 + grow) * big, (1.3 + grow) * big * (1 + 0.3 * smoothstep(0, 1, (hy - PY[seg]) / 3)), form * fadeOut);
+  }
+}
+
+// ================================================================ cells -> pixels (no need to edit)
+const RAMP = [" ", ".'`", ":-~,", "=+!/\\|()<>", "tfjrxnuvczil?", "XYUJCLQ0OZmwqpdbkhao", "#MW&8%B", "@$"];
+const LEVELS = [0.06, 0.15, 0.30, 0.45, 0.60, 0.75, 0.90];
+const view = document.getElementById("view"), ctx = view.getContext("2d");
+const W = COLS * CW, H = ROWS * CH;
+view.width = W; view.height = H;
+const START = [], COUNT = RAMP.map((s) => s.length);
+RAMP.reduce((s, b, k) => { START[k] = s; return s + b.length; }, 0);
+const MASKS = [...RAMP.join("")].map((ch) => {                        // each character pre-drawn as an alpha mask
+  const g = document.createElement("canvas"); g.width = CW; g.height = CH;
+  const gx = g.getContext("2d");
+  gx.font = FONT; gx.textBaseline = "top"; gx.fillStyle = "#fff"; gx.fillText(ch, 0, 0);
+  const d = gx.getImageData(0, 0, CW, CH).data, m = new Uint8Array(CW * CH);
+  for (let k = 0; k < m.length; k++) m[k] = d[k * 4 + 3];
+  return m;
+});
+const ascii = document.createElement("canvas"); ascii.width = W; ascii.height = H;
+const actx = ascii.getContext("2d");
+const img = actx.createImageData(W, H), px32 = new Uint32Array(img.data.buffer);
+const glows = [2, 4, 8].map((s) => { const g = document.createElement("canvas"); g.width = Math.ceil(W / s); g.height = Math.ceil(H / s); return g; });
+
+function draw(frame) {
+  px32.fill(0);
+  const fidx = Math.floor(frame / 3);                                 // characters reshuffle 10x a second
+  for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+    const i = r * COLS + c, L = lum[i];
+    let level = 0;
+    while (level < LEVELS.length && L >= LEVELS[level]) level++;
+    if (level === 0) continue;
+    const m = MASKS[START[level] + hash3(r, c, fidx) % COUNT[level]];
+    const k = (0.45 + 0.75 * L) * 1.5 * 255, j = i * 3;
+    const pr = Math.min(255, rgb[j] * k) | 0, pg = Math.min(255, rgb[j + 1] * k) | 0, pb = Math.min(255, rgb[j + 2] * k) | 0;
+    const rgb24 = (pb << 16) | (pg << 8) | pr;
+    let o = r * CH * W + c * CW, mi = 0;
+    for (let yy = 0; yy < CH; yy++, o += W) for (let xx = 0; xx < CW; xx++, mi++) {
+      const v = m[mi];
+      if (v) px32[o + xx] = (v << 24) | rgb24;
+    }
+  }
+  actx.putImageData(img, 0, 0);
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(ascii, 0, 0);
+  if (GLOW > 0) {                                                     // glow: shrink, then lay back on top
+    let src = ascii;
+    for (const g of glows) {
+      const gx = g.getContext("2d");
+      gx.imageSmoothingEnabled = true; gx.clearRect(0, 0, g.width, g.height);
+      gx.drawImage(src, 0, 0, g.width, g.height); src = g;
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter"; ctx.globalAlpha = GLOW; ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(glows[2], 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+// ================================================================ play
+let t0 = 0, lastDraw = -1e9;
+const START_AT = Number(new URLSearchParams(location.search).get("t")) || 0;   // ?t=45 jumps ahead (for previews)
+function tick(now) {
+  if (now - lastDraw >= 1000 / FPS - 2) {
+    lastDraw = now;
+    const t = (now - t0) / 1000 + START_AT;
+    scene(t);
+    draw(Math.floor(t * FPS));
+  }
+  requestAnimationFrame(tick);
+}
+const fontsReady = document.fonts ? Promise.all(FONTS_TO_WAIT_FOR.map((f) => document.fonts.load(f))) : Promise.resolve();
+Promise.race([fontsReady, new Promise((ok) => setTimeout(ok, 2500))]).catch(() => {})
+  .then(setup).then(() => { t0 = performance.now(); requestAnimationFrame(tick); });
+
+let resizeTimer = 0;                                                  // big change of window shape -> rebuild
+addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (Math.abs(innerWidth / Math.max(1, innerHeight) - ASPECT) / ASPECT > 0.08) location.reload();
+  }, 400);
+});
+</script>
+</body>
+</html>
