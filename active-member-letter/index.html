@@ -11,7 +11,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500..700&family=Caveat:wght@500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #000; --dim: #9d978c;
@@ -49,8 +49,8 @@
   /* text in the middle of the screen (rain), or a bit lower than the top (cobwebs) */
   .slide.middle .text { margin: auto; max-height: 80%; transform: translateY(-7vh); }
   .slide.big .lead { font-size: clamp(40px, 4.6vw + 2vh, 84px); }
-  .slide.swap .lead { font-family: "Caveat", cursive; font-weight: 500; font-size: clamp(24px, 1.6vw + 1.1vh, 34px); }
-  .slide.swap .body p { font-family: "Dancing Script", cursive; font-weight: 700; font-size: clamp(30px, 2.6vw + 1.5vh, 52px); line-height: 1.15; }
+  .slide.swap .lead { font-weight: 500; font-size: clamp(24px, 1.6vw + 1.1vh, 34px); color: color-mix(in srgb, var(--c) 82%, #fff); }
+  .slide.swap .body p { font-weight: 700; font-size: clamp(30px, 2.6vw + 1.5vh, 52px); line-height: 1.15; color: var(--c); }
   .slide.middle .art::after { background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,.2) 70%); }
   .slide.lower .text { margin-top: 16vh; }
   /* a lighter shade under the words, for art whose sky should show (sunrise) */
@@ -61,7 +61,7 @@
   /* the words: handwriting, glowing softly in the slide's colour */
   .lead, .body p { color: var(--c); text-wrap: balance;
     text-shadow: 0 0 22px color-mix(in srgb, var(--c) 35%, transparent), 0 2px 3px #000, 0 0 2px #000; }
-  .lead { font-family: "Dancing Script", cursive; font-weight: 700; line-height: 1.12; margin: 0 0 .3em;
+  .lead { font-family: "Caveat", cursive; font-weight: 700; line-height: 1.1; margin: 0 0 .3em;
     font-size: clamp(32px, 3.4vw + 1.6vh, 66px); }
   .lead.long { font-size: clamp(25px, 2.1vw + 1.3vh, 44px); line-height: 1.2; }
   .body p { font-family: "Caveat", cursive; font-weight: 500; line-height: 1.22; margin: 0 auto .35em;
@@ -75,10 +75,14 @@
 
   .cover .lead { font-size: clamp(46px, 6vw + 2vh, 104px); }
   .hint { position: absolute; z-index: 3; left: 0; right: 0; bottom: calc(84px + env(safe-area-inset-bottom));
-    text-align: center; font-family: "Space Mono", monospace; font-size: 12px; letter-spacing: .05em;
+    text-align: center; font-family: "Caveat", cursive; font-size: 20px; letter-spacing: .02em;
     color: var(--dim); line-height: 1.8; pointer-events: none; text-shadow: 0 1px 3px #000; }
-  .hint b { color: #f3efe7; font-weight: 400; }
-  @media (max-width: 480px) { .hint { font-size: 10.5px; letter-spacing: .02em; } }
+  .hint b { color: #f3efe7; font-weight: 700; }
+  @media (max-width: 480px) { .hint { font-size: 18px; letter-spacing: 0; } }
+  /* on the cover, bottom centre, between the star and the counter */
+  .noai { position: absolute; z-index: 3; left: 80px; right: 80px; bottom: calc(26px + env(safe-area-inset-bottom));
+    text-align: center; font-family: "Caveat", cursive; font-size: 17px; color: var(--dim);
+    pointer-events: none; text-shadow: 0 1px 3px #000; }
 
   /* ---------- chrome ---------- */
   .progress { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: var(--pad); right: var(--pad);
@@ -96,7 +100,7 @@
   .back svg { width: 100%; height: 100%; display: block; }
 
   .count { position: fixed; right: calc(16px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom));
-    font-family: "Space Mono", monospace; font-size: 12px; color: var(--dim); z-index: 5; pointer-events: none;
+    font-family: "Caveat", cursive; font-size: 18px; color: var(--dim); z-index: 5; pointer-events: none;
     text-shadow: 0 1px 3px #000; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -146,11 +150,12 @@ const els = SLIDES.map((s, i) => {
   el.innerHTML = `
     <div class="text">
       <h1 class="lead reveal${s.lead.length > 70 ? " long" : ""}" style="--d:${d}s">${esc(s.lead).replace(/\n/g, "<br>")}</h1>
-      <div class="body">${s.body.map((p) => `<p class="reveal" ${next()}>${esc(p)}</p>`).join("")}</div>
+      <div class="body">${s.body.map((p) => `<p class="reveal" ${next()}>${esc(p).replace(/\n/g, "<br>")}</p>`).join("")}</div>
     </div>
     <div class="art"></div>
     ${s.cover ? `<div class="hint reveal" ${next()}><b>tocca</b> o <b>scorri</b> per andare avanti<br>
-      <b>stella</b> in basso a sinistra per tornare indietro</div>` : ""}`;
+      <b>stella</b> in basso a sinistra per tornare indietro</div>
+      <div class="noai reveal" ${next()}>nessuna IA usata per il testo</div>` : ""}`;
   deck.appendChild(el);
   progress.appendChild(document.createElement("i"));
   return el;
