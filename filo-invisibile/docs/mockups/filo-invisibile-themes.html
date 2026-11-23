@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il filo invisibile: pick a theme</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ecebe6; color: #222; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header, footer { max-width: 1000px; margin: 0 auto; padding: 26px 18px 6px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0 0 8px; color: #555; line-height: 1.5; }
+  section.theme { max-width: 1000px; margin: 22px auto 8px; padding: 0 18px; }
+  section.theme h2 { margin: 0 0 4px; font-size: 21px; }
+  section.theme > p { margin: 0 0 14px; color: #444; line-height: 1.45; }
+  .row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .shot { width: 260px; margin: 0; }
+  .shot figcaption { text-align: center; font-size: 13px; color: #666; margin-top: 8px; }
+  .phone { width: 260px; height: 540px; border-radius: 34px; border: 9px solid #111; overflow: hidden; box-shadow: 0 16px 36px rgba(0,0,0,.25); position: relative; }
+  .scr { height: 100%; display: flex; flex-direction: column; font-size: 13px; position: relative; overflow: hidden; padding: 14px 14px 14px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; letter-spacing: .1em; white-space: nowrap; }
+  .prize { white-space: nowrap; font-size: 12.5px; }
+  .grow { flex: 1; }
+  .thread { display: block; width: 100%; height: 58px; overflow: visible; }
+  footer { color: #666; font-size: 14px; padding-bottom: 30px; }
+
+  /* ---------- A: embroidery (the colours of their guide) ---------- */
+  .A { background: #fbf7f1; color: #1c4a4a;
+       background-image: radial-gradient(rgba(28,74,74,.06) 1px, transparent 1.2px); background-size: 8px 8px; }
+  .A .top { color: #0f7a74; }
+  .A .pill { border: 1.5px solid #0f7a74; border-radius: 999px; padding: 3px 8px; }
+  .A h1 { font-size: 36px; line-height: .98; margin: 14px 0 0; font-weight: 900; letter-spacing: -.01em; }
+  .A h1 em { font-style: normal; color: #c8553d; }
+  .A .mission { margin: 12px 0 0; background: #1c4a4a; color: #fff; border-radius: 14px; padding: 11px 12px; font-weight: 700; font-size: 13.5px; line-height: 1.35; }
+  .A .mission small { display: block; color: #9fd8cf; font-size: 10px; letter-spacing: .14em; margin-bottom: 3px; }
+  .A ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+  .A li { display: flex; gap: 9px; font-size: 12px; line-height: 1.35; }
+  .A li b { background: #dff1ea; color: #0f7a74; border-radius: 7px; min-width: 26px; height: 22px; display: grid; place-items: center; font-size: 11px; }
+  .A .btn { background: #0f7a74; color: #fff; border-radius: 12px; text-align: center; padding: 14px; font-weight: 800; font-size: 15px; box-shadow: 0 5px 0 #0a524e; }
+  .A .link { text-align: center; font-weight: 700; color: #557; font-size: 12px; margin-top: 10px; }
+  .A .card { margin-top: 10px; background: #fff; border-radius: 16px; padding: 14px 14px 12px; box-shadow: 0 4px 14px rgba(28,74,74,.12); border-top: 5px solid #c8553d; }
+  .A .cat { color: #c8553d; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+  .A .q { font-size: 21px; font-weight: 800; line-height: 1.18; margin: 6px 0 0; }
+  .A .en { color: #6b7b7b; font-size: 12px; margin-top: 6px; }
+  .A .hint { margin-top: 10px; background: #fbe9df; border-radius: 10px; padding: 8px 10px; font-size: 11.5px; line-height: 1.35; }
+  .A .hint b { color: #c8553d; }
+  .A.end { background-color: #1c4a4a; color: #fff; }
+  .A .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+  .A .big h2 { margin: 0; font-size: 30px; line-height: 1.05; }
+  .A .prize { background: #fbe9df; color: #c8553d; border-radius: 12px; padding: 8px 14px; font-weight: 800; }
+
+  /* ---------- B: neon string ---------- */
+  .B { background: radial-gradient(circle at 30% 0%, #2b1550, #0d0b1f 60%); color: #efeaff; }
+  .B .top { color: #b9a8ff; }
+  .B .pill { border: 1.5px solid #ff4fd8; color: #ff4fd8; border-radius: 999px; padding: 3px 8px; }
+  .B h1 { font-size: 38px; line-height: .95; margin: 16px 0 0; font-weight: 900; color: #fff; text-shadow: 0 0 14px rgba(255,79,216,.55); }
+  .B h1 em { font-style: normal; color: #4ff0ff; text-shadow: 0 0 14px rgba(79,240,255,.7); }
+  .B .mission { margin: 12px 0 0; border: 1.5px solid rgba(79,240,255,.6); border-radius: 14px; padding: 10px 12px; font-weight: 700; font-size: 13.5px; line-height: 1.35; }
+  .B .mission small { display: block; color: #4ff0ff; font-size: 10px; letter-spacing: .16em; margin-bottom: 3px; }
+  .B ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+  .B li { display: flex; gap: 9px; font-size: 12px; line-height: 1.35; color: #d8d0f5; }
+  .B li b { color: #0d0b1f; background: #ff4fd8; border-radius: 50%; min-width: 22px; height: 22px; display: grid; place-items: center; font-size: 11px; box-shadow: 0 0 10px rgba(255,79,216,.6); }
+  .B .btn { background: linear-gradient(90deg, #ff4fd8, #8f5bff); color: #fff; border-radius: 14px; text-align: center; padding: 14px; font-weight: 900; font-size: 15px; letter-spacing: .06em; box-shadow: 0 5px 0 #5a2a9e, 0 0 20px rgba(255,79,216,.45); }
+  .B .link { text-align: center; font-weight: 700; color: #b9a8ff; font-size: 12px; margin-top: 10px; }
+  .B .card { margin-top: 10px; background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,79,216,.55); border-radius: 18px; padding: 14px; box-shadow: 0 0 24px rgba(255,79,216,.18); }
+  .B .cat { color: #4ff0ff; font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+  .B .q { font-size: 21px; font-weight: 800; line-height: 1.18; margin: 6px 0 0; color: #fff; }
+  .B .en { color: #a99fd0; font-size: 12px; margin-top: 6px; }
+  .B .hint { margin-top: 10px; border-left: 3px solid #4ff0ff; padding: 4px 0 4px 9px; font-size: 11.5px; line-height: 1.35; color: #d8d0f5; }
+  .B .hint b { color: #4ff0ff; }
+  .B .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+  .B .big h2 { margin: 0; font-size: 31px; line-height: 1.05; color: #fff; text-shadow: 0 0 16px rgba(79,240,255,.8); }
+  .B .prize { border: 1.5px solid #ff4fd8; color: #ff4fd8; border-radius: 12px; padding: 8px 14px; font-weight: 800; }
+
+  /* ---------- C: yarn pop ---------- */
+  .C { background: #ffe066; color: #2a1745;
+       background-image: radial-gradient(circle at 105% 0%, #ff8fab 0 70px, transparent 71px), radial-gradient(circle at -10% 100%, #7bdff2 0 90px, transparent 91px); }
+  .C .top { color: #2a1745; }
+  .C .pill { background: #2a1745; color: #ffe066; border-radius: 999px; padding: 3px 9px; }
+  .C h1 { font-size: 38px; line-height: .95; margin: 14px 0 0; font-weight: 900; color: #fff; -webkit-text-stroke: 1.5px #2a1745; text-shadow: 3px 3px 0 #2a1745; }
+  .C .mission { margin: 12px 0 0; background: #fff; border: 3px solid #2a1745; border-radius: 16px; padding: 9px 11px; font-weight: 800; font-size: 13.5px; line-height: 1.3; box-shadow: 4px 4px 0 #2a1745; }
+  .C .mission small { display: block; color: #e0457b; font-size: 10px; letter-spacing: .14em; margin-bottom: 2px; }
+  .C ol { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px; }
+  .C li { display: flex; gap: 9px; font-size: 12px; font-weight: 600; line-height: 1.35; }
+  .C li b { background: #e0457b; color: #fff; border: 2px solid #2a1745; border-radius: 50%; min-width: 24px; height: 24px; display: grid; place-items: center; font-size: 11px; }
+  .C .btn { background: #e0457b; color: #fff; border: 3px solid #2a1745; border-radius: 16px; text-align: center; padding: 12px; font-weight: 900; font-size: 16px; box-shadow: 0 6px 0 #2a1745; }
+  .C .link { text-align: center; font-weight: 800; font-size: 12px; margin-top: 10px; }
+  .C .card { margin-top: 10px; background: #fff; border: 3px solid #2a1745; border-radius: 20px; padding: 13px; box-shadow: 5px 5px 0 #2a1745; transform: rotate(-1deg); }
+  .C .cat { color: #e0457b; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+  .C .q { font-size: 21px; font-weight: 900; line-height: 1.15; margin: 6px 0 0; }
+  .C .en { color: #6d5a8a; font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .C .hint { margin-top: 10px; background: #7bdff2; border: 2px solid #2a1745; border-radius: 12px; padding: 7px 10px; font-size: 11.5px; font-weight: 600; line-height: 1.35; }
+  .C.end { background-color: #7bdff2; }
+  .C .big { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+  .C .big h2 { margin: 0; font-size: 32px; line-height: 1.02; color: #fff; -webkit-text-stroke: 1.5px #2a1745; text-shadow: 3px 3px 0 #2a1745; }
+  .C .prize { background: #fff; border: 3px solid #2a1745; border-radius: 14px; padding: 7px 14px; font-weight: 900; box-shadow: 3px 3px 0 #2a1745; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧶 Il filo invisibile: pick a theme</h1>
+  <p>Three looks for the same game, built from your guide. Meet three different people: read the question together, both answer, and when you find something specific you have in common, both tap <b>Thread found</b> to tie a knot. Three knots = the ball of yarn is complete, show it at the ESN desk for a prize. Italian and English, switchable.</p>
+  <p>Each row shows the start screen, a question, and the completed ball of yarn. Which one do you like: <b>A</b>, <b>B</b> or <b>C</b>?</p>
+</header>
+
+<!-- ================= A ================= -->
+<section class="theme">
+  <h2>A · Embroidery</h2>
+  <p>The colours of your guide (teal, cream, terracotta) on a dotted canvas. A red thread is stitched across the screen and gets a knot every time you find a connection. Calm and clean.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr A">
+      <div class="top"><span>ESN BOLOGNA · TANDEM</span><span class="pill">IT / EN</span></div>
+      <h1>Il filo <em>invisibile</em></h1>
+      <div class="mission"><small>YOUR MISSION</small>Meet three people. With each of them, find one thing you have in common.</div>
+      <ol>
+        <li><b>01</b>Find someone you haven't played with yet.</li>
+        <li><b>02</b>Read the question, both answer. Can you say "We both…"?</li>
+        <li><b>03</b>Both tap "Thread found": one knot. Then switch person.</li>
+      </ol>
+      <div class="grow"></div>
+      <svg class="thread" viewBox="0 0 232 58"><path d="M0 30 C 30 6, 50 52, 80 30 S 130 8, 160 30 S 210 50, 232 26" fill="none" stroke="#c8553d" stroke-width="2.5" stroke-dasharray="7 5"/><circle cx="80" cy="30" r="6" fill="none" stroke="#c8553d" stroke-width="2"/><circle cx="160" cy="30" r="6" fill="none" stroke="#c8553d" stroke-width="2"/><circle cx="216" cy="38" r="6" fill="none" stroke="#c8553d" stroke-width="2"/></svg>
+      <div class="btn">Start</div>
+    </div></div><figcaption>Start: mission + rules</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr A">
+      <div class="top"><span>● ○ ○ 1 OF 3 KNOTS</span><span class="pill">Rules</span></div>
+      <div class="card">
+        <div class="cat">TRAVEL · ERASMUS</div>
+        <p class="q">What tiny detail makes you feel at home when you're far away?</p>
+        <p class="en">Quale dettaglio insignificante ti fa sentire subito a casa quando sei lontano?</p>
+      </div>
+      <div class="hint"><b>Be specific.</b> "We both like travelling" is too easy. Share one real example each.</div>
+      <div class="grow"></div>
+      <div class="btn">Thread found 🧵</div>
+      <div class="link">Another question</div>
+    </div></div><figcaption>A question for the two of you</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr A end">
+      <div class="big">
+        <svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#c8553d"/><path d="M18 46 C 50 30, 80 34, 104 54 M14 66 C 46 52, 84 58, 108 78 M30 92 C 56 76, 84 80, 98 96 M40 16 C 34 50, 44 86, 64 110" fill="none" stroke="#fbe9df" stroke-width="3" opacity=".7"/><path d="M104 54 q 12 18, -2 36" fill="none" stroke="#c8553d" stroke-width="3"/></svg>
+        <h2>Ball of yarn<br>complete!</h2>
+        <p style="margin:0;opacity:.85">3 people, 3 threads</p>
+        <div class="prize">Show this at the ESN desk 🎁</div>
+        <p style="margin:0;font-size:11px;opacity:.7">COMPLETED AT 21:47</p>
+      </div>
+      <div class="btn" style="background:#fbf7f1;color:#1c4a4a;box-shadow:0 5px 0 #9fd8cf">Prize collected ✓ (volunteer)</div>
+    </div></div><figcaption>Three knots: the prize</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================= B ================= -->
+<section class="theme">
+  <h2>B · Neon thread</h2>
+  <p>Dark like the bar, with a glowing pink-and-cyan thread that lights up a little more with every knot. The most "party" one.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr B">
+      <div class="top"><span>ESN BOLOGNA · TANDEM</span><span class="pill">IT / EN</span></div>
+      <h1>Il filo<br><em>invisibile</em></h1>
+      <div class="mission"><small>YOUR MISSION</small>Meet three people. With each of them, find one thing you have in common.</div>
+      <ol>
+        <li><b>1</b>Find someone you haven't played with yet.</li>
+        <li><b>2</b>Read the question, both answer. Can you say "We both…"?</li>
+        <li><b>3</b>Both tap "Thread found": one knot. Then switch person.</li>
+      </ol>
+      <div class="grow"></div>
+      <svg class="thread" viewBox="0 0 232 58"><defs><linearGradient id="gB" x1="0" x2="1"><stop offset="0" stop-color="#ff4fd8"/><stop offset="1" stop-color="#4ff0ff"/></linearGradient></defs><path d="M0 30 C 30 6, 50 52, 80 30 S 130 8, 160 30 S 210 50, 232 26" fill="none" stroke="url(#gB)" stroke-width="3" style="filter:drop-shadow(0 0 4px #ff4fd8)"/><circle cx="80" cy="30" r="5" fill="#ff4fd8"/><circle cx="160" cy="30" r="5" fill="#b38cff"/><circle cx="216" cy="38" r="5" fill="#4ff0ff"/></svg>
+      <div class="btn">START</div>
+    </div></div><figcaption>Start: mission + rules</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr B">
+      <div class="top"><span>● ○ ○ 1 OF 3 KNOTS</span><span class="pill">Rules</span></div>
+      <div class="card">
+        <div class="cat">TRAVEL · ERASMUS</div>
+        <p class="q">What tiny detail makes you feel at home when you're far away?</p>
+        <p class="en">Quale dettaglio insignificante ti fa sentire subito a casa quando sei lontano?</p>
+      </div>
+      <div class="hint"><b>Be specific.</b> "We both like travelling" is too easy. Share one real example each.</div>
+      <div class="grow"></div>
+      <div class="btn">THREAD FOUND 🧵</div>
+      <div class="link">Another question</div>
+    </div></div><figcaption>A question for the two of you</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr B">
+      <div class="big">
+        <svg width="120" height="120" viewBox="0 0 120 120"><defs><linearGradient id="gB2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ff4fd8"/><stop offset="1" stop-color="#4ff0ff"/></linearGradient></defs><circle cx="60" cy="60" r="48" fill="none" stroke="url(#gB2)" stroke-width="4" style="filter:drop-shadow(0 0 8px #ff4fd8)"/><path d="M18 46 C 50 30, 80 34, 104 54 M14 66 C 46 52, 84 58, 108 78 M30 92 C 56 76, 84 80, 98 96 M40 16 C 34 50, 44 86, 64 110" fill="none" stroke="url(#gB2)" stroke-width="2.5"/></svg>
+        <h2>Ball of yarn<br>complete!</h2>
+        <p style="margin:0;color:#b9a8ff">3 people, 3 threads</p>
+        <div class="prize">Show this at the ESN desk 🎁</div>
+        <p style="margin:0;font-size:11px;color:#b9a8ff">COMPLETED AT 21:47</p>
+      </div>
+      <div class="btn">PRIZE COLLECTED ✓ (VOLUNTEER)</div>
+    </div></div><figcaption>Three knots: the prize</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================= C ================= -->
+<section class="theme">
+  <h2>C · Yarn pop</h2>
+  <p>Bright and playful: sunny yellow, pink and aqua, thick outlines, colourful balls of yarn. The card tilts a bit like a sticker. The most cheerful one.</p>
+  <div class="row">
+    <figure class="shot"><div class="phone"><div class="scr C">
+      <div class="top"><span>ESN BOLOGNA · TANDEM</span><span class="pill">IT / EN</span></div>
+      <h1>IL FILO<br>INVISIBILE 🧶</h1>
+      <div class="mission"><small>YOUR MISSION</small>Meet three people. With each of them, find one thing you have in common.</div>
+      <ol>
+        <li><b>1</b>Find someone you haven't played with yet.</li>
+        <li><b>2</b>Read the question, both answer. Can you say "We both…"?</li>
+        <li><b>3</b>Both tap "Thread found": one knot. Then switch person.</li>
+      </ol>
+      <div class="grow"></div>
+      <svg class="thread" viewBox="0 0 232 58"><path d="M0 30 C 30 6, 50 52, 80 30 S 130 8, 160 30 S 210 50, 232 26" fill="none" stroke="#2a1745" stroke-width="3.5"/><circle cx="80" cy="30" r="9" fill="#e0457b" stroke="#2a1745" stroke-width="2.5"/><circle cx="160" cy="30" r="9" fill="#fff" stroke="#2a1745" stroke-width="2.5"/><circle cx="216" cy="38" r="9" fill="#fff" stroke="#2a1745" stroke-width="2.5"/></svg>
+      <div class="btn">START!</div>
+    </div></div><figcaption>Start: mission + rules</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr C">
+      <div class="top"><span>🧶 1 OF 3 KNOTS</span><span class="pill">Rules</span></div>
+      <div class="card">
+        <div class="cat">TRAVEL · ERASMUS</div>
+        <p class="q">What tiny detail makes you feel at home when you're far away?</p>
+        <p class="en">Quale dettaglio insignificante ti fa sentire subito a casa quando sei lontano?</p>
+      </div>
+      <div class="hint"><b>Be specific.</b> "We both like travelling" is too easy. Share one real example each.</div>
+      <div class="grow"></div>
+      <div class="btn">THREAD FOUND 🧵</div>
+      <div class="link">Another question</div>
+    </div></div><figcaption>A question for the two of you</figcaption></figure>
+
+    <figure class="shot"><div class="phone"><div class="scr C end">
+      <div class="big">
+        <svg width="126" height="126" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#e0457b" stroke="#2a1745" stroke-width="4"/><path d="M18 46 C 50 30, 80 34, 104 54 M14 66 C 46 52, 84 58, 108 78 M30 92 C 56 76, 84 80, 98 96 M40 16 C 34 50, 44 86, 64 110" fill="none" stroke="#fff" stroke-width="3.5"/><path d="M104 60 q 14 20, 0 40" fill="none" stroke="#2a1745" stroke-width="3.5"/></svg>
+        <h2>BALL OF YARN<br>COMPLETE!</h2>
+        <p style="margin:0;font-weight:800">3 people, 3 threads</p>
+        <div class="prize">Show this at the ESN desk 🎁</div>
+        <p style="margin:0;font-size:11px;font-weight:800">COMPLETED AT 21:47</p>
+      </div>
+      <div class="btn" style="background:#ffe066;color:#2a1745">PRIZE COLLECTED ✓ (VOLUNTEER)</div>
+    </div></div><figcaption>Three knots: the prize</figcaption></figure>
+  </div>
+</section>
+
+<footer>Mockup only: colours and texts can all change. The questions come from your 70-question deck.</footer>
+</body>
+</html>
