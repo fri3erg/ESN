@@ -13,7 +13,7 @@ export const SLIDES = [
   { art: "art/esn/", color: "#8fdcff", cover: true, behind: true, down: 6, textAt: "light",
     lead: "Ciao amori miei.", body: ["Sì lo so, grande sorpresa"] },
   { art: "art/02-pioggia/", color: "#8db8ff", behind: true, textAt: "middle big",
-    lead: "Devo dirlo,\nnon sono entrato in ESN per un nobile motivo.",
+    lead: "Devo dirlo...\nnon sono entrato in ESN per un nobile motivo.",
     body: ["Volevo amici.\nUna scusa per uscire di casa.\nGente con cui organizzare cose, come facevo già prima,\nma con chi ha davvero voglia di farlo."] },
   { art: "art/03-alba/", color: "#ffc76e", behind: true, down: 18, textAt: "light",
     lead: "Poi però",
