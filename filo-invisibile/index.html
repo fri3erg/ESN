@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Il filo invisibile · ESN Bologna</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B6%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --red: #c8102e; --red2: #8a0b20; --pink: #fdecef; --pink2: #f3c4cc; --ink: #2b1416; --mute: #8a6a6e; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: #fff; color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    .screen { min-height: 100svh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; padding: 16px 18px max(18px, env(safe-area-inset-bottom)); position: relative; }
+
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: var(--red); white-space: nowrap; }
+    .top .right { display: flex; gap: 6px; }
+    .pill { background: #fff; border: 1.5px solid var(--red); color: var(--red); border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+    .pill i { font-style: normal; opacity: .45; }
+    .pill i.on { opacity: 1; }
+    .dots { user-select: none; padding: 6px 0; }
+    .dots span { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--red); margin-right: 4px; vertical-align: -1px; }
+    .dots span.on { background: var(--red); }
+
+    h1 { font-size: 60px; line-height: .95; margin: 26px 0 0; font-weight: 900; letter-spacing: -.02em; user-select: none; }
+    h1 em { font-style: normal; color: var(--red); display: block; }
+    .mission { margin: 18px 0 0; background: var(--red); color: #fff; border-radius: 16px; padding: 14px 15px; font-weight: 700; font-size: 17px; line-height: 1.35; }
+    .mission small { display: block; color: #ffc9d1; font-size: 11px; letter-spacing: .16em; margin-bottom: 4px; }
+    ol.steps { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+    ol.steps li { display: flex; gap: 11px; font-size: 15px; line-height: 1.4; }
+    ol.steps b { background: var(--pink); color: var(--red); border-radius: 8px; min-width: 32px; height: 27px; display: grid; place-items: center; font-size: 13px; flex: none; }
+    .rule { margin: 14px 0 0; background: var(--pink); border-radius: 12px; padding: 11px 13px; font-size: 14px; line-height: 1.4; }
+    .rule b { color: var(--red); }
+
+    .btn { display: block; width: 100%; border: 0; border-radius: 14px; background: var(--red); color: #fff; padding: 18px 14px; font-weight: 900; font-size: 19px;
+           box-shadow: 0 6px 0 var(--red2); transition: transform .08s, box-shadow .08s; }
+    .btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--red2); }
+    .btn.white { background: #fff; color: var(--red); border: 2px solid var(--red); box-shadow: 0 6px 0 var(--pink2); }
+    .btn.white:active { box-shadow: 0 1px 0 var(--pink2); }
+    .link { display: block; width: 100%; background: none; border: 0; padding: 14px 6px 4px; font-size: 15px; font-weight: 700; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+    .push { margin-top: auto; padding-top: 20px; }
+
+    .thread { display: block; width: 100%; height: 70px; overflow: visible; margin-top: 10px; }
+    .thread path { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 1.4s ease-out forwards; }
+    .thread circle.on { animation: knot .5s .9s ease-out both; transform-box: fill-box; transform-origin: center; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes knot { from { transform: scale(0); } 70% { transform: scale(1.4); } }
+
+    /* look / switch */
+    .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 18px 0; }
+    .mid .emoji { font-size: 74px; line-height: 1; }
+    .mid h2 { margin: 16px 0 0; font-size: 36px; line-height: 1.05; font-weight: 900; }
+    .mid h2 em { font-style: normal; color: var(--red); }
+    .mid p { margin: 14px auto 0; font-size: 17px; line-height: 1.45; max-width: 340px; color: #5a3a3e; }
+
+    /* card */
+    .card { margin-top: 18px; background: #fff; border: 2.5px solid var(--red); border-radius: 20px; padding: 18px 18px 16px; box-shadow: 0 6px 0 var(--pink2); animation: pop .35s ease-out; }
+    @keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+    .cat { color: var(--red); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+    .q { font-size: 27px; font-weight: 850; line-height: 1.18; margin: 9px 0 0; }
+    .q.long { font-size: 23px; }
+    .other { color: var(--mute); font-size: 14.5px; line-height: 1.4; margin: 10px 0 0; }
+    .nudge { margin: 12px 0 0; text-align: center; font-size: 14px; color: var(--red); font-weight: 700; animation: pop .4s ease-out; }
+
+    /* done */
+    body.win { background: #fff; }
+    body.win::before { content: ""; position: fixed; inset: -40px; z-index: -1; opacity: .5;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cpath d='M-10 40 C 30 10, 50 70, 90 40 S 150 10, 170 40 M-10 120 C 30 90, 50 150, 90 120 S 150 90, 170 120' fill='none' stroke='%23f3c4cc' stroke-width='3'/%3E%3C/svg%3E");
+      animation: drift 9s linear infinite; }
+    @keyframes drift { to { transform: translate(160px, 40px); } }
+    .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 10px 0; }
+    .yarn { width: 170px; height: 170px; user-select: none; animation: roll 3.2s ease-in-out infinite; }
+    @keyframes roll { 50% { transform: rotate(-8deg) scale(1.04); } }
+    .done h2 { margin: 0; font-size: 42px; line-height: 1; font-weight: 900; color: var(--red); }
+    .done .sub { margin: 0; color: var(--mute); font-size: 16px; }
+    .prize { position: relative; overflow: hidden; background: var(--red); color: #fff; border-radius: 14px; padding: 12px 18px; font-weight: 900; font-size: 19px; white-space: nowrap; }
+    .prize::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; left: -80px; background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); animation: shine 2.6s ease-in-out infinite; }
+    @keyframes shine { 60%, 100% { left: 110%; } }
+    .prize.got { background: #fff; color: var(--red); border: 2px solid var(--red); }
+    .at { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--mute); }
+    .at b { display: block; font-size: 34px; color: var(--ink); letter-spacing: .04em; animation: beat 1.6s ease-in-out infinite; }
+    @keyframes beat { 50% { color: var(--red); } }
+
+    /* overlays */
+    .ov { position: fixed; inset: 0; z-index: 20; background: rgba(43,20,22,.55); display: grid; place-items: center; padding: 18px; animation: fade .2s ease-out; }
+    @keyframes fade { from { opacity: 0; } }
+    .box { background: #fff; border-radius: 20px; padding: 22px 20px 20px; width: 100%; max-width: 420px; max-height: calc(100svh - 36px); overflow-y: auto; border-top: 6px solid var(--red); }
+    .box h3 { margin: 0; font-size: 26px; line-height: 1.1; }
+    .box p { font-size: 16px; line-height: 1.45; margin: 10px 0 18px; color: #5a3a3e; }
+    .box .btn { margin-top: 10px; }
+    .box h1 { font-size: 40px; margin: 0; }
+
+    .flash { position: fixed; inset: 0; z-index: 30; background: var(--red); color: #fff; display: grid; place-items: center; text-align: center; pointer-events: none; animation: flash 1.1s ease-out forwards; }
+    .flash div { font-size: 46px; font-weight: 900; line-height: 1.05; }
+    .flash small { display: block; font-size: 80px; margin-bottom: 8px; }
+    @keyframes flash { 0% { opacity: 0; } 12%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+    .bday { position: fixed; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 40%, #e0193a, var(--red2)); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; animation: fade .3s ease-out; overflow: hidden; }
+    .bday .cake { font-size: 110px; line-height: 1; animation: bounce .9s ease-in-out infinite; }
+    @keyframes bounce { 50% { transform: translateY(-16px) rotate(4deg); } }
+    .bday h2 { margin: 18px 0 0; font-size: 50px; line-height: .98; font-weight: 900; text-shadow: 0 4px 0 rgba(0,0,0,.18); }
+    .bday h2 em { font-style: normal; display: block; font-size: 1.45em; animation: glow 1.2s ease-in-out infinite; }
+    @keyframes glow { 50% { transform: scale(1.06); text-shadow: 0 0 26px rgba(255,255,255,.9); } }
+    .bday p { margin: 16px 0 0; font-size: 20px; font-weight: 700; }
+    .bday small { margin-top: 34px; font-size: 13px; opacity: .75; }
+
+    .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+    .confetti i { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 2px; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(var(--r)); } }
+
+    @media (max-height: 700px) {
+      .screen { padding-top: 12px; }
+      h1 { font-size: 46px; margin-top: 14px; }
+      .mission { font-size: 15px; padding: 11px 13px; margin-top: 12px; }
+      ol.steps { gap: 7px; margin-top: 12px; }
+      ol.steps li { font-size: 13.5px; }
+      .rule { font-size: 13px; padding: 9px 11px; margin-top: 10px; }
+      .thread { height: 50px; }
+      .btn { padding: 15px 12px; font-size: 17px; }
+      .q { font-size: 23px; } .q.long { font-size: 20px; }
+      .card { padding: 14px; margin-top: 12px; }
+      .other { font-size: 13px; }
+      .yarn { width: 120px; height: 120px; }
+      .done h2 { font-size: 34px; }
+      .done { gap: 8px; }
+      .at b { font-size: 28px; }
+      .mid .emoji { font-size: 56px; }
+      .mid h2 { font-size: 30px; }
+      .link { padding-top: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .thread path { stroke-dashoffset: 0; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import * as G from './game.js';
+import { CATEGORIES } from './deck.js';
+
+const T = {
+  it: {
+    brand: 'ESN BOLOGNA · TANDEM', rules: 'Regole', knotsOf: n => `${n} DI ${G.GOAL} NODI`,
+    title: ['Il filo', 'invisibile'], missionLbl: 'LA TUA MISSIONE',
+    mission: 'Conosci tre persone. Con ognuna, trova una cosa che avete in comune.',
+    steps: ['Trova qualcuno con cui non hai ancora giocato.', 'Leggete la domanda e rispondete entrambi. Potete dire «Tutti e due…»?', 'Toccate «Filo trovato»: un nodo. Poi cambia persona.'],
+    rule: '<b>Siate specifici.</b> «Ci piace viaggiare» è troppo facile. Raccontate un esempio vero a testa prima di fare il nodo.',
+    start: 'Inizia', close: 'Chiudi', restart: 'Ricomincia da capo',
+    restartQ: 'Ricominciare da capo?', restartP: 'I nodi fatti su questo telefono si cancellano.', restartYes: 'Sì, ricomincia',
+    lookH: ['Guardati', 'intorno'], lookP: 'Vuoi giocare con qualcuno vicino a te? Qualcuno che non conosci ancora.', ready: 'Siamo pronti',
+    found: 'Filo trovato 🧵', another: 'Un’altra domanda',
+    nudge: 'Continuate pure, cambiate domanda o salutatevi 👋',
+    confirmQ: 'Vale per entrambi?', confirmP: 'Avete trovato una cosa specifica in comune, con un esempio vero a testa?', yes: 'Sì, facciamo il nodo', back: 'Torna alla domanda',
+    knotFlash: 'Nodo fatto!',
+    switchH: ['Cambio', 'persona!'], switchP: 'Salutatevi e trova qualcuno di nuovo con cui giocare.', foundSomeone: 'Ho trovato qualcuno',
+    doneH: ['Gomitolo', 'completo!'], threads: n => `${n} persone, ${n} fili`,
+    show: 'Mostralo al desk ESN 🎁', completedAt: 'COMPLETATO ALLE', collected: t => `Premio ritirato ✓ ${t}`,
+    collect: 'Premio ritirato ✓ (volontario)', collectQ: 'Solo per il volontario ESN', collectP: 'Segnare il premio come ritirato? Non si può annullare.', collectYes: 'Sì, premio consegnato',
+    more: 'Altre domande, solo per divertimento',
+    bday: ['Happy birthday', 'Joana!'], bdayP: 'Tanti auguri da ESN Bologna ❤️', tapClose: 'tocca per chiudere',
+  },
+  en: {
+    brand: 'ESN BOLOGNA · TANDEM', rules: 'Rules', knotsOf: n => `${n} OF ${G.GOAL} KNOTS`,
+    title: ['Il filo', 'invisibile'], missionLbl: 'YOUR MISSION',
+    mission: 'Meet three people. With each of them, find one thing you have in common.',
+    steps: ['Find someone you haven’t played with yet.', 'Read the question, both answer. Can you say “We both…”?', 'Tap “Thread found”: one knot. Then switch person.'],
+    rule: '<b>Be specific.</b> “We both like travelling” is too easy. Share one real example each before you tie the knot.',
+    start: 'Start', close: 'Close', restart: 'Start over',
+    restartQ: 'Start over?', restartP: 'The knots on this phone will be erased.', restartYes: 'Yes, start over',
+    lookH: ['Look', 'around'], lookP: 'Want to play with someone near you? Someone you don’t know yet.', ready: 'We’re ready',
+    found: 'Thread found 🧵', another: 'Another question',
+    nudge: 'Keep going, change question or say goodbye 👋',
+    confirmQ: 'Does it count for both of you?', confirmP: 'Did you find one specific thing in common, with a real example each?', yes: 'Yes, tie a knot', back: 'Back to the question',
+    knotFlash: 'Knot tied!',
+    switchH: ['Time to', 'switch!'], switchP: 'Say goodbye and find someone new to play with.', foundSomeone: 'I found someone',
+    doneH: ['Ball of yarn', 'complete!'], threads: n => `${n} people, ${n} threads`,
+    show: 'Show this at the ESN desk 🎁', completedAt: 'COMPLETED AT', collected: t => `Prize collected ✓ ${t}`,
+    collect: 'Prize collected ✓ (volunteer)', collectQ: 'ESN volunteer only', collectP: 'Mark the prize as collected? This can’t be undone.', collectYes: 'Yes, prize given',
+    more: 'More questions, just for fun',
+    bday: ['Happy birthday', 'Joana!'], bdayP: 'Tanti auguri from ESN Bologna ❤️', tapClose: 'tap to close',
+  },
+};
+
+const NUDGE_MS = 120000;
+const store = G.safeStorage();
+if (new URLSearchParams(location.search).has('reset')) { G.clear(store); history.replaceState(null, '', location.pathname); }
+const browserLang = (navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en';
+let s = G.load(store) || G.fresh(browserLang);
+let overlay = null; // 'rules' | 'confirm' | 'restart' | 'collect'
+let taps = [];
+const app = document.getElementById('app');
+const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+function set(next) { if (next !== s) { s = next; G.save(store, s); } render(); }
+
+const thread = n => {
+  const k = [[80, 34], [160, 34], [216, 42]];
+  return `<svg class="thread" viewBox="0 0 232 64" aria-hidden="true"><path d="M2 34 C 30 8, 50 58, 80 34 S 130 10, 160 34 S 210 56, 230 30" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>${
+    k.map(([x, y], i) => `<circle class="${i < n ? 'on' : ''}" cx="${x}" cy="${y}" r="7.5" fill="${i < n ? '#c8102e' : '#fff'}" stroke="#c8102e" stroke-width="2.6"/>`).join('')}</svg>`;
+};
+
+const yarn = `<svg class="yarn" data-secret viewBox="0 0 120 120" aria-hidden="true"><path d="M6 114 C 30 106, 34 98, 22 88" fill="none" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/><circle cx="62" cy="58" r="48" fill="#c8102e"/><g fill="none" stroke="#fff" stroke-width="2.4" opacity=".55" stroke-linecap="round"><path d="M20 44 C 50 28, 82 32, 106 52"/><path d="M16 64 C 48 50, 86 56, 110 76"/><path d="M32 92 C 58 76, 86 80, 100 94"/><path d="M44 14 C 36 48, 46 84, 66 106"/><path d="M78 13 C 64 42, 70 78, 92 98"/></g></svg>`;
+
+function top(t) {
+  const n = G.knots(s);
+  const left = s.phase === 'rules'
+    ? `<span data-secret>${t.brand}</span>`
+    : `<span class="dots" data-secret aria-label="${t.knotsOf(Math.min(n, G.GOAL))}">${[0, 1, 2].map(i => `<span class="${i < n ? 'on' : ''}"></span>`).join('')} ${t.knotsOf(Math.min(n, G.GOAL))}</span>`;
+  const lang = `<button class="pill" data-act="lang" aria-label="Italiano / English"><i class="${s.lang === 'it' ? 'on' : ''}">IT</i> / <i class="${s.lang === 'en' ? 'on' : ''}">EN</i></button>`;
+  const rules = s.phase === 'rules' ? '' : `<button class="pill" data-act="rules">${t.rules}</button>`;
+  return `<div class="top">${left}<span class="right">${lang}${rules}</span></div>`;
+}
+
+const rulesBody = t => `
+  <div class="mission"><small>${t.missionLbl}</small>${t.mission}</div>
+  <ol class="steps">${t.steps.map((x, i) => `<li><b>0${i + 1}</b><span>${x}</span></li>`).join('')}</ol>
+  <div class="rule">${t.rule}</div>`;
+
+function screen(t) {
+  const n = G.knots(s);
+  switch (s.phase) {
+    case 'rules': return `
+      <h1 data-secret>${t.title[0]} <em>${t.title[1]}</em></h1>
+      ${rulesBody(t)}
+      <div class="push">${thread(0)}<button class="btn" data-act="start">${t.start}</button></div>`;
+    case 'look': return `
+      <div class="mid"><div class="emoji">👀</div><h2>${t.lookH[0]} <em>${t.lookH[1]}</em></h2><p>${t.lookP}</p>${thread(n)}</div>
+      <button class="btn" data-act="ready">${t.ready}</button>`;
+    case 'switch': return `
+      <div class="mid"><div class="emoji">👋</div><h2>${t.switchH[0]} <em>${t.switchH[1]}</em></h2><p>${t.switchP}</p>${thread(n)}</div>
+      <button class="btn" data-act="ready">${t.foundSomeone}</button>`;
+    case 'card': {
+      const c = G.card(s);
+      const other = s.lang === 'it' ? 'en' : 'it';
+      const q = c[s.lang];
+      const late = Date.now() - Date.parse(s.cardAt) > NUDGE_MS;
+      return `
+        <div class="card"><div class="cat">${esc(CATEGORIES[c.cat][s.lang])}</div>
+          <p class="q ${q.length > 95 ? 'long' : ''}">${esc(q)}</p><p class="other">${esc(c[other])}</p></div>
+        <div class="rule">${t.rule}</div>
+        ${late ? `<p class="nudge">${t.nudge}</p>` : ''}
+        <div class="push"><button class="btn" data-act="found">${t.found}</button><button class="link" data-act="another">${t.another}</button></div>`;
+    }
+    case 'done': {
+      const got = s.collectedAt;
+      return `
+        <div class="done">${yarn}
+          <h2>${t.doneH[0]}<br>${t.doneH[1]}</h2>
+          <p class="sub">${t.threads(n)}</p>
+          <div class="prize ${got ? 'got' : ''}">${got ? t.collected(G.formatTime(got)) : t.show}</div>
+          <p class="at">${t.completedAt}<b>${G.formatTime(s.completedAt)}</b></p>
+        </div>
+        ${got ? '' : `<button class="btn white" data-act="collect">${t.collect}</button>`}
+        <button class="link" data-act="more">${t.more}</button>`;
+    }
+  }
+  return '';
+}
+
+function overlayHtml(t) {
+  switch (overlay) {
+    case 'rules': return `<div class="ov" data-act="close"><div class="box"><h1>${t.title[0]} <em style="font-style:normal;color:var(--red)">${t.title[1]}</em></h1>${rulesBody(t)}
+      <button class="btn" data-act="close" style="margin-top:18px">${t.close}</button><button class="link" data-act="restart">${t.restart}</button></div></div>`;
+    case 'confirm': return `<div class="ov" data-act="close"><div class="box"><h3>${t.confirmQ}</h3><p>${t.confirmP}</p>
+      <button class="btn" data-act="tie">${t.yes}</button><button class="btn white" data-act="close" style="margin-top:16px">${t.back}</button></div></div>`;
+    case 'restart': return `<div class="ov" data-act="close"><div class="box"><h3>${t.restartQ}</h3><p>${t.restartP}</p>
+      <button class="btn" data-act="restartYes">${t.restartYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
+    case 'collect': return `<div class="ov" data-act="close"><div class="box"><h3>${t.collectQ}</h3><p>${t.collectP}</p>
+      <button class="btn" data-act="collectYes">${t.collectYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
+  }
+  return '';
+}
+
+function render() {
+  const t = T[s.lang];
+  document.documentElement.lang = s.lang;
+  document.body.classList.toggle('win', s.phase === 'done');
+  app.innerHTML = `<main class="screen">${top(t)}${screen(t)}</main>${overlayHtml(t)}`;
+}
+
+function flash(text, emoji) {
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.innerHTML = `<div><small>${emoji}</small>${text}</div>`;
+  document.body.append(f);
+  setTimeout(() => f.remove(), 1200);
+}
+
+function confetti(count = 90, ms = 4200) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const colors = ['#c8102e', '#ffffff', '#f3c4cc', '#ff5a74', '#8a0b20', '#ffd166'];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('i');
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--dx', `${(Math.random() - .5) * 160}px`);
+    p.style.setProperty('--r', `${Math.random() * 900 - 450}deg`);
+    p.style.animationDuration = `${2 + Math.random() * 2.2}s`;
+    p.style.animationDelay = `${Math.random() * .9}s`;
+    if (i % 3 === 0) p.style.borderRadius = '50%';
+    box.append(p);
+  }
+  document.body.append(box);
+  setTimeout(() => box.remove(), ms);
+}
+
+function birthday() {
+  if (document.querySelector('.bday')) return;
+  const t = T[s.lang];
+  const b = document.createElement('div');
+  b.className = 'bday';
+  b.setAttribute('role', 'dialog');
+  b.innerHTML = `<div class="cake">🎂</div><h2>${t.bday[0]}<em>${t.bday[1]}</em></h2><p>${t.bdayP}</p><small>${t.tapClose}</small>`;
+  b.addEventListener('click', () => b.remove());
+  document.body.append(b);
+  confetti(140, 5200);
+  const again = setInterval(() => (document.body.contains(b) ? confetti(70, 4600) : clearInterval(again)), 3000);
+}
+
+app.addEventListener('pointerdown', e => {
+  if (!e.target.closest('[data-secret]')) return;
+  const r = G.secretTap(taps, Date.now());
+  taps = r.taps;
+  if (r.hit) birthday();
+});
+
+app.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const act = el.dataset.act;
+  if (act === 'close' && el.classList.contains('ov') && e.target !== el) return; // taps inside the box
+  switch (act) {
+    case 'lang': set(G.setLang(s, s.lang === 'it' ? 'en' : 'it')); break;
+    case 'rules': overlay = 'rules'; render(); break;
+    case 'close': overlay = null; render(); break;
+    case 'restart': overlay = 'restart'; render(); break;
+    case 'restartYes': overlay = null; G.clear(store); s = G.fresh(s.lang); G.save(store, s); render(); scrollTo(0, 0); break;
+    case 'start': set(G.start(s)); break;
+    case 'ready': set(G.ready(s)); break;
+    case 'another': set(G.another(s)); break;
+    case 'found': overlay = 'confirm'; render(); break;
+    case 'tie': {
+      overlay = null;
+      const before = G.knots(s);
+      const next = G.tieKnot(s);
+      if (G.knots(next) === before) { render(); break; }
+      const won = next.phase === 'done';
+      set(next);
+      scrollTo(0, 0);
+      if (won) confetti(); else flash(T[s.lang].knotFlash, '🪢');
+      break;
+    }
+    case 'collect': overlay = 'collect'; render(); break;
+    case 'collectYes': overlay = null; set(G.collect(s)); break;
+    case 'more': set(G.playOn(s)); break;
+  }
+});
+
+// The gentle nudge appears by itself after a while on the same card.
+setInterval(() => {
+  if (s.phase === 'card' && !overlay && !document.querySelector('.nudge') && Date.now() - Date.parse(s.cardAt) > NUDGE_MS) render();
+}, 5000);
+
+// Another tab or a reload elsewhere: keep this screen in step.
+addEventListener('storage', e => { if (e.key === G.KEY) { const n = G.load(store); if (n) { s = n; render(); } } });
+
+render();
+</script>
+</body>
+</html>

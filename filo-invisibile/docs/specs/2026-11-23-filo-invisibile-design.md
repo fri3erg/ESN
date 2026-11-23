@@ -21,7 +21,7 @@ A **Rules** button stays visible. Double taps and reloads never give two knots o
 
 ## Secret
 
-Five quick taps on the ball of yarn / title open a full-screen "Happy birthday Joana! 🎂" with confetti.
+Five quick taps on the title, the knots at the top or the ball of yarn open a full-screen "Happy birthday Joana! 🎂" with confetti.
 
 ## Content
 
@@ -30,4 +30,4 @@ Prize wording: "prize", per the ESN rules.
 
 ## Look
 
-To be picked from `docs/mockups/filo-invisibile-themes.html`: A embroidery, B neon thread, C yarn pop.
+A+ "red thread" from `docs/mockups/filo-invisibile-themes.html`: theme A (picked by the organisers) recoloured in white and red (#c8102e, dark #8a0b20, pale pink #fdecef), a red thread with the knots and a red ball of yarn.
