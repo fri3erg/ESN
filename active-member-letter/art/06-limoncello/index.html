@@ -230,13 +230,13 @@ function drawBottle(t, B, hop, pop) {
 function drawConfetti(t, B) {
   if (!B.on) return;
   const H = YMAX - YMIN, Wd = 2 * XMAX;
-  for (let k = 0; k < 70; k++) {                                      // a gentle rain over the whole frame
+  for (let k = 0; k < 110; k++) {                                      // a gentle rain over the whole frame
     const life = 4 + rnd(k, 1) * 3, ph = (t - T0) / life + rnd(k, 2), cyc = Math.floor(ph), u = ph - cyc;
     if (cyc === 0 && u < rnd(k, 2)) continue;                         // nothing before the beat starts
-    const x = (rnd(k, cyc, 3) - 0.5) * Wd * 0.9 + 3 * Math.sin(t * (1 + rnd(k, 4)) + k);
+    const x = (rnd(k, cyc, 3) - 0.5) * Wd * 1.02 + 3 * Math.sin(t * (1 + rnd(k, 4)) + k);   // edge to edge
     const y = YMIN + u * H;
     const col = PARTY[k % PARTY.length], flip = Math.abs(Math.sin(t * (3 + rnd(k, 5) * 4) + k));
-    const ed = smoothstep(3, 14, Math.min(XMAX - Math.abs(x), y - YMIN, YMAX - y));
+    const ed = smoothstep(3, 14, Math.min(y - YMIN, YMAX - y));
     const l = (0.35 + 0.45 * flip) * ed * B.on;
     put(x, y, l, col[0], col[1], col[2]);
     if (flip > 0.4) put(x + UNIT, y, l * 0.8, col[0], col[1], col[2]);

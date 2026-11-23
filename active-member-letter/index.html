@@ -47,7 +47,10 @@
   .slide.behind .art::after { content: ""; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(to bottom, rgba(0,0,0,.72) 0, rgba(0,0,0,.45) 34%, transparent 55%); }
   /* text in the middle of the screen (rain), or a bit lower than the top (cobwebs) */
-  .slide.middle .text { margin: auto; max-height: 80%; }
+  .slide.middle .text { margin: auto; max-height: 80%; transform: translateY(-7vh); }
+  .slide.big .lead { font-size: clamp(40px, 4.6vw + 2vh, 84px); }
+  .slide.swap .lead { font-family: "Caveat", cursive; font-weight: 500; font-size: clamp(24px, 1.6vw + 1.1vh, 34px); }
+  .slide.swap .body p { font-family: "Dancing Script", cursive; font-weight: 700; font-size: clamp(30px, 2.6vw + 1.5vh, 52px); line-height: 1.15; }
   .slide.middle .art::after { background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,.2) 70%); }
   .slide.lower .text { margin-top: 16vh; }
   /* a lighter shade under the words, for art whose sky should show (sunrise) */

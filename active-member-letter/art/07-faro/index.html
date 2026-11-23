@@ -146,8 +146,8 @@ function scene(t) {
       const m = mistT[r * COLS + (c - drift % COLS + COLS) % COLS];
       let l = skyL * m * 1.6 + (sr[i] < 0.25 ? skyL * 0.8 : 0);
       let cr = MOON[0] * 0.8, cg = MOON[1] * 0.9, cb = MOON[2];
-      if (h > 0.3 && sr[i] > 0.9965) {                                  // stars
-        l = Math.max(l, 0.3 + 0.3 * Math.sin(t * 2.3 + sr[i] * 4000)); cr = 0.5; cg = 0.52; cb = 0.6;
+      if (h > 0.15 && sr[i] > 0.992) {                                  // stars
+        l = Math.max(l, 0.5 + 0.3 * Math.sin(t * 2.3 + sr[i] * 4000)); cr = 0.55; cg = 0.57; cb = 0.62;
       }
       if (beamI > 0) {
         const d = angDiff(bA[i], phi);

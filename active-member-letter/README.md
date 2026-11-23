@@ -18,18 +18,20 @@ rain and cobweb slides).
   piece, change it there and copy it over again. Two copies were changed here afterwards, so copy these
   changes back to ascii_art too, or they'll be lost on the next copy:
   `04-sezione` takes `?top=` / `?wide=` to start the photo lower (phones / wide screens), and
-  `10-ragnatele` has bigger webs that fan a full quarter turn, edge to edge.
+  `10-ragnatele` has bigger webs that fan a full quarter turn, edge to edge. Also tweaked here: the
+  sunrise's longer rays, the flag's lower and stronger cross, confetti across the whole width, more stars
+  over the lighthouse, stronger police tape.
 - `art/placeholder`: a cloud of letters in ESN colours, for a slide whose `art` is left empty.
 
 ## Photos
 
 Slides 4, 5 and 11 draw photos: `art/04-sezione/sezione.jpg`, `art/05-bologna/1-bologna.jpg`,
-`art/11-bacio/5-bacio.jpg`. They are gitignored, so they never go to GitHub; without them those slides
-show only black. Put them in those folders and deploy from this computer (below). Anyone with the link sees them.
+`art/11-bacio/5-bacio.jpg`. They are committed (on purpose), so a Vercel deploy from GitHub has them;
+anyone with the link, or with access to this repo, can see them.
 
 ## Running and deploying
 
 Open it through a local server, not as a file (the page uses JS modules and reads photo pixels): `npx serve .`
 
-Deploy from this folder with `npx vercel --prod` (the first time it asks to link a project: framework
-**Other**, no build settings). A deploy from GitHub would have no photos.
+Vercel: a project with **Root Directory** `active-member-letter`, framework **Other**, no build settings.
+Every push to `main` redeploys it.

@@ -1,4 +1,1 @@
-# personal photos the art pages read; they stay out of git
-art/**/*.jpg
-art/**/*.jpeg
 .vercel

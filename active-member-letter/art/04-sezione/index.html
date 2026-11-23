@@ -627,9 +627,9 @@ function swedishFlag(t) {
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
     const u = c / COLS, v = r / ROWS;
     const wave = Math.sin(t * 1.3 - u * 7 + v * 1.5), dv = 0.012 * wave * u;     // ripples travel away from the pole
-    const vy = v + dv, cross = Math.abs(u - 0.36) < 0.07 || Math.abs(vy - 0.36) < 0.08;
-    const l = (0.2 + 0.06 * wave) * on;
-    if (hash3(r, c, 5) % 4 === 0) continue;                                       // a little sparse, so it stays faint
+    const vy = v + dv, cross = Math.abs(u - 0.36) < 0.07 || Math.abs(vy - 0.56) < 0.08;
+    const l = (0.32 + 0.07 * wave) * on;
+    if (hash3(r, c, 5) % 6 === 0) continue;                                       // a little sparse, so it stays faint
     const col = cross ? FLAG_YELLOW : FLAG_BLUE;
     set(r * COLS + c, l * (cross ? 1.1 : 1), col[0], col[1], col[2]);
   }

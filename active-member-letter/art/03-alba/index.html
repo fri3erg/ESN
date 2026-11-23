@@ -150,11 +150,11 @@ function scene(t) {
       if (h > 0.25 && sr[i] > 0.9975) {                        // the last stars, fading at dawn
         l = Math.max(l, (1 - k) * 0.55 * (0.7 + 0.3 * Math.sin(t * 3 + c)));
       }
-      if (rays > 0 && rayD[i] < 115) {                          // gentle rays, slowly turning
+      if (rays > 0 && rayD[i] < 400) {                          // gentle rays, slowly turning
         const a = rayA[i];
         let ray = 0.5 + 0.5 * Math.sin(a * 9 + t * 0.12) * Math.sin(a * 4 - t * 0.07 + 1.3);
         ray = ray * ray; ray = ray * ray;
-        l += rays * 0.55 * ray * Math.exp(-(rayD[i] - SUN_R) / 45) * (sr[i] < 0.75 ? 1 : 0.2);
+        l += rays * 0.55 * ray * Math.exp(-(rayD[i] - SUN_R) / 95) * (sr[i] < 0.75 ? 1 : 0.2);
       }
       lum[i] = l; const o = i * 3; rgb[o] = cr; rgb[o + 1] = cg; rgb[o + 2] = cb;
     }

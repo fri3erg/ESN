@@ -171,13 +171,13 @@ function drawTape(T, t, on) {
       const w = TAPE_W * (0.86 + 0.14 * Math.cos(u * 0.11 - t * 1.5 + T.seed + 1.2));   // twisting
       if (Math.abs(v) > w) continue;
       const i = r * COLS + c;
-      const shade = 0.72 + 0.28 * Math.cos(u * 0.11 - t * 1.5 + T.seed + 1.2);
+      const shade = 0.82 + 0.18 * Math.cos(u * 0.11 - t * 1.5 + T.seed + 1.2);
       const edge = Math.abs(v) > w - 0.6;
       const stripe = ((u + v * 1.1) / 6.5 % 1 + 1) % 1 < 0.56;
       let l, col;
-      if (edge) { l = 0.3 * shade; col = TAPE_Y; }
-      else if (stripe) { l = (0.72 + 0.2 * (1 - Math.abs(v) / w)) * shade; col = TAPE_Y; }
-      else { l = 0.42 * shade; col = TAPE_K; }
+      if (edge) { l = 0.45 * shade; col = TAPE_Y; }
+      else if (stripe) { l = (0.88 + 0.12 * (1 - Math.abs(v) / w)) * shade; col = TAPE_Y; }
+      else { l = 0.55 * shade; col = TAPE_K; }
       set(i, l * on, col[0], col[1], col[2]);
     }
   }
