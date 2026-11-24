@@ -286,7 +286,7 @@ function overlayHtml(t) {
     case 'restart': return `<div class="ov" data-act="close"><div class="box"><h3>${t.restartQ}</h3><p>${t.restartP}</p>
       <button class="btn" data-act="restartYes">${t.restartYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
     // Birthday secret: always in both languages.
-    case 'mission': return `<div class="ov" data-act="close"><div class="box secret"><div class="big">🎂</div><small>MISSIONE SEGRETA · SECRET MISSION</small>
+    case 'mission': return `<div class="ov"><div class="box secret"><div class="big">🎂</div><small>MISSIONE SEGRETA · SECRET MISSION</small>
       <p class="it" lang="it">Picchia Francesco per una caramella omaggio</p><p class="en" lang="en">Punch Francesco for a free candy</p>
       <button class="btn" data-act="close">${t.close}</button></div></div>`;
   }
