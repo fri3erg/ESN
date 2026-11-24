@@ -140,6 +140,9 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
       .spool .thread { stroke-dashoffset: 0; }
+      /* the ladybugs only come out when someone asks for them: they always walk */
+      .bug svg { animation: waddle .16s ease-in-out infinite alternate !important; }
+      .bug .legs { animation: legs .16s linear infinite alternate !important; }
     }
   </style>
 </head>
@@ -346,7 +349,6 @@ function ladybugs(origin) {
   box.className = 'bugs';
   document.body.append(box);
   document.body.classList.add('bugging'); // the ball sits above the bugs, so they crawl out from under it
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const far = Math.hypot(innerWidth, innerHeight) + 60;
   const at = (x, y, deg, k = 1) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${deg.toFixed(1)}deg) scale(${k})`;
   const face = h => h + 90; // the drawing faces up; headings are screen degrees (0 = right)
@@ -361,11 +363,6 @@ function ladybugs(origin) {
     const cos = () => Math.cos(heading * Math.PI / 180), sin = () => Math.sin(heading * Math.PI / 180);
     const sx = home.x + cos() * home.R * .2, sy = home.y + sin() * home.R * .2;
     let x = home.x + cos() * (home.R + 24), y = home.y + sin() * (home.R + 24);
-    if (still) {
-      el.animate([{ opacity: 0, transform: at(x, y, face(heading)) }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .8 }, { opacity: 0, transform: at(x, y, face(heading)) }], { duration: 2500, fill: 'both' });
-      longest = Math.max(longest, 2500);
-      continue;
-    }
     // Crawl out from under the ball, stop and look around, then wander off the screen.
     const frames = [
       { transform: at(sx, sy, face(heading), home.R ? 1 : 0), offset: 0 },

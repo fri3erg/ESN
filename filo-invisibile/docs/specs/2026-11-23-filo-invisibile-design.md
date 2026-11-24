@@ -20,7 +20,7 @@ A **Rules** button stays visible. Double taps and reloads never give two knots o
 
 ## Secret
 
-Five quick taps on the ball of yarn (rules, look, switch and done screens), the title or the knots at the top: ladybugs (Joana's animal) crawl out from under the ball and wander off the screen. Reduced motion: they just fade in and out.
+Five quick taps on the ball of yarn (rules, look, switch and done screens), the title or the knots at the top: ladybugs (Joana's animal) crawl out from under the ball and wander off the screen. They walk even with "reduced motion" on, since someone asked for them.
 
 ## Content
 
