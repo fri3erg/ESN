@@ -18,8 +18,8 @@ until all have been used.
 
 ## At the desk
 
-The volunteer taps **Prize collected** (with a confirm) on the completed ball of yarn: from then on it shows
-"Prize collected ✓ HH:MM", so the same phone can't collect twice. Players can keep drawing questions for fun afterwards.
+The completed ball of yarn says "Show this at the ESN desk 🎁" with the time it was completed: the volunteer just looks
+at it, nothing to tap. Players can keep drawing questions for fun afterwards.
 
 ## Secret 🐞
 

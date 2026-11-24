@@ -81,7 +81,6 @@
     .prize { position: relative; overflow: hidden; background: var(--red); color: #fff; border-radius: 14px; padding: 14px 20px; font-weight: 900; font-size: 21px; white-space: nowrap; }
     .prize::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; left: -80px; background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); animation: shine 2.6s ease-in-out infinite; }
     @keyframes shine { 60%, 100% { left: 110%; } }
-    .prize.got { background: #fff; color: var(--red); border: 2px solid var(--red); }
     .at { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--mute); }
     .at b { display: block; font-size: 42px; color: var(--ink); letter-spacing: .04em; animation: beat 1.6s ease-in-out infinite; }
     @keyframes beat { 50% { color: var(--red); } }
@@ -168,8 +167,7 @@ const T = {
     knotFlash: 'Nodo fatto!',
     switchH: ['Cambio', 'persona!'], switchP: 'Salutatevi e trova qualcuno di nuovo con cui giocare.', foundSomeone: 'Ho trovato qualcuno',
     doneH: ['Gomitolo', 'completo!'], threads: n => `${n} persone, ${n} fili`,
-    show: 'Mostralo al desk ESN 🎁', completedAt: 'COMPLETATO ALLE', collected: t => `Premio ritirato ✓ ${t}`,
-    collect: 'Premio ritirato ✓ (volontario)', collectQ: 'Solo per il volontario ESN', collectP: 'Segnare il premio come ritirato? Non si può annullare.', collectYes: 'Sì, premio consegnato',
+    show: 'Mostralo al desk ESN 🎁', completedAt: 'COMPLETATO ALLE',
     more: 'Altre domande, solo per divertimento',
   },
   en: {
@@ -187,8 +185,7 @@ const T = {
     knotFlash: 'Knot tied!',
     switchH: ['Time to', 'switch!'], switchP: 'Say goodbye and find someone new to play with.', foundSomeone: 'I found someone',
     doneH: ['Ball of yarn', 'complete!'], threads: n => `${n} people, ${n} threads`,
-    show: 'Show this at the ESN desk 🎁', completedAt: 'COMPLETED AT', collected: t => `Prize collected ✓ ${t}`,
-    collect: 'Prize collected ✓ (volunteer)', collectQ: 'ESN volunteer only', collectP: 'Mark the prize as collected? This can’t be undone.', collectYes: 'Yes, prize given',
+    show: 'Show this at the ESN desk 🎁', completedAt: 'COMPLETED AT',
     more: 'More questions, just for fun',
   },
 };
@@ -198,7 +195,7 @@ const store = G.safeStorage();
 if (new URLSearchParams(location.search).has('reset')) { G.clear(store); history.replaceState(null, '', location.pathname); }
 const browserLang = (navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en';
 let s = G.load(store) || G.fresh(browserLang);
-let overlay = null; // 'rules' | 'confirm' | 'restart' | 'collect'
+let overlay = null; // 'rules' | 'confirm' | 'restart'
 let taps = [];
 const app = document.getElementById('app');
 const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -260,15 +257,13 @@ function screen(t) {
         <div class="push"><button class="btn" data-act="found">${t.found}</button><button class="link" data-act="another">${t.another}</button></div>`;
     }
     case 'done': {
-      const got = s.collectedAt;
       return `
         <div class="done">${yarn}
           <h2>${t.doneH[0]}<br>${t.doneH[1]}</h2>
           <p class="sub">${t.threads(n)}</p>
-          <div class="prize ${got ? 'got' : ''}">${got ? t.collected(G.formatTime(got)) : t.show}</div>
+          <div class="prize">${t.show}</div>
           <p class="at">${t.completedAt}<b>${G.formatTime(s.completedAt)}</b></p>
         </div>
-        ${got ? '' : `<button class="btn white" data-act="collect">${t.collect}</button>`}
         <button class="link" data-act="more">${t.more}</button>`;
     }
   }
@@ -283,8 +278,6 @@ function overlayHtml(t) {
       <button class="btn" data-act="tie">${t.yes}</button><button class="btn white" data-act="close" style="margin-top:16px">${t.back}</button></div></div>`;
     case 'restart': return `<div class="ov" data-act="close"><div class="box"><h3>${t.restartQ}</h3><p>${t.restartP}</p>
       <button class="btn" data-act="restartYes">${t.restartYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
-    case 'collect': return `<div class="ov" data-act="close"><div class="box"><h3>${t.collectQ}</h3><p>${t.collectP}</p>
-      <button class="btn" data-act="collectYes">${t.collectYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
   }
   return '';
 }
@@ -419,8 +412,6 @@ app.addEventListener('click', e => {
       if (won) confetti(); else flash(T[s.lang].knotFlash, '🪢');
       break;
     }
-    case 'collect': overlay = 'collect'; render(); break;
-    case 'collectYes': overlay = null; set(G.collect(s)); break;
     case 'more': set(G.playOn(s)); break;
   }
 });

@@ -1,7 +1,7 @@
 // Il filo invisibile: pure functions over one small JSON object kept in localStorage.
 // state = { lang: 'it'|'en', phase: 'rules'|'look'|'card'|'switch'|'done',
 //           deck: [cardId] (still to draw), card: cardId|null, cardAt: iso|null,
-//           knots: [iso], completedAt: iso|null, collectedAt: iso|null }
+//           knots: [iso], completedAt: iso|null }
 import { CARDS } from './deck.js';
 
 export const KEY = 'filoinvisibile.v1';
@@ -28,7 +28,7 @@ export function secureRandomInt(n) {
 
 export const fresh = (lang = 'en') => ({
   lang: LANGS.includes(lang) ? lang : 'en', phase: 'rules', deck: [], card: null, cardAt: null,
-  knots: [], completedAt: null, collectedAt: null,
+  knots: [], completedAt: null,
 });
 
 export const setLang = (s, lang) => (LANGS.includes(lang) && lang !== s.lang ? { ...s, lang } : s);
@@ -68,10 +68,7 @@ export function tieKnot(s, now = new Date()) {
 // "Back to the question": nothing changes.
 export const keepTalking = s => s;
 
-// The volunteer at the desk: once, only with the ball of yarn complete.
-export const collect = (s, now = new Date()) => (isComplete(s) && !s.collectedAt ? { ...s, collectedAt: now.toISOString() } : s);
-
-// After the prize, more cards just for fun.
+// With the ball of yarn complete, more cards just for fun.
 export const playOn = s => (s.phase === 'done' ? { ...s, phase: 'switch' } : s);
 
 // Secret combination: TAPS taps, each within GAP ms of the previous one.
@@ -88,7 +85,7 @@ export function isValid(s) {
   if (!LANGS.includes(s.lang) || !PHASES.includes(s.phase)) return false;
   if (!Array.isArray(s.deck) || !s.deck.every(id => IDS.includes(id))) return false;
   if (!Array.isArray(s.knots) || !s.knots.every(isIso)) return false;
-  if (!(s.completedAt === null || isIso(s.completedAt)) || !(s.collectedAt === null || isIso(s.collectedAt))) return false;
+  if (!(s.completedAt === null || isIso(s.completedAt))) return false;
   if (s.phase === 'card') return IDS.includes(s.card) && isIso(s.cardAt);
   return s.card === null;
 }

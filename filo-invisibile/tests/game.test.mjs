@@ -71,17 +71,12 @@ test('three knots complete the ball of yarn', () => {
   assert.equal(G.isComplete(s), true);
 });
 
-test('the volunteer marks the prize collected, once; playing on keeps it', () => {
+test('after the ball of yarn is complete, playing on comes back to it', () => {
   let s = G.start(G.fresh('en'));
   for (let i = 0; i < G.GOAL; i++) s = tie(meet(s));
-  assert.equal(G.collect(G.fresh('en'), T).collectedAt, null, 'no prize before three knots');
-  s = G.collect(s, T);
-  assert.equal(s.collectedAt, T.toISOString());
-  assert.equal(G.collect(s, new Date()), s);
   s = tie(meet(G.playOn(s)));
   assert.equal(G.knots(s), G.GOAL + 1);
-  assert.equal(s.phase, 'done', 'after the prize, every new knot comes back to the finished ball');
-  assert.equal(s.collectedAt, T.toISOString());
+  assert.equal(s.phase, 'done', 'every new knot comes back to the finished ball');
   assert.equal(s.completedAt, T.toISOString());
 });
 

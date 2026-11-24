@@ -14,7 +14,7 @@ complete → show it at the ESN desk for a prize. Live at `https://esn-filo-invi
    (never a countdown).
 4. **Switch**: "Time to switch! Say goodbye and find someone new." → **I found someone**.
 5. **Done** (3rd knot): "Ball of yarn complete! Show this at the ESN desk 🎁", completed time, alive background.
-   Volunteer taps **Prize collected** (with confirm) → "Prize collected". After that, more cards just for fun.
+   The volunteer only looks at it (no button). More cards just for fun from there.
 
 A **Rules** button stays visible. Double taps and reloads never give two knots or two prizes (`game.js`, tested).
 
