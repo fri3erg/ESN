@@ -98,6 +98,19 @@ test('the secret combination: five quick taps', () => {
   assert.equal(hit, false, 'too slow does not count');
 });
 
+test('the secret mission needs ten very quick taps, so it never fires by accident', () => {
+  const run = (count, gap) => {
+    let taps = [];
+    let hit = false;
+    for (let i = 0; i < count; i++) ({ taps, hit } = G.secretTap(taps, 1000 + i * gap, G.MISSION));
+    return hit;
+  };
+  assert.equal(run(10, 250), true);
+  assert.equal(run(9, 250), false, 'nine taps are not enough');
+  assert.equal(run(10, 500), false, 'too slow does not count');
+  assert.equal(run(5, 250), false, 'the ladybug combination does not open it');
+});
+
 test('saved games survive a reload, broken ones are dropped', () => {
   const store = G.memoryStorage();
   const s = tie(meet(G.start(G.fresh('it'))));

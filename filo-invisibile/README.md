@@ -26,6 +26,12 @@ at it, nothing to tap. Players can keep drawing questions for fun afterwards.
 Five quick taps on the ball of yarn (or the title, or the knots at the top): a few ladybugs (Joana's animal) crawl out
 from under the ball of yarn and wander off the screen.
 
+## Secret mission 🎂
+
+Ten very quick taps (each within 0.4 s) on the "ESN BOLOGNA · TANDEM" label, the 👀 / 👋 emoji, the category on the
+question card or "Ball of yarn complete!": a secret mission for Francesco's birthday, in Italian and English. Nine taps,
+or slower ones, do nothing, so it doesn't open by accident.
+
 ## Print
 
 [`print/`](print/) has A4 PDFs ready to print at 100%, each in colour and black & white:

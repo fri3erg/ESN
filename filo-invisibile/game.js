@@ -71,11 +71,13 @@ export const keepTalking = s => s;
 // With the ball of yarn complete, more cards just for fun.
 export const playOn = s => (s.phase === 'done' ? { ...s, phase: 'switch' } : s);
 
-// Secret combination: TAPS taps, each within GAP ms of the previous one.
+// Secret combinations: TAPS taps, each within GAP ms of the previous one.
+// SECRET: the ladybugs. MISSION: the birthday mission, much harder so it never opens by accident.
 export const SECRET = { TAPS: 5, GAP: 600 };
-export function secretTap(taps, now) {
-  const kept = taps.length && now - taps[taps.length - 1] <= SECRET.GAP ? [...taps, now] : [now];
-  return kept.length >= SECRET.TAPS ? { taps: [], hit: true } : { taps: kept, hit: false };
+export const MISSION = { TAPS: 10, GAP: 400 };
+export function secretTap(taps, now, rule = SECRET) {
+  const kept = taps.length && now - taps[taps.length - 1] <= rule.GAP ? [...taps, now] : [now];
+  return kept.length >= rule.TAPS ? { taps: [], hit: true } : { taps: kept, hit: false };
 }
 
 const isIso = v => typeof v === 'string' && !Number.isNaN(Date.parse(v));

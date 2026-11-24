@@ -22,6 +22,10 @@ A **Rules** button stays visible. Double taps and reloads never give two knots o
 
 Five quick taps on the ball of yarn (rules, look, switch and done screens), the title or the knots at the top: ladybugs (Joana's animal) crawl out from under the ball and wander off the screen. They walk even with "reduced motion" on, since someone asked for them.
 
+Second secret, for a volunteer's birthday: ten very quick taps (within 400 ms each) on the brand label, the emoji, the
+card category or the done title open "Missione segreta · Secret mission: Picchia Francesco per una caramella omaggio /
+Punch Francesco for a free candy", both languages at once. The wording is the organiser's own joke.
+
 ## Content
 
 `deck.js`: the 70-card deck minus 11–20 (the guide says 51–70 replace the easier social ones), IT + EN.

@@ -93,6 +93,12 @@
     .box p { font-size: 16px; line-height: 1.45; margin: 10px 0 18px; color: #5a3a3e; }
     .box .btn { margin-top: 10px; }
     .box h1 { font-size: 40px; margin: 0; }
+    [data-mission] { user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+    .secret { text-align: center; }
+    .secret .big { font-size: 64px; line-height: 1; margin-bottom: 6px; }
+    .secret small { display: block; color: var(--red); font-size: 13px; font-weight: 800; letter-spacing: .14em; margin-bottom: 10px; }
+    .secret .it { font-size: 28px; font-weight: 900; line-height: 1.15; margin: 0; color: var(--ink); }
+    .secret .en { font-size: 19px; font-weight: 700; line-height: 1.3; margin: 12px 0 20px; color: var(--mute); }
 
     .flash { position: fixed; inset: 0; z-index: 30; background: var(--red); color: #fff; display: grid; place-items: center; text-align: center; pointer-events: none; animation: flash 1.1s ease-out forwards; }
     .flash div { font-size: 46px; font-weight: 900; line-height: 1.05; }
@@ -195,8 +201,9 @@ const store = G.safeStorage();
 if (new URLSearchParams(location.search).has('reset')) { G.clear(store); history.replaceState(null, '', location.pathname); }
 const browserLang = (navigator.language || '').toLowerCase().startsWith('it') ? 'it' : 'en';
 let s = G.load(store) || G.fresh(browserLang);
-let overlay = null; // 'rules' | 'confirm' | 'restart'
+let overlay = null; // 'rules' | 'confirm' | 'restart' | 'mission'
 let taps = [];
+let missionTaps = [];
 const app = document.getElementById('app');
 const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
@@ -217,7 +224,7 @@ const yarn = `<svg class="yarn" data-secret viewBox="0 0 120 120" aria-hidden="t
 function top(t) {
   const n = G.knots(s);
   const left = s.phase === 'rules'
-    ? `<span>${t.brand}</span>`
+    ? `<span data-mission>${t.brand}</span>`
     : `<span class="dots" data-secret aria-label="${t.knotsOf(Math.min(n, G.GOAL))}">${[0, 1, 2].map(i => `<span class="${i < n ? 'on' : ''}"></span>`).join('')} ${t.knotsOf(Math.min(n, G.GOAL))}</span>`;
   const lang = `<button class="pill" data-act="lang" aria-label="Italiano / English"><i class="${s.lang === 'it' ? 'on' : ''}">IT</i> / <i class="${s.lang === 'en' ? 'on' : ''}">EN</i></button>`;
   const rules = s.phase === 'rules' ? '' : `<button class="pill" data-act="rules">${t.rules}</button>`;
@@ -238,11 +245,11 @@ function screen(t) {
       <div class="art">${spool(0)}</div>
       <button class="btn" data-act="start">${t.start}</button>`;
     case 'look': return `
-      <div class="mid"><div class="emoji">👀</div><h2>${t.lookH[0]} <em>${t.lookH[1]}</em></h2><p>${t.lookP}</p></div>
+      <div class="mid"><div class="emoji" data-mission>👀</div><h2>${t.lookH[0]} <em>${t.lookH[1]}</em></h2><p>${t.lookP}</p></div>
       <div class="art">${spool(n)}</div>
       <button class="btn" data-act="ready">${t.ready}</button>`;
     case 'switch': return `
-      <div class="mid"><div class="emoji">👋</div><h2>${t.switchH[0]} <em>${t.switchH[1]}</em></h2><p>${t.switchP}</p></div>
+      <div class="mid"><div class="emoji" data-mission>👋</div><h2>${t.switchH[0]} <em>${t.switchH[1]}</em></h2><p>${t.switchP}</p></div>
       <div class="art">${spool(n)}</div>
       <button class="btn" data-act="ready">${t.foundSomeone}</button>`;
     case 'card': {
@@ -250,7 +257,7 @@ function screen(t) {
       const q = c[s.lang];
       const late = Date.now() - Date.parse(s.cardAt) > NUDGE_MS;
       return `
-        <div class="card"><div class="cat">${esc(CATEGORIES[c.cat][s.lang])}</div>
+        <div class="card"><div class="cat" data-mission>${esc(CATEGORIES[c.cat][s.lang])}</div>
           <p class="q ${q.length > 95 ? 'long' : ''}">${esc(q)}</p></div>
         <div class="rule">${t.rule}</div>
         ${late ? `<p class="nudge">${t.nudge}</p>` : ''}
@@ -259,7 +266,7 @@ function screen(t) {
     case 'done': {
       return `
         <div class="done">${yarn}
-          <h2>${t.doneH[0]}<br>${t.doneH[1]}</h2>
+          <h2 data-mission>${t.doneH[0]}<br>${t.doneH[1]}</h2>
           <p class="sub">${t.threads(n)}</p>
           <div class="prize">${t.show}</div>
           <p class="at">${t.completedAt}<b>${G.formatTime(s.completedAt)}</b></p>
@@ -278,6 +285,10 @@ function overlayHtml(t) {
       <button class="btn" data-act="tie">${t.yes}</button><button class="btn white" data-act="close" style="margin-top:16px">${t.back}</button></div></div>`;
     case 'restart': return `<div class="ov" data-act="close"><div class="box"><h3>${t.restartQ}</h3><p>${t.restartP}</p>
       <button class="btn" data-act="restartYes">${t.restartYes}</button><button class="link" data-act="close">${t.close}</button></div></div>`;
+    // Birthday secret: always in both languages.
+    case 'mission': return `<div class="ov" data-act="close"><div class="box secret"><div class="big">🎂</div><small>MISSIONE SEGRETA · SECRET MISSION</small>
+      <p class="it" lang="it">Picchia Francesco per una caramella omaggio</p><p class="en" lang="en">Punch Francesco for a free candy</p>
+      <button class="btn" data-act="close">${t.close}</button></div></div>`;
   }
   return '';
 }
@@ -379,6 +390,13 @@ function ladybugs(origin) {
 }
 
 app.addEventListener('pointerdown', e => {
+  const secret = e.target.closest('[data-mission]');
+  if (secret && !overlay) {
+    const m = G.secretTap(missionTaps, Date.now(), G.MISSION);
+    missionTaps = m.taps;
+    if (m.hit) { overlay = 'mission'; render(); }
+    return;
+  }
   const target = e.target.closest('[data-secret]');
   if (!target) return;
   const r = G.secretTap(taps, Date.now());
