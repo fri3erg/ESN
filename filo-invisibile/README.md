@@ -23,8 +23,8 @@ The volunteer taps **Prize collected** (with a confirm) on the completed ball of
 
 ## Secret 🐞
 
-Five quick taps on the red thread, the title, the knots at the top or the ball of yarn: a few ladybugs (Joana's animal)
-climb out of the thread and crawl off the screen.
+Five quick taps on the ball of yarn (or the title, or the knots at the top): a few ladybugs (Joana's animal) crawl out
+from under the ball of yarn and wander off the screen.
 
 ## Print
 

@@ -8,9 +8,8 @@ complete → show it at the ESN desk for a prize. Live at `https://esn-filo-invi
 ## Flow (one phone each, progress saved on the phone)
 
 1. **Rules**: mission + 3 steps, IT / EN switch (starts in the browser language). **Start**.
-2. **Look around**: "Want to play with someone nearby?" → **We're ready**.
-3. **Card**: knots so far (● ○ ○), category, question in the chosen language with the other language small underneath,
-   the "be specific" rule. **Thread found** → "Does it count for both of you?" → **Yes, tie a knot** / back to the
+2. **Look around**: "Want to play with someone near you?" → **We're ready**.
+3. **Card**: knots so far (● ○ ○), category, question in the chosen language with the "be specific" rule. **Thread found** → "Does it count for both of you?" → **Yes, tie a knot** / back to the
    question. **Another question**. After ~2 minutes on a card a gentle nudge: "Keep going, change question or say goodbye"
    (never a countdown).
 4. **Switch**: "Time to switch! Say goodbye and find someone new." → **I found someone**.
@@ -21,7 +20,7 @@ A **Rules** button stays visible. Double taps and reloads never give two knots o
 
 ## Secret
 
-Five quick taps on the thread, the title, the knots at the top or the ball of yarn: ladybugs (Joana's animal) climb out of the thread and crawl off the screen. Reduced motion: they just fade in and out.
+Five quick taps on the ball of yarn (rules, look, switch and done screens), the title or the knots at the top: ladybugs (Joana's animal) crawl out from under the ball and wander off the screen. Reduced motion: they just fade in and out.
 
 ## Content
 

@@ -23,45 +23,49 @@
     .dots span { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--red); margin-right: 4px; vertical-align: -1px; }
     .dots span.on { background: var(--red); }
 
-    h1 { font-size: 60px; line-height: .95; margin: 26px 0 0; font-weight: 900; letter-spacing: -.02em; user-select: none; }
+    h1 { font-size: min(18vw, 80px); line-height: .93; margin: 22px 0 0; font-weight: 900; letter-spacing: -.02em; user-select: none; }
+    h1.long { font-size: min(13.5vw, 60px); }
     h1 em { font-style: normal; color: var(--red); display: block; }
-    .mission { margin: 18px 0 0; background: var(--red); color: #fff; border-radius: 16px; padding: 14px 15px; font-weight: 700; font-size: 17px; line-height: 1.35; }
-    .mission small { display: block; color: #ffc9d1; font-size: 11px; letter-spacing: .16em; margin-bottom: 4px; }
-    ol.steps { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
-    ol.steps li { display: flex; gap: 11px; font-size: 15px; line-height: 1.4; }
-    ol.steps b { background: var(--pink); color: var(--red); border-radius: 8px; min-width: 32px; height: 27px; display: grid; place-items: center; font-size: 13px; flex: none; }
-    .rule { margin: 14px 0 0; background: var(--pink); border-radius: 12px; padding: 11px 13px; font-size: 14px; line-height: 1.4; }
+    .mission { margin: 18px 0 0; background: var(--red); color: #fff; border-radius: 18px; padding: 16px 17px; font-weight: 800; font-size: 20px; line-height: 1.3; }
+    .mission small { display: block; color: #ffc9d1; font-size: 12px; letter-spacing: .16em; margin-bottom: 5px; }
+    ol.steps { list-style: none; margin: 20px 0 0; padding: 0; display: grid; gap: 12px; }
+    ol.steps li { display: flex; gap: 13px; align-items: center; font-size: 18px; font-weight: 600; line-height: 1.3; }
+    ol.steps b { background: var(--red); color: #fff; border-radius: 11px; width: 38px; height: 38px; display: grid; place-items: center; font-size: 17px; flex: none; }
+    .rule { margin: 18px 0 0; background: var(--pink); border-radius: 14px; padding: 13px 15px; font-size: 16px; line-height: 1.4; }
     .rule b { color: var(--red); }
 
-    .btn { display: block; width: 100%; border: 0; border-radius: 14px; background: var(--red); color: #fff; padding: 18px 14px; font-weight: 900; font-size: 19px;
+    .btn { display: block; width: 100%; border: 0; border-radius: 16px; background: var(--red); color: #fff; padding: 20px 14px; font-weight: 900; font-size: 21px;
            box-shadow: 0 6px 0 var(--red2); transition: transform .08s, box-shadow .08s; }
     .btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--red2); }
     .btn.white { background: #fff; color: var(--red); border: 2px solid var(--red); box-shadow: 0 6px 0 var(--pink2); }
     .btn.white:active { box-shadow: 0 1px 0 var(--pink2); }
-    .link { display: block; width: 100%; background: none; border: 0; padding: 14px 6px 4px; font-size: 15px; font-weight: 700; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+    .link { display: block; width: 100%; background: none; border: 0; padding: 16px 6px 4px; font-size: 17px; font-weight: 700; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
     .push { margin-top: auto; padding-top: 20px; }
 
-    .thread { display: block; width: 100%; height: 70px; overflow: visible; margin-top: 10px; }
-    .thread path { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 1.4s ease-out forwards; }
-    .thread circle.on { animation: knot .5s .9s ease-out both; transform-box: fill-box; transform-origin: center; }
+    .art { flex: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; padding: 8px 0; }
+    .spool { display: block; width: 100%; max-width: 380px; max-height: 100%; overflow: visible; user-select: none; }
+    .spool .ball { animation: roll 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    body.bugging .spool, body.bugging .yarn { position: relative; z-index: 41; }
+    .spool .thread { stroke-dasharray: 600; stroke-dashoffset: 600; animation: draw 1.4s ease-out forwards; }
+    .spool circle.on { animation: knot .5s .9s ease-out both; transform-box: fill-box; transform-origin: center; }
     @keyframes draw { to { stroke-dashoffset: 0; } }
     @keyframes knot { from { transform: scale(0); } 70% { transform: scale(1.4); } }
 
     /* look / switch */
-    .mid { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 18px 0; }
-    .mid .emoji { font-size: 74px; line-height: 1; }
-    .mid h2 { margin: 16px 0 0; font-size: 36px; line-height: 1.05; font-weight: 900; }
-    .mid h2 em { font-style: normal; color: var(--red); }
-    .mid p { margin: 14px auto 0; font-size: 17px; line-height: 1.45; max-width: 340px; color: #5a3a3e; }
+    .mid { text-align: center; padding: 34px 0 0; }
+    .mid .emoji { font-size: 88px; line-height: 1; }
+    .mid h2 { margin: 18px 0 0; font-size: 50px; line-height: 1; font-weight: 900; }
+    .mid h2 em { font-style: normal; color: var(--red); display: block; }
+    .mid p { margin: 18px auto 0; font-size: 21px; line-height: 1.4; max-width: 340px; color: #5a3a3e; }
 
     /* card */
-    .card { margin-top: 18px; background: #fff; border: 2.5px solid var(--red); border-radius: 20px; padding: 18px 18px 16px; box-shadow: 0 6px 0 var(--pink2); animation: pop .35s ease-out; }
+    .card { flex: 1; display: flex; flex-direction: column; margin-top: 18px; background: #fff; border: 3px solid var(--red); border-radius: 24px; padding: 20px; box-shadow: 0 7px 0 var(--pink2); animation: pop .35s ease-out; }
+    .card .q { flex: 1; display: flex; align-items: center; }
     @keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
-    .cat { color: var(--red); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
-    .q { font-size: 27px; font-weight: 850; line-height: 1.18; margin: 9px 0 0; }
-    .q.long { font-size: 23px; }
-    .other { color: var(--mute); font-size: 14.5px; line-height: 1.4; margin: 10px 0 0; }
-    .nudge { margin: 12px 0 0; text-align: center; font-size: 14px; color: var(--red); font-weight: 700; animation: pop .4s ease-out; }
+    .cat { color: var(--red); font-size: 13px; font-weight: 800; letter-spacing: .14em; }
+    .q { font-size: 35px; font-weight: 850; line-height: 1.17; margin: 12px 0 8px; }
+    .q.long { font-size: 28px; }
+    .nudge { margin: 14px 0 0; text-align: center; font-size: 16px; color: var(--red); font-weight: 700; animation: pop .4s ease-out; }
 
     /* done */
     body.win { background: #fff; }
@@ -69,17 +73,17 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cpath d='M-10 40 C 30 10, 50 70, 90 40 S 150 10, 170 40 M-10 120 C 30 90, 50 150, 90 120 S 150 90, 170 120' fill='none' stroke='%23f3c4cc' stroke-width='3'/%3E%3C/svg%3E");
       animation: drift 9s linear infinite; }
     @keyframes drift { to { transform: translate(160px, 40px); } }
-    .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 10px 0; }
-    .yarn { width: 170px; height: 170px; user-select: none; animation: roll 3.2s ease-in-out infinite; }
+    .done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; padding: 10px 0; }
+    .yarn { width: 210px; height: 210px; user-select: none; animation: roll 3.2s ease-in-out infinite; }
     @keyframes roll { 50% { transform: rotate(-8deg) scale(1.04); } }
-    .done h2 { margin: 0; font-size: 42px; line-height: 1; font-weight: 900; color: var(--red); }
-    .done .sub { margin: 0; color: var(--mute); font-size: 16px; }
-    .prize { position: relative; overflow: hidden; background: var(--red); color: #fff; border-radius: 14px; padding: 12px 18px; font-weight: 900; font-size: 19px; white-space: nowrap; }
+    .done h2 { margin: 0; font-size: 50px; line-height: 1; font-weight: 900; color: var(--red); }
+    .done .sub { margin: 0; color: var(--mute); font-size: 19px; }
+    .prize { position: relative; overflow: hidden; background: var(--red); color: #fff; border-radius: 14px; padding: 14px 20px; font-weight: 900; font-size: 21px; white-space: nowrap; }
     .prize::after { content: ""; position: absolute; top: 0; bottom: 0; width: 60px; left: -80px; background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); animation: shine 2.6s ease-in-out infinite; }
     @keyframes shine { 60%, 100% { left: 110%; } }
     .prize.got { background: #fff; color: var(--red); border: 2px solid var(--red); }
     .at { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--mute); }
-    .at b { display: block; font-size: 34px; color: var(--ink); letter-spacing: .04em; animation: beat 1.6s ease-in-out infinite; }
+    .at b { display: block; font-size: 42px; color: var(--ink); letter-spacing: .04em; animation: beat 1.6s ease-in-out infinite; }
     @keyframes beat { 50% { color: var(--red); } }
 
     /* overlays */
@@ -96,7 +100,7 @@
     .flash small { display: block; font-size: 80px; margin-bottom: 8px; }
     @keyframes flash { 0% { opacity: 0; } 12%, 70% { opacity: 1; } 100% { opacity: 0; } }
 
-    /* the secret: ladybugs crawl off the thread */
+    /* the secret: ladybugs crawl out from under the ball of yarn */
     .bugs { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
     .bug { position: absolute; left: -21px; top: -21px; width: 42px; height: 42px; will-change: transform; }
     .bug svg { width: 100%; height: 100%; display: block; overflow: visible; animation: waddle .16s ease-in-out infinite alternate; filter: drop-shadow(0 2px 2px rgba(43,20,22,.25)); }
@@ -110,27 +114,32 @@
 
     @media (max-height: 700px) {
       .screen { padding-top: 12px; }
-      h1 { font-size: 46px; margin-top: 14px; }
-      .mission { font-size: 15px; padding: 11px 13px; margin-top: 12px; }
+      h1 { font-size: min(13vw, 50px); margin-top: 10px; } h1.long { font-size: min(10.5vw, 42px); }
+      .mission { font-size: 15.5px; padding: 10px 13px; margin-top: 12px; }
+      .mission small { margin-bottom: 2px; }
       ol.steps { gap: 7px; margin-top: 12px; }
-      ol.steps li { font-size: 13.5px; }
-      .rule { font-size: 13px; padding: 9px 11px; margin-top: 10px; }
-      .thread { height: 50px; }
-      .btn { padding: 15px 12px; font-size: 17px; }
-      .q { font-size: 23px; } .q.long { font-size: 20px; }
-      .card { padding: 14px; margin-top: 12px; }
-      .other { font-size: 13px; }
-      .yarn { width: 120px; height: 120px; }
-      .done h2 { font-size: 34px; }
-      .done { gap: 8px; }
-      .at b { font-size: 28px; }
-      .mid .emoji { font-size: 56px; }
-      .mid h2 { font-size: 30px; }
-      .link { padding-top: 10px; }
+      ol.steps li { font-size: 14.5px; }
+      ol.steps b { width: 30px; height: 30px; font-size: 14px; border-radius: 9px; }
+      .rule { font-size: 13.5px; padding: 9px 12px; margin-top: 10px; }
+      .art { min-height: 54px; padding: 6px 0; }
+      .btn { padding: 16px 12px; font-size: 18px; }
+      .q { font-size: 26px; } .q.long { font-size: 22px; }
+      .card { padding: 15px; margin-top: 12px; }
+      .yarn { width: 130px; height: 130px; }
+      .done h2 { font-size: 38px; }
+      .done { gap: 9px; }
+      .done .sub { font-size: 16px; }
+      .prize { font-size: 18px; padding: 11px 16px; }
+      .at b { font-size: 32px; }
+      .mid { padding-top: 14px; }
+      .mid .emoji { font-size: 60px; }
+      .mid h2 { font-size: 38px; margin-top: 12px; }
+      .mid p { font-size: 17px; margin-top: 12px; }
+      .link { padding-top: 12px; font-size: 15px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
-      .thread path { stroke-dashoffset: 0; }
+      .spool .thread { stroke-dashoffset: 0; }
     }
   </style>
 </head>
@@ -149,7 +158,7 @@ const T = {
     rule: '<b>Siate specifici.</b> «Ci piace viaggiare» è troppo facile. Raccontate un esempio vero a testa prima di fare il nodo.',
     start: 'Inizia', close: 'Chiudi', restart: 'Ricomincia da capo',
     restartQ: 'Ricominciare da capo?', restartP: 'I nodi fatti su questo telefono si cancellano.', restartYes: 'Sì, ricomincia',
-    lookH: ['Guardati', 'intorno'], lookP: 'Vuoi giocare con qualcuno vicino a te? Qualcuno che non conosci ancora.', ready: 'Siamo pronti',
+    lookH: ['Guardati', 'intorno'], lookP: 'Vuoi giocare con qualcuno vicino a te?', ready: 'Siamo pronti',
     found: 'Filo trovato 🧵', another: 'Un’altra domanda',
     nudge: 'Continuate pure, cambiate domanda o salutatevi 👋',
     confirmQ: 'Vale per entrambi?', confirmP: 'Avete trovato una cosa specifica in comune, con un esempio vero a testa?', yes: 'Sì, facciamo il nodo', back: 'Torna alla domanda',
@@ -162,13 +171,13 @@ const T = {
   },
   en: {
     brand: 'ESN BOLOGNA · TANDEM', rules: 'Rules', knotsOf: n => `${n} OF ${G.GOAL} KNOTS`,
-    title: ['Il filo', 'invisibile'], missionLbl: 'YOUR MISSION',
+    title: ['The invisible', 'thread'], missionLbl: 'YOUR MISSION',
     mission: 'Meet three people. With each of them, find one thing you have in common.',
     steps: ['Find someone you haven’t played with yet.', 'Read the question, both answer. Can you say “We both…”?', 'Tap “Thread found”: one knot. Then switch person.'],
     rule: '<b>Be specific.</b> “We both like travelling” is too easy. Share one real example each before you tie the knot.',
     start: 'Start', close: 'Close', restart: 'Start over',
     restartQ: 'Start over?', restartP: 'The knots on this phone will be erased.', restartYes: 'Yes, start over',
-    lookH: ['Look', 'around'], lookP: 'Want to play with someone near you? Someone you don’t know yet.', ready: 'We’re ready',
+    lookH: ['Look', 'around'], lookP: 'Want to play with someone near you?', ready: 'We’re ready',
     found: 'Thread found 🧵', another: 'Another question',
     nudge: 'Keep going, change question or say goodbye 👋',
     confirmQ: 'Does it count for both of you?', confirmP: 'Did you find one specific thing in common, with a real example each?', yes: 'Yes, tie a knot', back: 'Back to the question',
@@ -193,18 +202,22 @@ const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;
 
 function set(next) { if (next !== s) { s = next; G.save(store, s); } render(); }
 
-const thread = n => {
-  const k = [[80, 34], [160, 34], [216, 42]];
-  return `<svg class="thread" data-secret viewBox="0 0 232 64" aria-hidden="true"><path d="M2 34 C 30 8, 50 58, 80 34 S 130 10, 160 34 S 210 56, 230 30" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>${
-    k.map(([x, y], i) => `<circle class="${i < n ? 'on' : ''}" cx="${x}" cy="${y}" r="7.5" fill="${i < n ? '#c8102e' : '#fff'}" stroke="#c8102e" stroke-width="2.6"/>`).join('')}</svg>`;
+// Ball of yarn with the thread unwinding to the right; the knots fill in as you go.
+const BALL = `<circle cx="60" cy="60" r="48" fill="#c8102e"/><g fill="none" stroke="#fff" stroke-width="2.4" opacity=".55" stroke-linecap="round"><path d="M18 46 C 48 30, 80 34, 104 54"/><path d="M14 66 C 46 52, 84 58, 108 78"/><path d="M30 94 C 56 78, 84 82, 98 96"/><path d="M42 16 C 34 50, 44 86, 64 108"/><path d="M76 15 C 62 44, 68 80, 90 100"/></g>`;
+const spool = n => {
+  const k = [[170, 82], [245, 82], [306, 90]];
+  return `<svg class="spool" data-secret viewBox="0 0 330 120" aria-hidden="true">
+    <path class="thread" d="M98 92 C 120 112, 140 98, 170 82 S 215 58, 245 82 S 290 106, 326 78" fill="none" stroke="#c8102e" stroke-width="3.4" stroke-linecap="round"/>
+    ${k.map(([x, y], i) => `<circle class="${i < n ? 'on' : ''}" cx="${x}" cy="${y}" r="8.5" fill="${i < n ? '#c8102e' : '#fff'}" stroke="#c8102e" stroke-width="2.8"/>`).join('')}
+    <g class="ball">${BALL}</g></svg>`;
 };
 
-const yarn = `<svg class="yarn" data-secret viewBox="0 0 120 120" aria-hidden="true"><path d="M6 114 C 30 106, 34 98, 22 88" fill="none" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/><circle cx="62" cy="58" r="48" fill="#c8102e"/><g fill="none" stroke="#fff" stroke-width="2.4" opacity=".55" stroke-linecap="round"><path d="M20 44 C 50 28, 82 32, 106 52"/><path d="M16 64 C 48 50, 86 56, 110 76"/><path d="M32 92 C 58 76, 86 80, 100 94"/><path d="M44 14 C 36 48, 46 84, 66 106"/><path d="M78 13 C 64 42, 70 78, 92 98"/></g></svg>`;
+const yarn = `<svg class="yarn" data-secret viewBox="0 0 120 120" aria-hidden="true"><path d="M6 114 C 30 106, 34 98, 22 88" fill="none" stroke="#c8102e" stroke-width="3" stroke-linecap="round"/><g class="ball">${BALL}</g></svg>`;
 
 function top(t) {
   const n = G.knots(s);
   const left = s.phase === 'rules'
-    ? `<span data-secret>${t.brand}</span>`
+    ? `<span>${t.brand}</span>`
     : `<span class="dots" data-secret aria-label="${t.knotsOf(Math.min(n, G.GOAL))}">${[0, 1, 2].map(i => `<span class="${i < n ? 'on' : ''}"></span>`).join('')} ${t.knotsOf(Math.min(n, G.GOAL))}</span>`;
   const lang = `<button class="pill" data-act="lang" aria-label="Italiano / English"><i class="${s.lang === 'it' ? 'on' : ''}">IT</i> / <i class="${s.lang === 'en' ? 'on' : ''}">EN</i></button>`;
   const rules = s.phase === 'rules' ? '' : `<button class="pill" data-act="rules">${t.rules}</button>`;
@@ -220,23 +233,25 @@ function screen(t) {
   const n = G.knots(s);
   switch (s.phase) {
     case 'rules': return `
-      <h1 data-secret>${t.title[0]} <em>${t.title[1]}</em></h1>
+      <h1 class="${s.lang === 'en' ? 'long' : ''}" data-secret>${t.title[0]} <em>${t.title[1]}</em></h1>
       ${rulesBody(t)}
-      <div class="push">${thread(0)}<button class="btn" data-act="start">${t.start}</button></div>`;
+      <div class="art">${spool(0)}</div>
+      <button class="btn" data-act="start">${t.start}</button>`;
     case 'look': return `
-      <div class="mid"><div class="emoji">👀</div><h2>${t.lookH[0]} <em>${t.lookH[1]}</em></h2><p>${t.lookP}</p>${thread(n)}</div>
+      <div class="mid"><div class="emoji">👀</div><h2>${t.lookH[0]} <em>${t.lookH[1]}</em></h2><p>${t.lookP}</p></div>
+      <div class="art">${spool(n)}</div>
       <button class="btn" data-act="ready">${t.ready}</button>`;
     case 'switch': return `
-      <div class="mid"><div class="emoji">👋</div><h2>${t.switchH[0]} <em>${t.switchH[1]}</em></h2><p>${t.switchP}</p>${thread(n)}</div>
+      <div class="mid"><div class="emoji">👋</div><h2>${t.switchH[0]} <em>${t.switchH[1]}</em></h2><p>${t.switchP}</p></div>
+      <div class="art">${spool(n)}</div>
       <button class="btn" data-act="ready">${t.foundSomeone}</button>`;
     case 'card': {
       const c = G.card(s);
-      const other = s.lang === 'it' ? 'en' : 'it';
       const q = c[s.lang];
       const late = Date.now() - Date.parse(s.cardAt) > NUDGE_MS;
       return `
         <div class="card"><div class="cat">${esc(CATEGORIES[c.cat][s.lang])}</div>
-          <p class="q ${q.length > 95 ? 'long' : ''}">${esc(q)}</p><p class="other">${esc(c[other])}</p></div>
+          <p class="q ${q.length > 95 ? 'long' : ''}">${esc(q)}</p></div>
         <div class="rule">${t.rule}</div>
         ${late ? `<p class="nudge">${t.nudge}</p>` : ''}
         <div class="push"><button class="btn" data-act="found">${t.found}</button><button class="link" data-act="another">${t.another}</button></div>`;
@@ -259,7 +274,7 @@ function screen(t) {
 
 function overlayHtml(t) {
   switch (overlay) {
-    case 'rules': return `<div class="ov" data-act="close"><div class="box"><h1>${t.title[0]} <em style="font-style:normal;color:var(--red)">${t.title[1]}</em></h1>${rulesBody(t)}
+    case 'rules': return `<div class="ov" data-act="close"><div class="box"><h1 style="font-size:40px;margin:0">${t.title[0]} <em>${t.title[1]}</em></h1>${rulesBody(t)}
       <button class="btn" data-act="close" style="margin-top:18px">${t.close}</button><button class="link" data-act="restart">${t.restart}</button></div></div>`;
     case 'confirm': return `<div class="ov" data-act="close"><div class="box"><h3>${t.confirmQ}</h3><p>${t.confirmP}</p>
       <button class="btn" data-act="tie">${t.yes}</button><button class="btn white" data-act="close" style="margin-top:16px">${t.back}</button></div></div>`;
@@ -317,60 +332,60 @@ const BUG = `<svg viewBox="0 0 34 34" aria-hidden="true">
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 
-// Starting points: on the thread when there is one on screen, else along the tapped element.
-function bugStarts(origin, n) {
-  const path = document.querySelector('.thread path');
-  if (path) {
-    const len = path.getTotalLength(), m = path.getScreenCTM();
-    return Array.from({ length: n }, (_, i) => {
-      const p = path.getPointAtLength(len * (i + rnd(.2, .8)) / n);
-      return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f, up: Math.random() < .5 };
-    });
-  }
-  const r = origin.getBoundingClientRect();
-  return Array.from({ length: n }, () => ({ x: rnd(r.left, r.right), y: rnd(r.top, r.bottom), up: Math.random() < .5 }));
+// Where they come from: hidden under the ball of yarn on screen, else the tapped element.
+function bugHome(origin) {
+  const ball = document.querySelector('.ball circle') || null;
+  const r = (ball || origin).getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2, R: ball ? r.width / 2 : 0 };
 }
 
 function ladybugs(origin) {
+  if (document.querySelector('.bugs')) return;
+  const home = bugHome(origin);
   const box = document.createElement('div');
   box.className = 'bugs';
   document.body.append(box);
+  document.body.classList.add('bugging'); // the ball sits above the bugs, so they crawl out from under it
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const far = Math.hypot(innerWidth, innerHeight) + 60;
+  const at = (x, y, deg, k = 1) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${deg.toFixed(1)}deg) scale(${k})`;
+  const face = h => h + 90; // the drawing faces up; headings are screen degrees (0 = right)
+  const n = 7, turn = rnd(0, 360);
   let longest = 0;
-  for (const st of bugStarts(origin, 7)) {
+  for (let i = 0; i < n; i++) {
     const el = document.createElement('div');
     el.className = 'bug';
     el.innerHTML = BUG;
     box.append(el);
-    const at = (x, y, deg, k = 1) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${deg.toFixed(1)}deg) scale(${k})`;
-    let heading = (st.up ? -90 : 90) + rnd(-50, 50); // away from the thread, in screen degrees (0 = right)
-    const face = h => h + 90; // the drawing faces up
+    let heading = turn + (360 * i) / n + rnd(-18, 18); // away from the ball
+    const cos = () => Math.cos(heading * Math.PI / 180), sin = () => Math.sin(heading * Math.PI / 180);
+    const sx = home.x + cos() * home.R * .2, sy = home.y + sin() * home.R * .2;
+    let x = home.x + cos() * (home.R + 24), y = home.y + sin() * (home.R + 24);
     if (still) {
-      el.animate([{ opacity: 0, transform: at(st.x, st.y, face(heading)) }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .8 }, { opacity: 0, transform: at(st.x, st.y, face(heading)) }], { duration: 2500, fill: 'forwards' });
+      el.animate([{ opacity: 0, transform: at(x, y, face(heading)) }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .8 }, { opacity: 0, transform: at(x, y, face(heading)) }], { duration: 2500, fill: 'both' });
       longest = Math.max(longest, 2500);
       continue;
     }
-    // Pop out of the thread, look around, then crawl off the screen with little turns.
+    // Crawl out from under the ball, stop and look around, then wander off the screen.
     const frames = [
-      { transform: at(st.x, st.y, face(heading), 0), offset: 0 },
-      { transform: at(st.x, st.y, face(heading) - 25, 1.15), offset: .06 },
-      { transform: at(st.x, st.y, face(heading) + 20, 1), offset: .12 },
-      { transform: at(st.x, st.y, face(heading), 1), offset: .16 },
+      { transform: at(sx, sy, face(heading), home.R ? 1 : 0), offset: 0 },
+      { transform: at(x, y, face(heading)), offset: .2 },
+      { transform: at(x, y, face(heading) - 30), offset: .26 },
+      { transform: at(x, y, face(heading) + 25), offset: .32 },
+      { transform: at(x, y, face(heading)), offset: .36 },
     ];
-    let x = st.x, y = st.y;
-    const steps = 7, stepLen = far / steps;
-    for (let i = 1; i <= steps; i++) {
-      heading += rnd(-28, 28);
-      x += Math.cos(heading * Math.PI / 180) * stepLen;
-      y += Math.sin(heading * Math.PI / 180) * stepLen;
-      frames.push({ transform: at(x, y, face(heading), 1), offset: .16 + .84 * i / steps });
+    const steps = 6, stepLen = far / steps;
+    for (let j = 1; j <= steps; j++) {
+      heading += rnd(-26, 26);
+      x += cos() * stepLen;
+      y += sin() * stepLen;
+      frames.push({ transform: at(x, y, face(heading)), offset: .36 + .64 * j / steps });
     }
-    const duration = rnd(4200, 6500), delay = rnd(0, 700);
+    const duration = rnd(5200, 7200), delay = rnd(0, 1400);
     el.animate(frames, { duration, delay, easing: 'linear', fill: 'both' });
     longest = Math.max(longest, duration + delay);
   }
-  setTimeout(() => box.remove(), longest + 300);
+  setTimeout(() => { box.remove(); document.body.classList.remove('bugging'); }, longest + 300);
 }
 
 app.addEventListener('pointerdown', e => {
