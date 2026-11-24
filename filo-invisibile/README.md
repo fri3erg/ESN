@@ -21,10 +21,10 @@ until all have been used.
 The volunteer taps **Prize collected** (with a confirm) on the completed ball of yarn: from then on it shows
 "Prize collected ✓ HH:MM", so the same phone can't collect twice. Players can keep drawing questions for fun afterwards.
 
-## Secret 🎂
+## Secret 🐞
 
-Five quick taps on the title, on the knots at the top, or on the ball of yarn open a full-screen
-"Happy birthday Joana!" with confetti. Tap to close.
+Five quick taps on the red thread, the title, the knots at the top or the ball of yarn: a few ladybugs (Joana's animal)
+climb out of the thread and crawl off the screen.
 
 ## Print
 

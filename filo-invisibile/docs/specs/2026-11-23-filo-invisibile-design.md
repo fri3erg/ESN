@@ -21,7 +21,7 @@ A **Rules** button stays visible. Double taps and reloads never give two knots o
 
 ## Secret
 
-Five quick taps on the title, the knots at the top or the ball of yarn open a full-screen "Happy birthday Joana! 🎂" with confetti.
+Five quick taps on the thread, the title, the knots at the top or the ball of yarn: ladybugs (Joana's animal) climb out of the thread and crawl off the screen. Reduced motion: they just fade in and out.
 
 ## Content
 

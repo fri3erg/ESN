@@ -96,14 +96,13 @@
     .flash small { display: block; font-size: 80px; margin-bottom: 8px; }
     @keyframes flash { 0% { opacity: 0; } 12%, 70% { opacity: 1; } 100% { opacity: 0; } }
 
-    .bday { position: fixed; inset: 0; z-index: 40; background: radial-gradient(circle at 50% 40%, #e0193a, var(--red2)); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; animation: fade .3s ease-out; overflow: hidden; }
-    .bday .cake { font-size: 110px; line-height: 1; animation: bounce .9s ease-in-out infinite; }
-    @keyframes bounce { 50% { transform: translateY(-16px) rotate(4deg); } }
-    .bday h2 { margin: 18px 0 0; font-size: 50px; line-height: .98; font-weight: 900; text-shadow: 0 4px 0 rgba(0,0,0,.18); }
-    .bday h2 em { font-style: normal; display: block; font-size: 1.45em; animation: glow 1.2s ease-in-out infinite; }
-    @keyframes glow { 50% { transform: scale(1.06); text-shadow: 0 0 26px rgba(255,255,255,.9); } }
-    .bday p { margin: 16px 0 0; font-size: 20px; font-weight: 700; }
-    .bday small { margin-top: 34px; font-size: 13px; opacity: .75; }
+    /* the secret: ladybugs crawl off the thread */
+    .bugs { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
+    .bug { position: absolute; left: -21px; top: -21px; width: 42px; height: 42px; will-change: transform; }
+    .bug svg { width: 100%; height: 100%; display: block; overflow: visible; animation: waddle .16s ease-in-out infinite alternate; filter: drop-shadow(0 2px 2px rgba(43,20,22,.25)); }
+    .bug .legs { animation: legs .16s linear infinite alternate; transform-origin: 17px 19px; }
+    @keyframes waddle { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+    @keyframes legs { from { transform: scaleX(.85); } to { transform: scaleX(1.1); } }
 
     .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
     .confetti i { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 2px; animation: fall linear forwards; }
@@ -160,7 +159,6 @@ const T = {
     show: 'Mostralo al desk ESN 🎁', completedAt: 'COMPLETATO ALLE', collected: t => `Premio ritirato ✓ ${t}`,
     collect: 'Premio ritirato ✓ (volontario)', collectQ: 'Solo per il volontario ESN', collectP: 'Segnare il premio come ritirato? Non si può annullare.', collectYes: 'Sì, premio consegnato',
     more: 'Altre domande, solo per divertimento',
-    bday: ['Happy birthday', 'Joana!'], bdayP: 'Tanti auguri da ESN Bologna ❤️', tapClose: 'tocca per chiudere',
   },
   en: {
     brand: 'ESN BOLOGNA · TANDEM', rules: 'Rules', knotsOf: n => `${n} OF ${G.GOAL} KNOTS`,
@@ -180,7 +178,6 @@ const T = {
     show: 'Show this at the ESN desk 🎁', completedAt: 'COMPLETED AT', collected: t => `Prize collected ✓ ${t}`,
     collect: 'Prize collected ✓ (volunteer)', collectQ: 'ESN volunteer only', collectP: 'Mark the prize as collected? This can’t be undone.', collectYes: 'Yes, prize given',
     more: 'More questions, just for fun',
-    bday: ['Happy birthday', 'Joana!'], bdayP: 'Tanti auguri from ESN Bologna ❤️', tapClose: 'tap to close',
   },
 };
 
@@ -198,7 +195,7 @@ function set(next) { if (next !== s) { s = next; G.save(store, s); } render(); }
 
 const thread = n => {
   const k = [[80, 34], [160, 34], [216, 42]];
-  return `<svg class="thread" viewBox="0 0 232 64" aria-hidden="true"><path d="M2 34 C 30 8, 50 58, 80 34 S 130 10, 160 34 S 210 56, 230 30" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>${
+  return `<svg class="thread" data-secret viewBox="0 0 232 64" aria-hidden="true"><path d="M2 34 C 30 8, 50 58, 80 34 S 130 10, 160 34 S 210 56, 230 30" fill="none" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/>${
     k.map(([x, y], i) => `<circle class="${i < n ? 'on' : ''}" cx="${x}" cy="${y}" r="7.5" fill="${i < n ? '#c8102e' : '#fff'}" stroke="#c8102e" stroke-width="2.6"/>`).join('')}</svg>`;
 };
 
@@ -309,24 +306,79 @@ function confetti(count = 90, ms = 4200) {
   setTimeout(() => box.remove(), ms);
 }
 
-function birthday() {
-  if (document.querySelector('.bday')) return;
-  const t = T[s.lang];
-  const b = document.createElement('div');
-  b.className = 'bday';
-  b.setAttribute('role', 'dialog');
-  b.innerHTML = `<div class="cake">🎂</div><h2>${t.bday[0]}<em>${t.bday[1]}</em></h2><p>${t.bdayP}</p><small>${t.tapClose}</small>`;
-  b.addEventListener('click', () => b.remove());
-  document.body.append(b);
-  confetti(140, 5200);
-  const again = setInterval(() => (document.body.contains(b) ? confetti(70, 4600) : clearInterval(again)), 3000);
+// A ladybug seen from above, head up (0,0 is its centre after the .bug offset).
+const BUG = `<svg viewBox="0 0 34 34" aria-hidden="true">
+  <g class="legs" stroke="#1a0d0e" stroke-width="1.6" stroke-linecap="round"><path d="M8 13 L3 10 M7 19 L2 19 M8 25 L3 28 M26 13 L31 10 M27 19 L32 19 M26 25 L31 28"/></g>
+  <path d="M14 6 L11 2 M20 6 L23 2" stroke="#1a0d0e" stroke-width="1.4" stroke-linecap="round"/>
+  <ellipse cx="17" cy="8.5" rx="6" ry="4.5" fill="#1a0d0e"/><circle cx="14.6" cy="7.6" r="1.1" fill="#fff"/><circle cx="19.4" cy="7.6" r="1.1" fill="#fff"/>
+  <ellipse cx="17" cy="20" rx="10.5" ry="11.5" fill="#e01f3d"/><path d="M17 9 V31.5" stroke="#1a0d0e" stroke-width="1.5"/>
+  <g fill="#1a0d0e"><circle cx="11.5" cy="15" r="2.3"/><circle cx="22.5" cy="15" r="2.3"/><circle cx="10.5" cy="23" r="2.1"/><circle cx="23.5" cy="23" r="2.1"/><circle cx="14" cy="28.5" r="1.6"/><circle cx="20" cy="28.5" r="1.6"/></g>
+  <ellipse cx="13" cy="12.5" rx="2.4" ry="1.4" fill="#fff" opacity=".45" transform="rotate(-30 13 12.5)"/></svg>`;
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+// Starting points: on the thread when there is one on screen, else along the tapped element.
+function bugStarts(origin, n) {
+  const path = document.querySelector('.thread path');
+  if (path) {
+    const len = path.getTotalLength(), m = path.getScreenCTM();
+    return Array.from({ length: n }, (_, i) => {
+      const p = path.getPointAtLength(len * (i + rnd(.2, .8)) / n);
+      return { x: m.a * p.x + m.c * p.y + m.e, y: m.b * p.x + m.d * p.y + m.f, up: Math.random() < .5 };
+    });
+  }
+  const r = origin.getBoundingClientRect();
+  return Array.from({ length: n }, () => ({ x: rnd(r.left, r.right), y: rnd(r.top, r.bottom), up: Math.random() < .5 }));
+}
+
+function ladybugs(origin) {
+  const box = document.createElement('div');
+  box.className = 'bugs';
+  document.body.append(box);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const far = Math.hypot(innerWidth, innerHeight) + 60;
+  let longest = 0;
+  for (const st of bugStarts(origin, 7)) {
+    const el = document.createElement('div');
+    el.className = 'bug';
+    el.innerHTML = BUG;
+    box.append(el);
+    const at = (x, y, deg, k = 1) => `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${deg.toFixed(1)}deg) scale(${k})`;
+    let heading = (st.up ? -90 : 90) + rnd(-50, 50); // away from the thread, in screen degrees (0 = right)
+    const face = h => h + 90; // the drawing faces up
+    if (still) {
+      el.animate([{ opacity: 0, transform: at(st.x, st.y, face(heading)) }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .8 }, { opacity: 0, transform: at(st.x, st.y, face(heading)) }], { duration: 2500, fill: 'forwards' });
+      longest = Math.max(longest, 2500);
+      continue;
+    }
+    // Pop out of the thread, look around, then crawl off the screen with little turns.
+    const frames = [
+      { transform: at(st.x, st.y, face(heading), 0), offset: 0 },
+      { transform: at(st.x, st.y, face(heading) - 25, 1.15), offset: .06 },
+      { transform: at(st.x, st.y, face(heading) + 20, 1), offset: .12 },
+      { transform: at(st.x, st.y, face(heading), 1), offset: .16 },
+    ];
+    let x = st.x, y = st.y;
+    const steps = 7, stepLen = far / steps;
+    for (let i = 1; i <= steps; i++) {
+      heading += rnd(-28, 28);
+      x += Math.cos(heading * Math.PI / 180) * stepLen;
+      y += Math.sin(heading * Math.PI / 180) * stepLen;
+      frames.push({ transform: at(x, y, face(heading), 1), offset: .16 + .84 * i / steps });
+    }
+    const duration = rnd(4200, 6500), delay = rnd(0, 700);
+    el.animate(frames, { duration, delay, easing: 'linear', fill: 'both' });
+    longest = Math.max(longest, duration + delay);
+  }
+  setTimeout(() => box.remove(), longest + 300);
 }
 
 app.addEventListener('pointerdown', e => {
-  if (!e.target.closest('[data-secret]')) return;
+  const target = e.target.closest('[data-secret]');
+  if (!target) return;
   const r = G.secretTap(taps, Date.now());
   taps = r.taps;
-  if (r.hit) birthday();
+  if (r.hit) ladybugs(target);
 });
 
 app.addEventListener('click', e => {
