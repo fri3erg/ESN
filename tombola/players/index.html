@@ -23,8 +23,7 @@
     .cartella span { background: var(--empty); }
     .cartella button b { position: relative; z-index: 1; }
     /* crossed out: a big hand-drawn X over the number */
-    .cartella button.x { background: #f1dfc0; }
-    .cartella button.x b { z-index: 3; color: var(--ink); text-shadow: 0 0 3px #f1dfc0, 0 0 3px #f1dfc0, 0 0 6px #f1dfc0; }
+    .cartella button.x b { z-index: 3; color: var(--ink); text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 6px var(--paper); }
     .cartella button.x::before, .cartella button.x::after { content: ""; position: absolute; z-index: 2; left: 50%; top: 50%; width: 128%; height: 6px; border-radius: 3px;
       background: var(--red); transform: translate(-50%, -50%) rotate(58deg); animation: cross .18s ease-out both; }
     .cartella button.x::after { transform: translate(-50%, -50%) rotate(-58deg); animation-delay: .1s; }
