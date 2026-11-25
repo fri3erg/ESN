@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tombola ESN: scegli un tema</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ecebe6; color: #222; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header, footer { max-width: 1000px; margin: 0 auto; padding: 26px 18px 6px; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0 0 8px; color: #555; line-height: 1.5; }
+  section.theme { max-width: 1000px; margin: 26px auto 8px; padding: 0 18px; }
+  section.theme h2 { margin: 0 0 4px; font-size: 21px; }
+  section.theme > p { margin: 0 0 14px; color: #444; line-height: 1.45; }
+  .row { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .shot { width: 260px; margin: 0; }
+  .shot figcaption { text-align: center; font-size: 13px; color: #666; margin-top: 8px; }
+  .phone { width: 260px; height: 540px; border-radius: 34px; border: 9px solid #111; overflow: hidden; box-shadow: 0 16px 36px rgba(0,0,0,.25); position: relative; }
+  .scr { height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 14px; background: var(--bg); color: var(--ink); }
+  footer { color: #666; font-size: 14px; padding-bottom: 30px; }
+
+  /* shared skeleton, every theme only sets the variables and a few extras */
+  .top { display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: 800; letter-spacing: .1em; color: var(--accent); white-space: nowrap; }
+  .pill { border: 1.5px solid var(--accent); border-radius: 999px; padding: 3px 8px; }
+  .pill i { font-style: normal; opacity: .45; } .pill i.on { opacity: 1; }
+  h1 { font-size: 40px; line-height: .95; margin: 14px 0 0; font-weight: 900; letter-spacing: -.02em; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .sub { font-size: 12.5px; line-height: 1.4; margin: 8px 0 0; color: var(--mute); }
+  .cartella { margin-top: 14px; background: var(--paper); border: 2.5px solid var(--line); border-radius: 12px; padding: 5px; display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; box-shadow: 0 5px 0 var(--shadow); }
+  .cartella span { aspect-ratio: .5; display: grid; place-items: center; border-radius: 5px; font-weight: 900; font-size: 15px; color: var(--num); background: var(--cell); position: relative; }
+  .cartella span.e { background: var(--empty); }
+  .cartella span.x::after { content: ""; position: absolute; left: 1px; right: 1px; top: 50%; aspect-ratio: 1; transform: translateY(-50%); border-radius: 50%; background: var(--mark); opacity: .9; }
+  .cartella span.x b { position: relative; z-index: 1; color: var(--markInk); }
+  .wins { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }
+  .wins b { font-size: 10px; font-weight: 800; letter-spacing: .05em; padding: 5px 8px; border-radius: 999px; border: 1.5px solid var(--line); color: var(--mute); }
+  .wins b.on { background: var(--accent); border-color: var(--accent); color: var(--onAccent); }
+  .grow { flex: 1; }
+  .hint { font-size: 11.5px; line-height: 1.35; text-align: center; color: var(--mute); margin-bottom: 10px; }
+  .btn { background: var(--accent); color: var(--onAccent); border-radius: 14px; text-align: center; padding: 15px; font-weight: 900; font-size: 17px; box-shadow: 0 6px 0 var(--accent2); }
+  .link { text-align: center; font-weight: 700; font-size: 12px; margin-top: 12px; color: var(--mute); }
+
+  .flash { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; background: var(--flashBg); }
+  .flash div { transform: rotate(-4deg); }
+  .flash strong { display: block; font-size: 66px; font-weight: 900; line-height: 1; color: var(--flashInk); letter-spacing: -.02em; }
+  .flash small { display: block; font-size: 14px; font-weight: 800; margin-top: 8px; color: var(--flashInk); opacity: .85; }
+  .flash .em { font-size: 44px; display: block; margin-bottom: 6px; }
+
+  .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .ball { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; font-size: 76px; font-weight: 900; color: var(--ballInk); background: var(--ball); box-shadow: inset -12px -14px 0 rgba(0,0,0,.12), 0 8px 0 var(--shadow); letter-spacing: -.03em; }
+  .words { margin-top: 16px; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--ink); }
+  .smorfia { margin-top: 8px; font-size: 12px; font-style: italic; color: var(--mute); }
+  .last { display: flex; gap: 6px; justify-content: center; margin: 4px 0 14px; align-items: center; }
+  .last small { font-size: 9.5px; font-weight: 800; letter-spacing: .1em; color: var(--mute); margin-right: 2px; }
+  .last span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 900; border: 2px solid var(--line); color: var(--ink); }
+  .white { background: transparent; color: var(--accent); border: 2.5px solid var(--accent); box-shadow: none; padding: 11px; font-size: 14px; margin-top: 10px; }
+
+  /* ---------- A: cartella napoletana ---------- */
+  .A { --bg: #f6ecd6; --ink: #3a1d10; --mute: #7d5b45; --accent: #b3261e; --accent2: #7a1610; --onAccent: #fff7e8;
+       --paper: #fffaf0; --line: #b3261e; --shadow: #d8c39b; --cell: #fffaf0; --empty: #efe0c0; --num: #b3261e;
+       --mark: #6b3b1f; --markInk: #fffaf0; --flashBg: rgba(179,38,30,.94); --flashInk: #fff7e8; --ball: #fffaf0; --ballInk: #b3261e;
+       background-image: radial-gradient(rgba(58,29,16,.07) 1px, transparent 1.3px); background-size: 9px 9px; }
+  .A h1 { font-family: Georgia, "Times New Roman", serif; font-style: italic; }
+  .A .cartella span.x::after { border-radius: 48% 52% 46% 54% / 60% 58% 42% 40%; aspect-ratio: .75; transform: translateY(-50%) rotate(-20deg); } /* a bean */
+  .A .ball { border: 4px solid #b3261e; }
+
+  /* ---------- B: bus di notte ---------- */
+  .B { --bg: #15122e; --ink: #f4f1ff; --mute: #a49fd0; --accent: #ffd60a; --accent2: #b38f00; --onAccent: #15122e;
+       --paper: #1f1a44; --line: #ff3d7f; --shadow: #0b0920; --cell: #2a2458; --empty: #1a1640; --num: #ffd60a;
+       --mark: #ff3d7f; --markInk: #fff; --flashBg: rgba(255,61,127,.95); --flashInk: #fff; --ball: #ffd60a; --ballInk: #15122e; }
+  .B h1 em { text-shadow: 0 0 14px rgba(255,214,10,.55); }
+  .B .ball { box-shadow: 0 0 36px rgba(255,214,10,.55), inset -12px -14px 0 rgba(0,0,0,.14); }
+  .B .last span { border-color: #ff3d7f; }
+
+  /* ---------- C: coriandoli ESN ---------- */
+  .C { --bg: #ffffff; --ink: #2e3192; --mute: #6b6f9c; --accent: #ec008c; --accent2: #9c005d; --onAccent: #fff;
+       --paper: #fff; --line: #2e3192; --shadow: #c9caf0; --cell: #f2f3ff; --empty: #ffffff; --num: #2e3192;
+       --mark: #00aeef; --markInk: #fff; --flashBg: rgba(122,193,67,.96); --flashInk: #fff; --ball: #f47b20; --ballInk: #fff; }
+  .C .cartella span.x:nth-of-type(3n)::after { background: #ec008c; }
+  .C .cartella span.x:nth-of-type(3n+1)::after { background: #7ac143; }
+  .scr.C::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+       background: radial-gradient(circle at 12% 8%, #7ac143 0 4px, transparent 5px), radial-gradient(circle at 88% 14%, #00aeef 0 5px, transparent 6px),
+                   radial-gradient(circle at 92% 70%, #f47b20 0 4px, transparent 5px), radial-gradient(circle at 6% 84%, #ec008c 0 5px, transparent 6px); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Tombola ESN · scegli un tema</h1>
+  <p>Tre stili, ognuno con le stesse tre schermate: la cartella del giocatore (si toccano i numeri per segnarli), il flash quando fai ambo, e la schermata dello staff che estrae sul bus.</p>
+  <p><b>Rispondi A, B o C</b> (e cosa cambieresti).</p>
+</header>
+
+<section class="theme"><h2>A · Cartella napoletana</h2><p>Carta color crema, numeri rossi, i numeri segnati coperti da un fagiolo come al tavolo di casa. Titolo in corsivo da tradizione.</p><div class="row" data-theme="A"></div></section>
+<section class="theme"><h2>B · Bus di notte</h2><p>Fondo scuro, giallo e rosa neon: si legge bene al buio sul bus e non acceca chi la guarda.</p><div class="row" data-theme="B"></div></section>
+<section class="theme"><h2>C · Coriandoli ESN</h2><p>Bianco con i colori ESN (ciano, magenta, verde, arancio): festa, segni colorati come coriandoli.</p><div class="row" data-theme="C"></div></section>
+
+<footer>Mockup statici: i numeri e i nomi sono di esempio. Le lingue vere sono IT / EN / ES.</footer>
+
+<script>
+  // Example card: 3 rows × 9 columns, 5 numbers a row, each column in its own ten.
+  const rows = [
+    [3, 0, 21, 0, 45, 52, 0, 77, 0],
+    [0, 14, 26, 0, 0, 58, 63, 0, 86],
+    [7, 0, 0, 33, 49, 0, 0, 71, 90],
+  ];
+  const marked = [21, 45, 63, 33];
+  const card = () => `<div class="cartella">${rows.flat().map(n => n ? `<span class="${marked.includes(n) ? 'x' : ''}"><b>${n}</b></span>` : '<span class="e"></span>').join('')}</div>`;
+  const bar = right => `<div class="top"><span>ESN · TOMBOLA</span>${right}</div>`;
+  const lang = '<span class="pill"><i class="on">IT</i> / <i>EN</i> / <i>ES</i></span>';
+  const player = t => `<div class="scr ${t}">${bar(lang)}
+      <h1>La tua <em>cartella</em></h1>
+      <p class="sub">Tocca i numeri quando li urlano. Ritocca per togliere.</p>
+      ${card()}
+      <div class="wins"><b class="on">Ambo</b><b>Terno</b><b>Quaterna</b><b>Cinquina</b><b>Tombola</b></div>
+      <div class="grow"></div>
+      <p class="hint">Tombola? Mostra la cartella allo staff 🎁</p>
+      <div class="link">Nuova cartella</div></div>`;
+  const flash = t => `<div class="scr ${t}">${bar(lang)}<h1>La tua <em>cartella</em></h1>${card()}
+      <div class="flash"><div><span class="em">🎉</span><strong>AMBO!</strong><small>Two in a row · Dos en línea</small></div></div></div>`;
+  const staff = t => `<div class="scr ${t}">${bar('<span class="pill">STAFF</span>')}
+      <div class="stage"><div class="ball">47</div>
+        <div class="words">quarantasette · forty-seven<br>cuarenta y siete</div>
+        <div class="smorfia">'o muorto · il morto</div></div>
+      <div class="last"><small>PRIMA</small><span>12</span><span>85</span><span>3</span><span>66</span><span>21</span></div>
+      <div class="btn">Estrai</div>
+      <div class="btn white">Numeri usciti</div></div>`;
+  for (const row of document.querySelectorAll('.row')) {
+    const t = row.dataset.theme;
+    row.innerHTML = [[player(t), 'Giocatore: la cartella'], [flash(t), 'Giocatore: flash di ambo'], [staff(t), 'Staff: estrazione']]
+      .map(([html, cap]) => `<figure class="shot"><div class="phone">${html}</div><figcaption>${cap}</figcaption></figure>`).join('');
+  }
+</script>
+</body>
+</html>
