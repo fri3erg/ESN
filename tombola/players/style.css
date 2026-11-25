@@ -1,0 +1,64 @@
+/* Tombola ESN: the shared look (theme A, "cartella napoletana").
+   Edit this file in tombola/shared/, then run `npm run sync` to copy it into players/ and staff/. */
+:root {
+  --bg: #f6ecd6; --paper: #fffaf0; --empty: #efe0c0; --line: #d8c39b;
+  --red: #b3261e; --red2: #7a1610; --ink: #3a1d10; --mute: #7d5b45; --bean: #6b3b1f; --cream: #fff7e8;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-image: radial-gradient(rgba(58,29,16,.07) 1.2px, transparent 1.5px); background-size: 11px 11px;
+  -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+.screen { min-height: 100svh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; padding: 16px 18px max(18px, env(safe-area-inset-bottom)); position: relative; }
+
+.top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .1em; color: var(--red); white-space: nowrap; }
+.top .right { display: flex; gap: 6px; }
+.pill { background: var(--paper); border: 1.5px solid var(--red); color: var(--red); border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+.pill i { font-style: normal; opacity: .4; }
+.pill i.on { opacity: 1; }
+
+h1 { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: min(17vw, 74px); line-height: .95; margin: 20px 0 0; font-weight: 900; letter-spacing: -.02em; }
+h1 em { color: var(--red); display: block; }
+
+.btn { display: block; width: 100%; border: 0; border-radius: 16px; background: var(--red); color: var(--cream); padding: 20px 14px; font-weight: 900; font-size: 21px;
+       box-shadow: 0 6px 0 var(--red2); transition: transform .08s, box-shadow .08s; }
+.btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--red2); }
+.btn:disabled { opacity: .5; }
+.btn.white { background: var(--paper); color: var(--red); border: 2.5px solid var(--red); box-shadow: 0 6px 0 var(--line); }
+.btn.white:active { box-shadow: 0 1px 0 var(--line); }
+.link { display: block; width: 100%; background: none; border: 0; padding: 16px 6px 4px; font-size: 17px; font-weight: 700; color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+.push { margin-top: auto; padding-top: 18px; }
+
+/* overlays */
+.ov { position: fixed; inset: 0; z-index: 20; background: rgba(58,29,16,.55); display: grid; place-items: center; padding: 18px; animation: fade .2s ease-out; }
+@keyframes fade { from { opacity: 0; } }
+.box { background: var(--paper); border-radius: 20px; padding: 22px 20px 20px; width: 100%; max-width: 420px; max-height: calc(100svh - 36px); overflow-y: auto; border-top: 6px solid var(--red); }
+.box h3 { margin: 0; font-size: 26px; line-height: 1.1; }
+.box p { font-size: 16px; line-height: 1.45; margin: 10px 0 18px; color: var(--mute); }
+.box .btn { margin-top: 10px; }
+
+/* full-screen flash */
+.flash { position: fixed; inset: 0; z-index: 30; background: rgba(179,38,30,.95); color: var(--cream); display: grid; place-items: center; text-align: center; pointer-events: none; animation: flash 1.6s ease-out forwards; padding: 20px; }
+.flash > div { animation: stamp .45s cubic-bezier(.2,1.6,.4,1) both; }
+.flash strong { display: block; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: min(18vw, 96px); line-height: 1; font-weight: 900; }
+.flash small { display: block; font-size: 20px; font-weight: 800; margin-top: 12px; line-height: 1.35; }
+.flash .em { display: block; font-size: 64px; margin-bottom: 6px; }
+@keyframes flash { 0% { opacity: 0; } 10%, 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes stamp { from { transform: scale(2.2) rotate(-12deg); opacity: 0; } to { transform: rotate(-4deg); } }
+
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+.confetti i { position: absolute; top: -20px; width: 9px; height: 15px; border-radius: 2px; animation: fall linear forwards; }
+@keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(var(--r)); } }
+
+@media (max-height: 700px) {
+  .screen { padding-top: 12px; }
+  h1 { font-size: min(12.5vw, 50px); margin-top: 10px; }
+  .btn { padding: 16px 12px; font-size: 18px; }
+  .link { padding-top: 12px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

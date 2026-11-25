@@ -13,6 +13,7 @@ Each project lives in its own folder and is deployed separately on Vercel.
 | [`crime-night-2/`](crime-night-2/) | ESN Mystery Night · Second Edition: same detective game for the International Dinner, new suspects and cases | Live: https://esn-zdaura-detective-night.vercel.app |
 | [`filo-invisibile/`](filo-invisibile/) | Il filo invisibile: meet three people, find one specific thing in common with each, three knots for a prize (IT/EN) | https://esn-filo-invisibile.vercel.app |
 | [`side-quest/`](side-quest/) | Side Quest: one random social challenge per person, proof shown to a volunteer for a prize | Live: https://esn-side-quest.vercel.app |
+| [`tombola/`](tombola/) | Tombola on the bus: a random card on each player's phone with ambo… tombola flashes, and a staff page that draws the numbers with the Smorfia (IT/EN/ES) | Players https://esn-tombola.vercel.app · staff https://esn-tombola-staff.vercel.app (not deployed yet) |
 | [`taboo/`](taboo/) | Taboo Night: describe the word without the forbidden ones, guess 5 in 2 minutes for a prize | Live: https://esn-taboo.vercel.app |
 | [`tandem-passport/`](tandem-passport/) | Tandem Passport: 6 missions to fill a passport with stickers, finishers sent to Telegram for the draw | Live: https://esn-tandem-passport.vercel.app |
 | [`undercover/`](undercover/) | Undercover: secret targets by post-it number, make them say a word or do an action; eliminations sent to Telegram for the draw | https://esn-undercover.vercel.app |
