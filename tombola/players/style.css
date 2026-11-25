@@ -41,12 +41,14 @@ h1 em { color: var(--red); display: block; }
 .box .btn { margin-top: 10px; }
 
 /* full-screen flash */
-.flash { position: fixed; inset: 0; z-index: 30; background: rgba(179,38,30,.95); color: var(--cream); display: grid; place-items: center; text-align: center; pointer-events: none; animation: flash 1.6s ease-out forwards; padding: 20px; }
+.flash { position: fixed; inset: 0; z-index: 30; background: rgba(179,38,30,.95); color: var(--cream); display: grid; place-items: center; text-align: center; animation: fade .2s ease-out; padding: 20px; cursor: pointer; }
+.flash.out { animation: out .3s ease-in forwards; }
+.flash .tap { display: block; margin-top: 34px; font-size: 14px; font-weight: 700; letter-spacing: .08em; opacity: .7; }
 .flash > div { animation: stamp .45s cubic-bezier(.2,1.6,.4,1) both; }
 .flash strong { display: block; font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: min(18vw, 96px); line-height: 1; font-weight: 900; }
 .flash small { display: block; font-size: 20px; font-weight: 800; margin-top: 12px; line-height: 1.35; }
 .flash .em { display: block; font-size: 64px; margin-bottom: 6px; }
-@keyframes flash { 0% { opacity: 0; } 10%, 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes out { to { opacity: 0; } }
 @keyframes stamp { from { transform: scale(2.2) rotate(-12deg); opacity: 0; } to { transform: rotate(-4deg); } }
 
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }

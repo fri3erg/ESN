@@ -75,7 +75,7 @@ const T = {
     deal: 'Dammi la cartella', sub: 'Tocca i numeri quando li urlano.', hint: 'Tombola? Mostra la cartella allo staff 🎁',
     row: n => `${n} numeri sulla stessa riga · Sei il primo? Urlalo!`, all: 'Tutta la cartella · Urla «Tombola!»',
     show: 'Mostrala allo staff 🎁', at: 'FINITA ALLE',
-    close: 'Chiudi', newGame: 'Nuova partita', newQ: 'Nuova partita?', newP: 'I segni su questa cartella si cancellano.',
+    tap: 'Tocca per chiudere', close: 'Chiudi', newGame: 'Nuova partita', newQ: 'Nuova partita?', newP: 'I segni su questa cartella si cancellano.',
     same: 'Stessa cartella, togli i segni', fresh: 'Nuova cartella',
   },
   en: {
@@ -85,7 +85,7 @@ const T = {
     deal: 'Get my card', sub: 'Tap the numbers when they’re called.', hint: 'Tombola? Show your card to the staff 🎁',
     row: n => `${n} numbers on one row · First? Shout it!`, all: 'The whole card · Shout “Tombola!”',
     show: 'Show this to the staff 🎁', at: 'COMPLETED AT',
-    close: 'Close', newGame: 'New game', newQ: 'New game?', newP: 'The crosses on this card will be cleared.',
+    tap: 'Tap to close', close: 'Close', newGame: 'New game', newQ: 'New game?', newP: 'The crosses on this card will be cleared.',
     same: 'Same card, clear the crosses', fresh: 'New card',
   },
   es: {
@@ -95,10 +95,11 @@ const T = {
     deal: 'Dame mi cartón', sub: 'Toca los números cuando los canten.', hint: '¿Tombola? Enséñale tu cartón al staff 🎁',
     row: n => `${n} números en la misma fila · ¿Eres el primero? ¡Grítalo!`, all: 'Todo el cartón · ¡Grita «Tombola»!',
     show: 'Enséñaselo al staff 🎁', at: 'COMPLETADO A LAS',
-    close: 'Cerrar', newGame: 'Nueva partida', newQ: '¿Nueva partida?', newP: 'Se borrarán las cruces de este cartón.',
+    tap: 'Toca para cerrar', close: 'Cerrar', newGame: 'Nueva partida', newQ: '¿Nueva partida?', newP: 'Se borrarán las cruces de este cartón.',
     same: 'Mismo cartón, borrar las cruces', fresh: 'Cartón nuevo',
   },
 };
+const FLASH_MS = 6000;
 const NAMES = ['', 'Ambo', 'Terno', 'Quaterna', 'Cinquina', 'Tombola'];
 
 const store = P.safeStorage();
@@ -160,9 +161,12 @@ function flash(win) {
   document.querySelector('.flash')?.remove();
   const f = document.createElement('div');
   f.className = 'flash';
-  f.innerHTML = `<div><span class="em">${win === 5 ? '🏆' : '🎉'}</span><strong>${NAMES[win]}!</strong><small>${win === 5 ? t.all : t.row(win + 1)}</small></div>`;
+  f.innerHTML = `<div><span class="em">${win === 5 ? '🏆' : '🎉'}</span><strong>${NAMES[win]}!</strong><small>${win === 5 ? t.all : t.row(win + 1)}</small><span class="tap">${t.tap}</span></div>`;
   document.body.append(f);
-  setTimeout(() => f.remove(), 1700);
+  // Stays a few seconds so everyone around sees it; a tap closes it sooner.
+  const close = () => { if (f.classList.contains('out')) return; f.classList.add('out'); setTimeout(() => f.remove(), 320); };
+  f.addEventListener('click', close);
+  setTimeout(close, FLASH_MS);
   try { navigator.vibrate?.(win === 5 ? [80, 60, 80, 60, 200] : 60); } catch { /* no vibration */ }
 }
 
