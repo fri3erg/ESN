@@ -22,10 +22,13 @@
     .cartella button { background: var(--paper); color: var(--red); box-shadow: inset 0 0 0 1.5px var(--line); }
     .cartella span { background: var(--empty); }
     .cartella button b { position: relative; z-index: 1; }
-    .cartella button.x::after { content: ""; position: absolute; left: 6%; right: 6%; top: 50%; aspect-ratio: .78; transform: translateY(-50%) rotate(-20deg);
-      border-radius: 48% 52% 46% 54% / 60% 58% 42% 40%; background: radial-gradient(circle at 35% 30%, #8d5532, var(--bean) 60%, #4a2712); box-shadow: 0 2px 2px rgba(58,29,16,.35); animation: drop .25s ease-out; }
-    .cartella button.x b { color: var(--cream); }
-    @keyframes drop { from { transform: translateY(-50%) rotate(-50deg) scale(1.7); opacity: 0; } }
+    /* crossed out: a big hand-drawn X over the number */
+    .cartella button.x { background: #f1dfc0; }
+    .cartella button.x b { z-index: 3; color: var(--ink); text-shadow: 0 0 3px #f1dfc0, 0 0 3px #f1dfc0, 0 0 6px #f1dfc0; }
+    .cartella button.x::before, .cartella button.x::after { content: ""; position: absolute; z-index: 2; left: 50%; top: 50%; width: 128%; height: 6px; border-radius: 3px;
+      background: var(--red); transform: translate(-50%, -50%) rotate(58deg); animation: cross .18s ease-out both; }
+    .cartella button.x::after { transform: translate(-50%, -50%) rotate(-58deg); animation-delay: .1s; }
+    @keyframes cross { from { width: 0; } }
     .wins { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
     .wins b { font-size: 13px; font-weight: 800; letter-spacing: .04em; padding: 7px 11px; border-radius: 999px; border: 1.5px solid var(--red); color: var(--red); background: var(--paper); opacity: .55; }
     .wins b.on { background: var(--red); color: var(--cream); opacity: 1; }
@@ -68,33 +71,33 @@ import * as P from './card.js';
 const T = {
   it: {
     rules: 'Regole', title: ['Tombola', 'ESN'], cardTitle: ['La tua', 'cartella'],
-    steps: ['Lo staff urla i numeri.', 'Se il numero è sulla tua cartella, toccalo: ci va sopra un fagiolo. Ritocca per toglierlo.',
-      'Ambo, terno, quaterna, cinquina: 2, 3, 4 o 5 numeri sulla stessa riga. Urlalo!', 'Tombola: tutta la cartella. Mostrala allo staff e vinci un premio 🎁'],
+    steps: ['Lo staff urla i numeri.', 'Se il numero è sulla tua cartella, toccalo per segnarlo con una X. Ritocca per toglierla.',
+      'Ambo, terno, quaterna, cinquina: 2, 3, 4 o 5 numeri sulla stessa riga. Se sei il primo, urlalo!', 'Tombola: tutta la cartella. Se sei il primo, urla «Tombola!» e mostrala allo staff per vincere un premio 🎁'],
     deal: 'Dammi la cartella', sub: 'Tocca i numeri quando li urlano.', hint: 'Tombola? Mostra la cartella allo staff 🎁',
-    row: n => `${n} numeri sulla stessa riga · Urlalo!`, all: 'Tutta la cartella!',
+    row: n => `${n} numeri sulla stessa riga · Sei il primo? Urlalo!`, all: 'Tutta la cartella · Urla «Tombola!»',
     show: 'Mostrala allo staff 🎁', at: 'FINITA ALLE',
     close: 'Chiudi', newGame: 'Nuova partita', newQ: 'Nuova partita?', newP: 'I segni su questa cartella si cancellano.',
     same: 'Stessa cartella, togli i segni', fresh: 'Nuova cartella',
   },
   en: {
     rules: 'Rules', title: ['Tombola', 'ESN'], cardTitle: ['Your', 'card'],
-    steps: ['The staff shout the numbers.', 'If the number is on your card, tap it: a bean goes on it. Tap again to take it off.',
-      'Ambo, terno, quaterna, cinquina: 2, 3, 4 or 5 numbers on the same row. Shout it!', 'Tombola: the whole card. Show it to the staff and win a prize 🎁'],
+    steps: ['The staff shout the numbers.', 'If the number is on your card, tap it to cross it out with an X. Tap again to remove it.',
+      'Ambo, terno, quaterna, cinquina: 2, 3, 4 or 5 numbers on the same row. If you’re the first, shout it!', 'Tombola: the whole card. If you’re the first, shout “Tombola!” and show it to the staff to win a prize 🎁'],
     deal: 'Get my card', sub: 'Tap the numbers when they’re called.', hint: 'Tombola? Show your card to the staff 🎁',
-    row: n => `${n} numbers on one row · Shout it!`, all: 'The whole card!',
+    row: n => `${n} numbers on one row · First? Shout it!`, all: 'The whole card · Shout “Tombola!”',
     show: 'Show this to the staff 🎁', at: 'COMPLETED AT',
-    close: 'Close', newGame: 'New game', newQ: 'New game?', newP: 'The beans on this card will be cleared.',
-    same: 'Same card, clear the beans', fresh: 'New card',
+    close: 'Close', newGame: 'New game', newQ: 'New game?', newP: 'The crosses on this card will be cleared.',
+    same: 'Same card, clear the crosses', fresh: 'New card',
   },
   es: {
     rules: 'Reglas', title: ['Tombola', 'ESN'], cardTitle: ['Tu', 'cartón'],
-    steps: ['El staff grita los números.', 'Si el número está en tu cartón, tócalo: le ponemos una judía encima. Vuelve a tocar para quitarla.',
-      'Ambo, terno, quaterna, cinquina: 2, 3, 4 o 5 números en la misma fila. ¡Grítalo!', 'Tombola: todo el cartón. Enséñaselo al staff y gana un premio 🎁'],
+    steps: ['El staff grita los números.', 'Si el número está en tu cartón, tócalo para tacharlo con una X. Vuelve a tocar para quitarla.',
+      'Ambo, terno, quaterna, cinquina: 2, 3, 4 o 5 números en la misma fila. Si eres el primero, ¡grítalo!', 'Tombola: todo el cartón. Si eres el primero, grita «¡Tombola!» y enséñaselo al staff para ganar un premio 🎁'],
     deal: 'Dame mi cartón', sub: 'Toca los números cuando los canten.', hint: '¿Tombola? Enséñale tu cartón al staff 🎁',
-    row: n => `${n} números en la misma fila · ¡Grítalo!`, all: '¡Todo el cartón!',
+    row: n => `${n} números en la misma fila · ¿Eres el primero? ¡Grítalo!`, all: 'Todo el cartón · ¡Grita «Tombola»!',
     show: 'Enséñaselo al staff 🎁', at: 'COMPLETADO A LAS',
-    close: 'Cerrar', newGame: 'Nueva partida', newQ: '¿Nueva partida?', newP: 'Se quitarán las judías de este cartón.',
-    same: 'Mismo cartón, quitar las judías', fresh: 'Cartón nuevo',
+    close: 'Cerrar', newGame: 'Nueva partida', newQ: '¿Nueva partida?', newP: 'Se borrarán las cruces de este cartón.',
+    same: 'Mismo cartón, borrar las cruces', fresh: 'Cartón nuevo',
   },
 };
 const NAMES = ['', 'Ambo', 'Terno', 'Quaterna', 'Cinquina', 'Tombola'];

@@ -1,8 +1,8 @@
 # Tombola ESN
 
 Tombola on the bus. The staff draw the numbers on a phone and shout them; every player gets a random card on their own
-phone (from a QR code) and taps the numbers to put a bean on them. Ambo, terno, quaterna and cinquina flash full screen
-("Shout it!"); tombola (the whole card) shows a live "Show this to the staff 🎁" screen with the time. IT / EN / ES.
+phone (from a QR code) and taps the numbers to cross them out with an X. Ambo, terno, quaterna and cinquina flash full screen
+("First? Shout it!": the rules say the first one to get it shouts it); tombola (the whole card) shows a live "Show this to the staff 🎁" screen with the time. IT / EN / ES.
 
 Two separate sites with the same look:
 

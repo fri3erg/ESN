@@ -25,10 +25,10 @@ their "Numbers drawn" board.
 1. **Rules**: title, 4 numbered steps (listen to the numbers, tap to cross out, ambo… cinquina on one row, tombola =
    the whole card → show it to the staff for a prize 🎁), **Get my card**.
 2. **Card**: a random real cartella: 3 rows × 9 columns, 5 numbers per row, 15 in all, column 1 = 1–9, column 2 =
-   10–19 … column 9 = 80–90, every column used, numbers going down in order. Tap to cross out (a bean covers it), tap
+   10–19 … column 9 = 80–90, every column used, numbers going down in order. Tap to cross out (a big X over it), tap
    again to remove. Chips Ambo · Terno · Quaterna · Cinquina · Tombola light up as they are reached.
 3. **Flash** the first time each win is reached (best row: 2 ambo, 3 terno, 4 quaterna, 5 cinquina): full screen
-   "AMBO!" + "2 numbers on one row · Shout it!" in the chosen language. Win names stay Italian.
+   "AMBO!" + "2 numbers on one row · First? Shout it!" (the rules: the first one to get each win shouts it) in the chosen language. Win names stay Italian.
 4. **Tombola** (all 15): the card stays on screen (the staff check it) under a live banner "TOMBOLA! Show this to the
    staff 🎁" with "FINISHED AT HH:MM", drifting background, shine, confetti.
 5. **New game** (in Rules): "Same card, clear the marks" or "New card", with a confirmation.
@@ -50,5 +50,5 @@ The Smorfia list is the traditional one (some entries are rude, kept on purpose)
 ## Look
 
 Theme A "Cartella napoletana" from `docs/mockups/tombola-themes.html`: cream paper (#f6ecd6 with dots), red
-(#b3261e, dark #7a1610), brown ink (#3a1d10), a brown bean on crossed-out numbers, italic serif titles, a cream ball
+(#b3261e, dark #7a1610), brown ink (#3a1d10), a dark X on crossed-out numbers, italic serif titles, a cream ball
 with a red rim and red number.

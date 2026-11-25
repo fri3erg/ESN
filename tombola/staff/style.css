@@ -2,7 +2,7 @@
    Edit this file in tombola/shared/, then run `npm run sync` to copy it into players/ and staff/. */
 :root {
   --bg: #f6ecd6; --paper: #fffaf0; --empty: #efe0c0; --line: #d8c39b;
-  --red: #b3261e; --red2: #7a1610; --ink: #3a1d10; --mute: #7d5b45; --bean: #6b3b1f; --cream: #fff7e8;
+  --red: #b3261e; --red2: #7a1610; --ink: #3a1d10; --mute: #7d5b45; --cream: #fff7e8;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
