@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3a8c">
+  <title>Need more limoncello · ESN Bologna</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%8B%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --blue: #0b3a8c; --blue2: #072a66; --tile: #1b4fae; --lemon: #ffd51f; --lemon2: #e0a800; --leaf: #3f9b3a; --cream: #fffbe8; --ink: #1d2340; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body { background: var(--blue); color: var(--cream); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden;
+      /* Amalfi majolica tiles */
+      background-image:
+        radial-gradient(circle at 50% 50%, transparent 0 13px, rgba(255,255,255,.08) 13px 15px, transparent 15px),
+        radial-gradient(circle at 0 0, rgba(255,213,31,.13) 0 9px, transparent 10px),
+        radial-gradient(circle at 100% 100%, rgba(255,213,31,.13) 0 9px, transparent 10px),
+        linear-gradient(45deg, transparent 47%, rgba(255,255,255,.05) 47% 53%, transparent 53%);
+      background-size: 56px 56px; }
+    button, input { font: inherit; }
+    button { cursor: pointer; color: inherit; }
+    .screen { min-height: 100svh; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; padding: 16px 18px max(18px, env(safe-area-inset-bottom)); }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .12em; color: var(--lemon); white-space: nowrap; }
+    .pill { background: transparent; border: 1.5px solid var(--lemon); color: var(--lemon); border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 800; }
+
+    /* name */
+    .hello { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+    .hello .big { font-size: 96px; line-height: 1; animation: sway 2.4s ease-in-out infinite; }
+    h1 { font-size: min(15vw, 64px); line-height: .95; margin: 14px 0 0; font-weight: 900; letter-spacing: -.02em; }
+    h1 em { font-style: normal; color: var(--lemon); display: block; }
+    .hello p { font-size: 19px; line-height: 1.4; margin: 14px auto 0; max-width: 320px; opacity: .85; }
+    input { width: 100%; margin-top: 26px; padding: 18px; border-radius: 16px; border: 3px solid var(--lemon); background: var(--cream); color: var(--ink); font-size: 22px; font-weight: 800; text-align: center; outline: none; }
+    input::placeholder { color: #9a9cb0; font-weight: 600; }
+    .go { display: block; width: 100%; margin-top: 16px; border: 0; border-radius: 16px; background: var(--lemon); color: var(--ink); padding: 19px; font-weight: 900; font-size: 21px; box-shadow: 0 6px 0 var(--lemon2); transition: transform .08s, box-shadow .08s; }
+    .go:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--lemon2); }
+    .go:disabled { opacity: .45; }
+
+    /* the button */
+    .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 10px 0; }
+    .hi { font-size: 20px; font-weight: 800; margin: 0 0 22px; }
+    .hi b { color: var(--lemon); }
+    .main { position: relative; width: min(84vw, 360px); aspect-ratio: 1; border-radius: 50%; border: 0; padding: 0;
+      background: radial-gradient(circle at 36% 30%, #fff7b8 0 9%, var(--lemon) 38%, #f7c200 78%, #e8a900 100%); color: var(--ink);
+      box-shadow: 0 14px 0 var(--lemon2), 0 22px 40px rgba(0,0,0,.35), inset 0 -10px 0 rgba(0,0,0,.06);
+      display: grid; place-items: center; transition: transform .09s, box-shadow .09s; animation: breathe 2.2s ease-in-out infinite; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .main:active:not(:disabled) { transform: translateY(12px) scale(.97); box-shadow: 0 2px 0 var(--lemon2), 0 6px 14px rgba(0,0,0,.3), inset 0 -10px 0 rgba(0,0,0,.06); }
+    .main .in { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .main .em { font-size: min(18vw, 78px); line-height: 1; }
+    .main strong { font-size: min(9.4vw, 40px); font-weight: 900; line-height: .98; text-transform: uppercase; letter-spacing: -.01em; }
+    .main small { font-size: 15px; font-weight: 800; opacity: .7; margin-top: 6px; }
+    .main:disabled { animation: none; filter: saturate(.55) brightness(.92); cursor: default; }
+    .main.pouring .em { animation: pour .5s ease-in-out infinite alternate; }
+    .main.nope { animation: nope .4s; }
+    .ring { position: absolute; inset: -12px; width: calc(100% + 24px); height: calc(100% + 24px); transform: rotate(-90deg); pointer-events: none; }
+    .ring circle { fill: none; stroke: var(--lemon); stroke-width: 5; stroke-linecap: round; }
+    @keyframes breathe { 50% { transform: scale(1.035) rotate(-1.5deg); } }
+    @keyframes pour { from { transform: rotate(-25deg); } to { transform: rotate(25deg) translateY(4px); } }
+    @keyframes nope { 20%, 60% { transform: translateX(-12px); } 40%, 80% { transform: translateX(12px); } }
+    @keyframes sway { 50% { transform: rotate(12deg) scale(1.06); } }
+    .count { margin: 30px 0 0; font-size: 15px; font-weight: 800; letter-spacing: .1em; color: var(--lemon); min-height: 20px; }
+    .err { margin: 14px 0 0; font-size: 17px; font-weight: 700; color: #ffd0d0; min-height: 22px; }
+    .link { background: none; border: 0; padding: 10px; font-size: 15px; font-weight: 700; color: var(--cream); opacity: .7; text-decoration: underline; text-underline-offset: 3px; }
+
+    /* the flash */
+    .flash { position: fixed; inset: 0; z-index: 30; background: var(--lemon); color: var(--ink); display: grid; place-items: center; text-align: center; padding: 20px; animation: fade .15s ease-out; cursor: pointer; overflow: hidden; }
+    .flash.out { animation: out .3s ease-in forwards; }
+    .flash > div { position: relative; z-index: 2; animation: stamp .5s cubic-bezier(.2,1.6,.4,1) both; }
+    .flash .em { font-size: 110px; line-height: 1; display: block; animation: spin 1.2s ease-in-out infinite; }
+    .flash strong { display: block; font-size: min(17vw, 80px); line-height: .95; font-weight: 900; text-transform: uppercase; margin-top: 10px; }
+    .flash p { font-size: 21px; font-weight: 800; margin: 14px 0 0; }
+    .flash .salute { display: inline-block; margin-top: 18px; background: var(--blue); color: var(--lemon); border-radius: 999px; padding: 9px 18px; font-weight: 900; font-size: 19px; transform: rotate(-3deg); }
+    .flash::before { content: ""; position: absolute; inset: -50%; background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.45) 0 10deg, transparent 10deg 20deg); animation: rays 8s linear infinite; }
+    @keyframes fade { from { opacity: 0; } }
+    @keyframes out { to { opacity: 0; } }
+    @keyframes stamp { from { transform: scale(2.4) rotate(-14deg); opacity: 0; } to { transform: rotate(-3deg); } }
+    @keyframes spin { 50% { transform: rotate(18deg) scale(1.1); } }
+    @keyframes rays { to { transform: rotate(360deg); } }
+    .rain { position: fixed; inset: 0; z-index: 31; pointer-events: none; overflow: hidden; }
+    .rain i { position: absolute; top: -70px; font-style: normal; animation: drop linear forwards; }
+    @keyframes drop { to { transform: translate(var(--dx), 115vh) rotate(var(--r)); } }
+
+    @media (max-height: 700px) {
+      .hello .big { font-size: 66px; }
+      h1 { font-size: min(12vw, 48px); }
+      .hello p { font-size: 16px; }
+      input { margin-top: 16px; padding: 14px; }
+      .main { width: min(70vw, 300px); }
+      .hi { margin-bottom: 14px; font-size: 18px; }
+      .count { margin-top: 20px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .main, .hello .big, .flash::before, .flash .em { animation: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import * as L from './limoncello.js';
+
+const KEY = 'limoncello.v1';
+const FLASH_MS = 3800;
+const app = document.getElementById('app');
+const esc = v => String(v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+// { name, n (limoncelli asked for tonight), lastAt (ms), muted }
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && typeof s === 'object') return { name: L.cleanName(s.name), n: Number.isInteger(s.n) && s.n >= 0 ? s.n : 0, lastAt: Number(s.lastAt) || null, muted: !!s.muted };
+  } catch { /* private mode or broken: start fresh */ }
+  return { name: '', n: 0, lastAt: null, muted: false };
+}
+let s = load();
+if (new URLSearchParams(location.search).has('reset')) { s = { name: '', n: 0, lastAt: null, muted: false }; history.replaceState(null, '', location.pathname); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* keep going in memory */ } };
+let editing = !s.name, sending = false, error = '';
+
+function top() {
+  return `<div class="top"><span>ESN BOLOGNA · 🍋</span><button class="pill" data-act="mute" aria-label="Sound">${s.muted ? '🔇' : '🔊'}</button></div>`;
+}
+
+function render() {
+  if (editing) {
+    app.innerHTML = `<main class="screen">${top()}
+      <form class="hello" data-form>
+        <div class="big">🍋</div>
+        <h1>Who’s <em>thirsty?</em></h1>
+        <p>Tell us your name, so the limoncello finds you.</p>
+        <input name="name" maxlength="${L.MAX_NAME}" autocomplete="given-name" placeholder="Your name" value="${esc(s.name)}" aria-label="Your name">
+        <button class="go" type="submit" ${s.name ? '' : 'disabled'}>Let’s go 🍋</button>
+      </form></main>`;
+    const input = app.querySelector('input');
+    input.addEventListener('input', () => { app.querySelector('.go').disabled = !L.cleanName(input.value); });
+    if (!s.name) input.focus();
+    return;
+  }
+  const wait = L.waitLeft(s.lastAt, Date.now());
+  const busy = sending || wait > 0;
+  const label = sending ? 'Pouring…' : wait > 0 ? `Refill in ${Math.ceil(wait / 1000)}s` : 'Tap me!';
+  const R = 48, C = 2 * Math.PI * R;
+  const ring = wait > 0 ? `<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${R}" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - wait / L.COOLDOWN_MS)}"/></svg>` : '';
+  app.innerHTML = `<main class="screen">${top()}
+    <div class="stage">
+      <p class="hi">Ciao <b>${esc(s.name)}</b>!</p>
+      <button class="main ${sending ? 'pouring' : ''}" data-act="more" ${busy ? 'disabled' : ''}>${ring}
+        <span class="in"><span class="em">🍋</span><strong>Need more<br>limoncello</strong><small>${label}</small></span></button>
+      <p class="count">${s.n ? `🍋 LIMONCELLI TONIGHT: ${s.n}` : ''}</p>
+      <p class="err" role="status">${esc(error)}</p>
+      <button class="link" data-act="name">Not ${esc(s.name)}? Change name</button>
+    </div></main>`;
+}
+
+// Sound, made on the spot (no files): three glugs, then a bright "ding-ding".
+let ctx = null;
+function sound() {
+  if (s.muted) return;
+  try {
+    ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume?.();
+    const now = ctx.currentTime;
+    const tone = (type, f0, f1, at, len, vol) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f0, now + at);
+      o.frequency.exponentialRampToValueAtTime(f1, now + at + len);
+      g.gain.setValueAtTime(0.0001, now + at);
+      g.gain.exponentialRampToValueAtTime(vol, now + at + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + at + len);
+      o.connect(g).connect(ctx.destination);
+      o.start(now + at);
+      o.stop(now + at + len + 0.02);
+    };
+    [0, 0.13, 0.26].forEach((at, i) => tone('sine', 520 - i * 60, 140, at, 0.12, 0.5));   // glug glug glug
+    tone('triangle', 1318, 1318, 0.45, 0.35, 0.35);                                       // ding
+    tone('triangle', 1760, 1760, 0.62, 0.6, 0.3);                                        // ding!
+    tone('sine', 2637, 2637, 0.62, 0.5, 0.08);
+  } catch { /* no audio: the flash is enough */ }
+}
+
+function flash() {
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.innerHTML = `<div><span class="em">🍋</span><strong>On its<br>way!</strong><p>Hang in there, ${esc(s.name)} 🙌</p><span class="salute">Salute! 🇮🇹</span></div>`;
+  document.body.append(f);
+  const rain = document.createElement('div');
+  rain.className = 'rain';
+  for (let i = 0; i < 34; i++) {
+    const l = document.createElement('i');
+    l.textContent = i % 5 === 0 ? '✨' : '🍋';
+    l.style.left = `${Math.random() * 100}%`;
+    l.style.fontSize = `${26 + Math.random() * 30}px`;
+    l.style.setProperty('--dx', `${(Math.random() - .5) * 140}px`);
+    l.style.setProperty('--r', `${Math.random() * 720 - 360}deg`);
+    l.style.animationDuration = `${1.6 + Math.random() * 1.8}s`;
+    l.style.animationDelay = `${Math.random() * 1.2}s`;
+    rain.append(l);
+  }
+  document.body.append(rain);
+  const close = () => { if (f.classList.contains('out')) return; f.classList.add('out'); setTimeout(() => { f.remove(); rain.remove(); }, 320); };
+  f.addEventListener('click', close);
+  setTimeout(close, FLASH_MS);
+}
+
+async function more() {
+  if (sending || L.waitLeft(s.lastAt, Date.now()) > 0) return;
+  sending = true; error = '';
+  render();
+  sound();
+  try { navigator.vibrate?.([40, 40, 40, 40, 120]); } catch { /* no vibration */ }
+  let ok = false;
+  try {
+    const r = await fetch('/api/more', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: s.name, n: s.n + 1, at: new Date().toISOString() }) });
+    ok = r.ok;
+  } catch { ok = false; }
+  sending = false;
+  if (ok) {
+    s.n += 1; s.lastAt = Date.now(); save();
+    flash();
+  } else {
+    error = 'The bar didn’t hear you 😢 Try again!';
+  }
+  render();
+  if (!ok) app.querySelector('.main')?.classList.add('nope');
+}
+
+app.addEventListener('submit', e => {
+  e.preventDefault();
+  const name = L.cleanName(new FormData(e.target).get('name'));
+  if (!name) return;
+  s.name = name; save(); editing = false; render();
+});
+
+app.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  switch (el.dataset.act) {
+    case 'more': more(); break;
+    case 'name': editing = true; error = ''; render(); break;
+    case 'mute': s.muted = !s.muted; save(); render(); break;
+  }
+});
+
+// The refill countdown ticks down on its own.
+setInterval(() => { if (!editing && !sending && s.lastAt && L.waitLeft(s.lastAt, Date.now() - 1000) > 0) render(); }, 500);
+
+render();
+</script>
+</body>
+</html>
