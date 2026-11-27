@@ -26,7 +26,8 @@ Each event is one folder in this repo (`side-quest/`, `taboo/`, ...), deployed a
 1. **Read the brief** (often an Italian PDF/message). List the mechanics, the content (quests, words…) and open questions; ask only what changes the build.
 2. **Theme mockups first.** One standalone HTML in `<folder>/docs/mockups/<folder>-themes.html`, 3 themes side by side as phone frames (260×540), each showing the real main screen with real content. Self-contained (no external requests), no sideways scroll on a phone, a "pick A, B or C" header: the organiser forwards it to friends to vote. Expect "these colours are ugly" → recolour fast.
 3. **Spec** in `<folder>/docs/specs/YYYY-MM-DD-<folder>-design.md`: flow screen by screen, look (palette), content. Short.
-4. **Build** (no build step): `index.html` (UI + CSS, inline `<script type="module">`), `<content>.js` (the organiser's list, the only file to edit), `game.js`/`quest.js` (pure state functions), `tests/*.test.mjs` (`node --test`), `package.json` (`"type": "module"`), `.vercelignore` (`tests docs package.json README.md print`), `README.md`. Logic test-first.
+4. **Build** (no build step): `index.html` (UI + CSS, inline `<script type="module">`), `<content>.js` (the organiser's list, the only file to edit), `game.js`/`quest.js` (pure state functions), `tests/*.test.mjs` (`node --test`), `package.json` (`"type": "module"`), `.vercelignore` (`tests docs package.json README.md print`), `README.md`, and the no-crawlers pair (below). Logic test-first.
+   - **No crawlers**: every deployed folder (each Vercel Root Directory, e.g. `tombola/players` and `tombola/staff`) gets a `robots.txt` with `User-agent: *` / `Disallow: /`, and every HTML page Vercel serves (iframe pages included) gets `<meta name="robots" content="noindex, nofollow, noai, noimageai">` right after `<meta charset>`. The games are reached only from the QR at the venue; being in search results only lets people read missions before the night, and bots fill the analytics.
 5. **Headless walkthrough** with puppeteer-core on 390×844 and 360×640: every screen, reloads, no sideways scroll, main screens fit without scrolling, no external requests, no JS errors. Look at the screenshots yourself.
 6. **Print material** (`<folder>/print/`, colour + B&W each): A4 poster with a big QR + 3 steps, and an A4 sheet of 20 cut-out QR cards (4×5, 35 mm QR, dashed cut lines, 8 mm margin). Decode every QR from the PNGs before committing.
 7. **README**: what it is, live URL, how to edit the content, print files, run/test/deploy.
@@ -64,3 +65,4 @@ Chrome is at `C:/Program Files/Google/Chrome/Application/chrome.exe`.
 - Building before the organiser has picked a theme.
 - Forgetting the B&W versions or not decoding the QR codes.
 - Checking only a big phone: 360×640 is where things overflow.
+- Forgetting `robots.txt` and the `noindex` meta in a new deployed folder.

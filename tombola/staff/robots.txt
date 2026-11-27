@@ -1,0 +1,3 @@
+# A party game reached from a QR code at the venue: no search engines, no AI crawlers.
+User-agent: *
+Disallow: /
