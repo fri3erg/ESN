@@ -28,7 +28,7 @@ This repo is a monorepo, so each project needs **its own Vercel project** pointe
    each, as `tombola/players` and `tombola/staff` do (see its README).
 3. Framework preset: **Other** (unless that project's README says otherwise). Leave the build command empty for static sites.
 4. Deploy. Every push to `main` that touches the folder redeploys it.
-5. Open the project's **Analytics** tab and press **Enable**. The pages already load `/_vercel/insights/script.js`
+5. Open the project's **Analytics** tab, press **Enable**, then **Redeploy** the latest deployment (the script route only exists in deployments made after enabling). The pages already load `/_vercel/insights/script.js`
    (visits, countries, devices; no cookies); until Analytics is enabled that request just fails, harmlessly.
 
 Every deployed folder also has a `robots.txt` and a `noindex` meta in its pages: the games are reached from QR codes
